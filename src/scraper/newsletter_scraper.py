@@ -23,6 +23,7 @@ class Article:
     published_date: datetime
     category: str = "tech"
     word_count: int = 0
+    content_extraction_status: str = "unknown"  # "success", "failed", "partial", "paywall"
 
 
 class NewsletterScraper:
@@ -246,23 +247,37 @@ class NewsletterScraper:
                                 article_url = f"https://tldr.tech{article_url}"
                             elif not article_url.startswith('http'):
                                 continue  # Skip invalid URLs
-                            
-                            # Determine category based on the section
+                              # Determine category based on the section
                             category = self._determine_category_from_context(link, soup)
                             
                             # Fetch article content from the external URL
                             article_content = await self._fetch_external_article_content(article_url)
                             
-                # Create Article object
+                            # Analyze content extraction results and expected length
+                            expected_words = read_time_minutes * 200  # ~200 words per minute
+                            
                             if article_content and len(article_content) > 100:
+                                actual_words = len(article_content.split())
                                 content = article_content
-                                word_count = len(article_content.split())
+                                word_count = actual_words
+                                
+                                # Determine extraction status based on content analysis
+                                if actual_words >= expected_words * 0.7:  # Got at least 70% of expected content
+                                    extraction_status = "success"
+                                elif actual_words >= expected_words * 0.3:  # Got 30-70% of expected content
+                                    extraction_status = "partial"
+                                    logger.warning(f"Partial content extraction for {title}: {actual_words}/{expected_words} words")
+                                else:  # Got less than 30% of expected content
+                                    extraction_status = "failed"
+                                    content = f"[CONTENT EXTRACTION FAILED] Expected ~{expected_words} words, got {actual_words}. URL: {article_url}"
+                                    logger.warning(f"Content extraction failed for {title}: {actual_words}/{expected_words} words")
+                                    
                             else:
-                                # Fallback: try to get content from newsletter page itself
-                                content = self._extract_article_snippet_from_newsletter(link, soup)
-                                if not content or len(content) < 100:
-                                    content = f"Article content from {article_url}"
-                                word_count = len(content.split()) if content != f"Article content from {article_url}" else read_time_minutes * 200
+                                # No content extracted from external URL
+                                extraction_status = "failed"
+                                content = f"[CONTENT EXTRACTION FAILED] Unable to extract content from: {article_url}"
+                                word_count = 0
+                                logger.warning(f"Complete content extraction failure for {title}")
 
                             article = Article(
                                 title=title,
@@ -271,7 +286,8 @@ class NewsletterScraper:
                                 url=article_url,
                                 published_date=published_date,
                                 category=category,
-                                word_count=word_count
+                                word_count=word_count,
+                                content_extraction_status=extraction_status
                             )
                             
                             articles.append(article)
@@ -569,8 +585,7 @@ class NewsletterScraper:
                     '.main-content',
                     '#content',
                     '.content'
-                ]),
-                  # Strategy 4: Structured data
+                ]),                # Strategy 4: Structured data
                 lambda: self._extract_from_structured_data(soup)
             ]
             
@@ -596,24 +611,52 @@ class NewsletterScraper:
         return None
     
     def _extract_from_paragraphs(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract content by finding the area with the most paragraphs."""
+        """Extract content by finding the area with the most relevant paragraphs."""
         try:
-            # Find containers with multiple paragraphs
-            containers = soup.find_all(['article', 'main', 'div'], recursive=True)
+            # Find containers that likely contain article content
+            content_containers = []
             
-            best_content = ""
-            max_paragraph_count = 0
-            
-            for container in containers:
+            # Look for common article containers
+            main_containers = soup.find_all(['article', 'main', 'div'], recursive=True)
+            for container in main_containers:
+                # Skip if container has obvious non-content classes
+                container_classes = ' '.join(container.get('class', [])).lower()
+                if any(skip_word in container_classes for skip_word in ['nav', 'menu', 'header', 'footer', 'sidebar', 'comment', 'ad']):
+                    continue
+                
+                # Find all paragraphs within this container
                 paragraphs = container.find_all('p', recursive=True)
-                if len(paragraphs) > max_paragraph_count:
-                    content = container.get_text(separator=' ', strip=True)
-                    # Filter out navigation and other non-content areas
-                    if len(content) > 500 and not self._is_navigation_content(content):
-                        best_content = content
-                        max_paragraph_count = len(paragraphs)
+                if len(paragraphs) < 3:  # Need at least 3 paragraphs for article content
+                    continue
+                    
+                # Calculate content quality metrics
+                total_text = ' '.join([p.get_text(strip=True) for p in paragraphs])
+                if len(total_text) < 500:  # Skip short content
+                    continue
+                    
+                # Check for article-like indicators
+                article_indicators = ['published', 'written', 'reported', 'according to', 'research', 'study', 'analysis']
+                indicator_count = sum(1 for indicator in article_indicators if indicator.lower() in total_text.lower())
+                
+                content_containers.append({
+                    'container': container,
+                    'paragraph_count': len(paragraphs),
+                    'text_length': len(total_text),
+                    'text': total_text,
+                    'article_indicators': indicator_count
+                })
             
-            return best_content if best_content else None
+            if not content_containers:
+                return None
+                
+            # Sort by quality metrics: prioritize more paragraphs, longer text, and article indicators
+            best_container = max(content_containers, key=lambda x: (
+                x['paragraph_count'] * 0.3 +  # Paragraph count weight
+                (x['text_length'] / 1000) * 0.5 +  # Text length weight (normalized)
+                x['article_indicators'] * 0.2  # Article indicators weight
+            ))
+            
+            return best_container['text'] if best_container['text'] else None
             
         except Exception as e:
             logger.debug(f"Error extracting from paragraphs: {str(e)}")
@@ -684,8 +727,7 @@ class NewsletterScraper:
         for suffix_pattern in suffixes_to_remove:
             content = re.sub(suffix_pattern, '', content, flags=re.IGNORECASE)
         
-        content = content.strip()
-          # Validate content quality
+        content = content.strip()        # Validate content quality
         if len(content) < 50:  # Reduced from 100 to 50 for better handling
             logger.debug(f"Content too short ({len(content)} chars) for {url}")
             return None
@@ -707,9 +749,10 @@ class NewsletterScraper:
             logger.debug(f"Paywall detected for {url}")
             return None
         
-        # Limit content length
-        if len(content) > 8000:
-            content = content[:8000] + "..."
+        # Don't truncate content - let it be full length for proper analysis
+        # If content is extremely long (>50k chars), something might be wrong
+        if len(content) > 50000:
+            logger.warning(f"Unusually long content ({len(content)} chars) for {url}")
         
         return content
     

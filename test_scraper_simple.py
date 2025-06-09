@@ -119,8 +119,7 @@ async def test_data_output():
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"tldr_articles_{timestamp}.json"
             filepath = data_dir / filename
-            
-            # Convert articles to dict format for JSON serialization
+              # Convert articles to dict format for JSON serialization
             articles_data = []
             for article in articles:
                 articles_data.append({
@@ -130,7 +129,8 @@ async def test_data_output():
                     'url': article.url,
                     'published_date': article.published_date.isoformat(),
                     'category': article.category,
-                    'word_count': article.word_count
+                    'word_count': article.word_count,
+                    'content_extraction_status': article.content_extraction_status
                 })
             
             with open(filepath, 'w', encoding='utf-8') as f:
