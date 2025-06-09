@@ -24,6 +24,7 @@ class Article:
     category: str = "tech"
     word_count: int = 0
     content_extraction_status: str = "unknown"  # "success", "failed", "partial", "paywall"
+    failure_reason: Optional[str] = None  # Detailed reason for failed/partial extractions
 
 
 class NewsletterScraper:
@@ -47,8 +48,9 @@ class NewsletterScraper:
             'Sec-Fetch-Site': 'none',
             'Cache-Control': 'max-age=0'
         }
-          # Session timeout configuration
-        self.timeout = aiohttp.ClientTimeout(total=30, connect=10)
+        
+        # Session timeout configuration - increased for better reliability
+        self.timeout = aiohttp.ClientTimeout(total=45, connect=15)
     
     async def __aenter__(self):
         """Async context manager entry."""
@@ -247,11 +249,12 @@ class NewsletterScraper:
                                 article_url = f"https://tldr.tech{article_url}"
                             elif not article_url.startswith('http'):
                                 continue  # Skip invalid URLs
-                              # Determine category based on the section
+                            
+                            # Determine category based on the section
                             category = self._determine_category_from_context(link, soup)
                             
                             # Fetch article content from the external URL
-                            article_content = await self._fetch_external_article_content(article_url)
+                            article_content, failure_reason = await self._fetch_external_article_content(article_url)
                             
                             # Analyze content extraction results and expected length
                             expected_words = read_time_minutes * 200  # ~200 words per minute
@@ -264,12 +267,15 @@ class NewsletterScraper:
                                 # Determine extraction status based on content analysis
                                 if actual_words >= expected_words * 0.7:  # Got at least 70% of expected content
                                     extraction_status = "success"
+                                    failure_reason = None  # Clear failure reason for successful extractions
                                 elif actual_words >= expected_words * 0.3:  # Got 30-70% of expected content
                                     extraction_status = "partial"
+                                    failure_reason = f"Partial extraction: got {actual_words}/{expected_words} words ({actual_words/expected_words*100:.1f}%)"
                                     logger.warning(f"Partial content extraction for {title}: {actual_words}/{expected_words} words")
                                 else:  # Got less than 30% of expected content
                                     extraction_status = "failed"
                                     content = f"[CONTENT EXTRACTION FAILED] Expected ~{expected_words} words, got {actual_words}. URL: {article_url}"
+                                    failure_reason = f"Insufficient content: got {actual_words}/{expected_words} words ({actual_words/expected_words*100:.1f}%)"
                                     logger.warning(f"Content extraction failed for {title}: {actual_words}/{expected_words} words")
                                     
                             else:
@@ -277,6 +283,8 @@ class NewsletterScraper:
                                 extraction_status = "failed"
                                 content = f"[CONTENT EXTRACTION FAILED] Unable to extract content from: {article_url}"
                                 word_count = 0
+                                if not failure_reason:
+                                    failure_reason = "No content extracted - empty or very short response"
                                 logger.warning(f"Complete content extraction failure for {title}")
 
                             article = Article(
@@ -287,7 +295,8 @@ class NewsletterScraper:
                                 published_date=published_date,
                                 category=category,
                                 word_count=word_count,
-                                content_extraction_status=extraction_status
+                                content_extraction_status=extraction_status,
+                                failure_reason=failure_reason
                             )
                             
                             articles.append(article)
@@ -338,7 +347,9 @@ class NewsletterScraper:
                 elif any(keyword in text_content for keyword in ['crypto', 'blockchain']):
                     return 'crypto'
                 
-                parent = parent.parent            # Fallback: analyze the link text itself
+                parent = parent.parent
+            
+            # Fallback: analyze the link text itself
             link_text = link_element.get_text().lower()
             if any(keyword in link_text for keyword in ['apple', 'google', 'microsoft', 'amazon', 'meta']):
                 return 'big_tech'
@@ -354,95 +365,136 @@ class NewsletterScraper:
         except Exception as e:
             logger.warning(f"Error determining category from context: {str(e)}")
             return 'tech'
-    
-    async def _fetch_external_article_content(self, article_url: str) -> Optional[str]:
+
+    async def _fetch_external_article_content(self, article_url: str) -> tuple[Optional[str], Optional[str]]:
         """
-        Fetch content from external article URL with improved extraction logic.
+        Fetch content from external article URL with improved extraction logic and retry handling.
         
         Args:
             article_url: URL of the external article
             
         Returns:
-            Article content or None if failed
+            Tuple of (Article content or None if failed, failure reason or None)
         """
-        try:
-            logger.debug(f"Fetching external content from: {article_url}")
-            
-            session = await self._get_session()
-            
-            # Use different headers for different sites to avoid blocking
-            site_headers = self.headers.copy()
-            if 'techcrunch.com' in article_url:
-                site_headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-            elif 'bloomberg.com' in article_url:
-                site_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'
-            elif 'spectrum.ieee.org' in article_url:
-                site_headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15'
-            
-            # Shorter timeout for external sites to avoid hanging
-            timeout = 10 if any(domain in article_url for domain in ['bloomberg.com', 'nytimes.com']) else 15
-            
+        max_retries = 2
+        base_timeout = 25  # Increased base timeout
+        
+        for attempt in range(max_retries + 1):
             try:
-                async with session.get(article_url, timeout=timeout, headers=site_headers) as response:
-                    if response.status == 403:
-                        logger.warning(f"Access denied (403) for: {article_url}")
-                        return None
-                    elif response.status == 404:
-                        logger.warning(f"Article not found (404) for: {article_url}")
-                        return None
-                    elif response.status not in [200, 301, 302]:
-                        logger.warning(f"Failed to fetch external article: HTTP {response.status}")
-                        return None
+                if attempt > 0:
+                    # Add delay between retries
+                    await asyncio.sleep(2 * attempt)
+                    logger.debug(f"Retry {attempt} for: {article_url}")
+                
+                logger.debug(f"Fetching external content from: {article_url} (attempt {attempt + 1})")
+                
+                session = await self._get_session()
+                
+                # Use different headers for different sites to avoid blocking
+                site_headers = self.headers.copy()
+                if 'techcrunch.com' in article_url:
+                    site_headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+                elif 'bloomberg.com' in article_url:
+                    site_headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0'
+                elif 'spectrum.ieee.org' in article_url:
+                    site_headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15'
+                
+                # Progressive timeout increase with retries
+                timeout = base_timeout + (attempt * 10)
+                
+                # Shorter timeout for known problematic sites only on first attempt
+                if attempt == 0 and any(domain in article_url for domain in ['bloomberg.com', 'nytimes.com']):
+                    timeout = 18
+                
+                try:
+                    async with session.get(article_url, timeout=timeout, headers=site_headers) as response:
+                        if response.status == 403:
+                            if attempt < max_retries:
+                                continue  # Retry with different timeout/headers
+                            return None, "HTTP 403 - Access denied (likely paywall or bot protection)"
+                        elif response.status == 404:
+                            return None, "HTTP 404 - Article not found"
+                        elif response.status == 502:
+                            if attempt < max_retries:
+                                continue  # Retry for server errors
+                            return None, "HTTP 502 - Request failed"
+                        elif response.status not in [200, 301, 302]:
+                            if attempt < max_retries:
+                                continue  # Retry
+                            return None, f"HTTP {response.status} - Request failed"
+                        
+                        html = await response.text()
+                        
+                except asyncio.TimeoutError:
+                    if attempt < max_retries:
+                        logger.debug(f"Timeout on attempt {attempt + 1} for {article_url}, retrying with longer timeout...")
+                        continue
+                    return None, f"Request timeout after {timeout}s (tried {max_retries + 1} times)"
+                except Exception as e:
+                    if attempt < max_retries:
+                        logger.debug(f"Network error on attempt {attempt + 1} for {article_url}: {str(e)}, retrying...")
+                        continue
+                    return None, f"Network error: {str(e)}"
+                
+                # If we got here, we have valid HTML - process it
+                soup = BeautifulSoup(html, 'html.parser')
+                
+                # Remove unwanted elements that clutter content
+                unwanted_selectors = [
+                    'script', 'style', 'nav', 'header', 'footer', 'aside',
+                    '.advertisement', '.ad', '.ads', '.social-share', '.share',
+                    '.newsletter-signup', '.subscription', '.paywall',
+                    '.comments', '.comment', '.related', '.sidebar',
+                    '.navigation', '.breadcrumb', '.menu', '.toolbar',
+                    '[class*="ad-"]', '[id*="ad-"]', '[class*="social"]',
+                    '.cookie-banner', '.gdpr', '.privacy-notice'
+                ]
+                
+                for selector in unwanted_selectors:
+                    for element in soup.select(selector):
+                        element.decompose()
+                
+                # Site-specific content extraction
+                content = self._extract_content_by_site(soup, article_url)
+                failure_reason = None
+                
+                if not content:
+                    # Generic content extraction with multiple strategies
+                    content = self._extract_content_generic(soup)
+                    if not content:
+                        failure_reason = "Content extraction failed - no content found using site-specific or generic strategies"
+                
+                if content:
+                    # Clean and validate content
+                    cleaned_content = self._clean_and_validate_content(content, article_url)
+                    if cleaned_content:
+                        return cleaned_content, None
+                    else:
+                        failure_reason = "Content validation failed - content too short, paywall detected, or formatting issues"
+                
+                if not failure_reason:
+                    failure_reason = "Unknown content extraction failure"
                     
-                    html = await response.text()
-            except asyncio.TimeoutError:
-                logger.warning(f"Timeout fetching article: {article_url}")
-                return None
+                logger.warning(f"No content extracted from: {article_url} - {failure_reason}")
+                return None, failure_reason
+                
             except Exception as e:
-                logger.warning(f"Network error fetching article {article_url}: {str(e)}")
-                return None
-            
-            soup = BeautifulSoup(html, 'html.parser')
-            
-            # Remove unwanted elements that clutter content
-            unwanted_selectors = [
-                'script', 'style', 'nav', 'header', 'footer', 'aside',
-                '.advertisement', '.ad', '.ads', '.social-share', '.share',
-                '.newsletter-signup', '.subscription', '.paywall',
-                '.comments', '.comment', '.related', '.sidebar',
-                '.navigation', '.breadcrumb', '.menu', '.toolbar',
-                '[class*="ad-"]', '[id*="ad-"]', '[class*="social"]',
-                '.cookie-banner', '.gdpr', '.privacy-notice'
-            ]
-            
-            for selector in unwanted_selectors:
-                for element in soup.select(selector):
-                    element.decompose()
-            
-            # Site-specific content extraction
-            content = self._extract_content_by_site(soup, article_url)
-            
-            if not content:
-                # Generic content extraction with multiple strategies
-                content = self._extract_content_generic(soup)
-            
-            if content:
-                # Clean and validate content
-                content = self._clean_and_validate_content(content, article_url)
-                return content
-            
-            logger.warning(f"No content extracted from: {article_url}")
-            return None
-            
-        except Exception as e:
-            logger.warning(f"Error fetching external article content from {article_url}: {str(e)}")
-            return None
+                if attempt < max_retries:
+                    logger.debug(f"Unexpected error on attempt {attempt + 1} for {article_url}: {str(e)}, retrying...")
+                    continue
+                failure_reason = f"Exception during content extraction: {str(e)}"
+                logger.warning(f"Error fetching external article content from {article_url}: {failure_reason}")
+                return None, failure_reason
+        
+        # If we get here, all retries failed
+        return None, f"All {max_retries + 1} attempts failed"
     
     def _extract_content_by_site(self, soup: BeautifulSoup, url: str) -> Optional[str]:
         """Extract content using site-specific selectors."""
         try:
             domain = url.split('/')[2].lower()
-              # Site-specific selectors for better content extraction
+            
+            # Site-specific selectors for better content extraction
             site_selectors = {
                 'techcrunch.com': [
                     '.article-content',
@@ -510,13 +562,38 @@ class NewsletterScraper:
                     '.post-content',
                     '.entry-content',
                     '.article-content',
-                    'main article'
+                    'main article',
+                    '.content',
+                    '.single-content',
+                    '.blog-content',
+                    '.post-body',
+                    '[role="main"]',
+                    'main',
+                    '.prose',  # Common in modern blogs
+                    '.markdown-content',
+                    '.post-wrapper',
+                    '.article-wrapper',
+                    '.main-content',
+                    '.page-content',
+                    # Try broader selectors for content
+                    '#content',
+                    '#main-content',
+                    '[class*="content"]',
+                    '[class*="post"]',
+                    '[class*="article"]'
                 ],
                 'tensorzero.com': [
                     '.post-content',
                     '.blog-content',
                     '.article-content',
-                    'main'
+                    'main',
+                    '.prose',  # Tailwind CSS prose class
+                    '.markdown-body',
+                    '.blog-post-content',
+                    '.post-body',
+                    '[class*="content"]',
+                    'article',
+                    '.entry-content'
                 ],
                 'joshuapurtell.com': [
                     '.post-content',
@@ -545,12 +622,28 @@ class NewsletterScraper:
             # Try site-specific selectors first
             for site_domain, selectors in site_selectors.items():
                 if site_domain in domain:
-                    for selector in selectors:
+                    logger.debug(f"Trying site-specific selectors for {site_domain}: {len(selectors)} selectors")
+                    # Try each selector for this site
+                    for i, selector in enumerate(selectors):
                         elements = soup.select(selector)
                         if elements:
                             content = elements[0].get_text(separator=' ', strip=True)
+                            logger.debug(f"Selector {i+1}/{len(selectors)} '{selector}' found {len(elements)} elements, content length: {len(content)}")
                             if len(content) > 200:  # Ensure we got substantial content
+                                logger.info(f"Successfully extracted {len(content)} chars using selector '{selector}' for {site_domain}")
                                 return content
+                        else:
+                            logger.debug(f"Selector '{selector}' found no elements")
+                    
+                    # If site-specific selectors didn't work, try enhanced extraction for known partial sites
+                    logger.info(f"Site-specific selectors failed for {site_domain}, trying enhanced extraction")
+                    if site_domain in ['tensorzero.com', 'diwank.space']:
+                        enhanced_content = self._enhanced_extraction_for_partial_sites(soup, site_domain)
+                        if enhanced_content:
+                            logger.info(f"Enhanced extraction successful for {site_domain}: {len(enhanced_content)} chars")
+                            return enhanced_content
+                        else:
+                            logger.warning(f"Enhanced extraction also failed for {site_domain}")
             
             return None
             
@@ -574,7 +667,7 @@ class NewsletterScraper:
                     '.content-body'
                 ]),
                 
-                # Strategy 2: Look for paragraphs in main content areas
+                # Strategy 2: Enhanced paragraph extraction with better content detection
                 lambda: self._extract_from_paragraphs(soup),
                 
                 # Strategy 3: Main content areas
@@ -585,8 +678,13 @@ class NewsletterScraper:
                     '.main-content',
                     '#content',
                     '.content'
-                ]),                # Strategy 4: Structured data
-                lambda: self._extract_from_structured_data(soup)
+                ]),
+                
+                # Strategy 4: Structured data
+                lambda: self._extract_from_structured_data(soup),
+                
+                # Strategy 5: Enhanced paragraph aggregation
+                lambda: self._extract_by_paragraph_density(soup)
             ]
             
             for strategy in content_strategies:
@@ -628,12 +726,12 @@ class NewsletterScraper:
                 paragraphs = container.find_all('p', recursive=True)
                 if len(paragraphs) < 3:  # Need at least 3 paragraphs for article content
                     continue
-                    
+                
                 # Calculate content quality metrics
                 total_text = ' '.join([p.get_text(strip=True) for p in paragraphs])
                 if len(total_text) < 500:  # Skip short content
                     continue
-                    
+                
                 # Check for article-like indicators
                 article_indicators = ['published', 'written', 'reported', 'according to', 'research', 'study', 'analysis']
                 indicator_count = sum(1 for indicator in article_indicators if indicator.lower() in total_text.lower())
@@ -686,19 +784,171 @@ class NewsletterScraper:
             logger.debug(f"Error extracting from structured data: {str(e)}")
             return None
     
-    def _is_navigation_content(self, content: str) -> bool:
-        """Check if content appears to be navigation/header/footer rather than article content."""
-        nav_indicators = [
-            'subscribe', 'newsletter', 'follow us', 'about us', 'contact',
-            'privacy policy', 'terms of service', 'home', 'menu',
-            'sign in', 'log in', 'register', 'search', 'trending'
-        ]
-        
-        content_lower = content.lower()
-        nav_count = sum(1 for indicator in nav_indicators if indicator in content_lower)
-        
-        # If more than 3 navigation indicators and short content, likely navigation
-        return nav_count > 3 and len(content) < 1000
+    def _extract_by_paragraph_density(self, soup: BeautifulSoup) -> Optional[str]:
+        """Extract content by analyzing paragraph density across the page."""
+        try:
+            # Find all divs/sections that might contain articles
+            containers = soup.find_all(['div', 'section', 'article', 'main'], recursive=True)
+            
+            content_candidates = []
+            
+            for container in containers:
+                # Skip containers with navigation-like classes
+                container_classes = ' '.join(container.get('class', [])).lower()
+                container_id = (container.get('id') or '').lower()
+                
+                skip_indicators = ['nav', 'menu', 'header', 'footer', 'sidebar', 'comment', 'ad', 'related', 'share', 'social']
+                if any(indicator in container_classes + ' ' + container_id for indicator in skip_indicators):
+                    continue
+                
+                # Count paragraphs and calculate density
+                paragraphs = container.find_all('p', recursive=True)
+                if len(paragraphs) < 2:
+                    continue
+                
+                # Get all text content
+                text_content = container.get_text(separator=' ', strip=True)
+                if len(text_content) < 300:  # Too short to be main content
+                    continue
+                
+                # Calculate quality score
+                paragraph_density = len(paragraphs) / max(1, len(text_content) / 1000)  # paragraphs per 1000 chars
+                word_count = len(text_content.split())
+                
+                # Look for article-like patterns
+                article_patterns = [
+                    r'\b(according to|research shows|study finds|analysis reveals)\b',
+                    r'\b(however|moreover|furthermore|additionally|meanwhile)\b',
+                    r'\b(first|second|third|finally|in conclusion)\b',
+                    r'\b(published|written|reported|says|explains|notes)\b'
+                ]
+                pattern_count = sum(len(re.findall(pattern, text_content, re.IGNORECASE)) for pattern in article_patterns)
+                
+                quality_score = (
+                    word_count * 0.4 +  # Word count (primary factor)
+                    paragraph_density * 100 +  # Paragraph density
+                    pattern_count * 50 +  # Article-like patterns
+                    (100 if 'article' in container_classes else 0)  # Article container bonus
+                )
+                
+                content_candidates.append({
+                    'content': text_content,
+                    'score': quality_score,
+                    'word_count': word_count,
+                    'paragraphs': len(paragraphs)
+                })
+            
+            if not content_candidates:
+                return None
+            
+            # Return the highest scoring content
+            best_candidate = max(content_candidates, key=lambda x: x['score'])
+            return best_candidate['content'] if best_candidate['word_count'] > 200 else None
+            
+        except Exception as e:
+            logger.debug(f"Error in paragraph density extraction: {str(e)}")
+            return None
+    
+    def _enhanced_extraction_for_partial_sites(self, soup: BeautifulSoup, domain: str) -> Optional[str]:
+        """Enhanced extraction specifically for sites showing partial results."""
+        try:
+            content_parts = []
+            
+            if domain == 'tensorzero.com':
+                # TensorZero blog specific extraction
+                selectors_to_try = [
+                    '.prose',  # Common in modern blogs
+                    '.blog-post-content',
+                    '.post-body',
+                    '[class*="content"]',
+                    'article',
+                    'main',
+                    '[class*="post"]',
+                    '[class*="article"]',
+                    '.markdown-body'  # If using markdown rendering
+                ]
+                
+                for selector in selectors_to_try:
+                    elements = soup.select(selector)
+                    for element in elements:
+                        text = element.get_text(separator=' ', strip=True)
+                        if len(text) > 500 and text not in content_parts:  # Avoid duplicates
+                            content_parts.append(text)
+                
+                # Also try extracting all paragraphs in sequence
+                paragraphs = soup.find_all('p')
+                if len(paragraphs) > 10:  # Likely article content
+                    paragraph_text = ' '.join([p.get_text(strip=True) for p in paragraphs if len(p.get_text(strip=True)) > 20])
+                    if len(paragraph_text) > 1000:
+                        content_parts.append(paragraph_text)
+            
+            elif domain == 'diwank.space':
+                # Diwank.space specific extraction - enhanced for long-form articles
+                selectors_to_try = [
+                    '.post-content',
+                    '.entry-content', 
+                    '.article-content',
+                    'main article',
+                    '.content',
+                    '[role="main"]',
+                    '.blog-content',
+                    '.single-content',
+                    '.post-body',
+                    '.prose',
+                    '.markdown-content',
+                    '.post-wrapper',
+                    '.article-wrapper',
+                    '.main-content'
+                ]
+                
+                for selector in selectors_to_try:
+                    elements = soup.select(selector)
+                    for element in elements:
+                        text = element.get_text(separator=' ', strip=True)
+                        if len(text) > 500 and text not in content_parts:
+                            content_parts.append(text)
+                
+                # Aggressive fallback: try to extract ALL paragraphs from the page
+                all_paragraphs = soup.find_all('p')
+                if len(all_paragraphs) > 20:  # Likely a long-form article
+                    # Filter out navigation/header/footer paragraphs
+                    article_paragraphs = []
+                    for p in all_paragraphs:
+                        p_text = p.get_text(strip=True)
+                        # Skip very short paragraphs and obvious navigation text
+                        if (len(p_text) > 30 and 
+                            not any(nav_word in p_text.lower() for nav_word in [
+                                'menu', 'navigation', 'subscribe', 'follow', 'contact',
+                                'home', 'about', 'privacy', 'terms', 'copyright'
+                            ])):
+                            # Check if paragraph is within a reasonable content area
+                            parent_classes = ' '.join(p.parent.get('class', [])).lower() if p.parent else ''
+                            parent_id = (p.parent.get('id') or '').lower() if p.parent else ''
+                            
+                            # Skip if clearly in navigation/header/footer area
+                            if not any(skip_area in parent_classes + ' ' + parent_id for skip_area in [
+                                'nav', 'menu', 'header', 'footer', 'sidebar', 'aside', 'advertisement'
+                            ]):
+                                article_paragraphs.append(p_text)
+                    
+                    if len(article_paragraphs) > 10:
+                        combined_paragraphs = ' '.join(article_paragraphs)
+                        if len(combined_paragraphs) > 2000:  # Substantial content
+                            content_parts.append(combined_paragraphs)
+                            logger.info(f"Extracted {len(article_paragraphs)} paragraphs totaling {len(combined_paragraphs)} chars for {domain}")
+            
+            # Combine and return the longest/best content
+            if content_parts:
+                # Return the longest content part (likely the most complete)
+                best_content = max(content_parts, key=len)
+                logger.info(f"Enhanced extraction for {domain}: found {len(content_parts)} content parts, using best with {len(best_content)} chars")
+                return best_content if len(best_content) > 1000 else None
+            
+            return None
+            
+        except Exception as e:
+            logger.debug(f"Error in enhanced extraction for {domain}: {str(e)}")
+            return None
     
     def _clean_and_validate_content(self, content: str, url: str) -> Optional[str]:
         """Clean and validate extracted content."""
@@ -727,128 +977,94 @@ class NewsletterScraper:
         for suffix_pattern in suffixes_to_remove:
             content = re.sub(suffix_pattern, '', content, flags=re.IGNORECASE)
         
-        content = content.strip()        # Validate content quality
-        if len(content) < 50:  # Reduced from 100 to 50 for better handling
+        content = content.strip()
+        
+        # Validate content quality
+        if len(content) < 50:  # Very short content
             logger.debug(f"Content too short ({len(content)} chars) for {url}")
             return None
         
         # Check for paywall indicators
         paywall_indicators = [
             'subscribe to continue reading',
-            'this article is for subscribers only',
-            'please subscribe',
-            'upgrade to premium',
-            'sign up for free',
-            'create a free account',
+            'sign up to read more',
             'become a member',
-            'unlock this article'
+            'premium content',
+            'subscription required',
+            'paywall',
+            'upgrade to premium',
+            'sign in to read',
+            'create a free account',
+            'this article is for subscribers',
+            'unlock this article',
+            'continue reading with',
+            'get unlimited access'
         ]
         
         content_lower = content.lower()
-        if any(indicator in content_lower for indicator in paywall_indicators):
-            logger.debug(f"Paywall detected for {url}")
+        paywall_detected = any(indicator in content_lower for indicator in paywall_indicators)
+        
+        if paywall_detected and len(content) < 500:
+            logger.debug(f"Paywall content detected for {url}")
             return None
         
-        # Don't truncate content - let it be full length for proper analysis
-        # If content is extremely long (>50k chars), something might be wrong
-        if len(content) > 50000:
-            logger.warning(f"Unusually long content ({len(content)} chars) for {url}")
+        # Check for minimal content that's just headers/navigation
+        words = content.split()
+        if len(words) < 30:  # Very few words
+            logger.debug(f"Too few words ({len(words)}) for {url}")
+            return None
+        
+        # Advanced content quality check
+        if not self._has_article_like_structure(content):
+            logger.debug(f"Content lacks article-like structure for {url}")
+            return None
         
         return content
     
-    def _clean_html(self, html_content: str) -> str:
-        """
-        Clean HTML tags from content.
-        
-        Args:
-            html_content: HTML content
-            
-        Returns:
-            Clean text content
-        """
-        if not html_content:
-            return ""
-        
-        soup = BeautifulSoup(html_content, 'html.parser')
-        text = soup.get_text()
-        
-        # Clean up whitespace
-        text = re.sub(r'\s+', ' ', text)
-        return text.strip()
-    
-    def _determine_category(self, title: str, content: str) -> str:
-        """
-        Determine article category based on title and content.
-        
-        Args:
-            title: Article title
-            content: Article content
-            
-        Returns:
-            Category string
-        """
-        text = f"{title} {content}".lower()
-        
-        categories = {
-            'ai': ['ai', 'artificial intelligence', 'machine learning', 'neural', 'gpt', 'llm'],
-            'crypto': ['crypto', 'bitcoin', 'ethereum', 'blockchain', 'nft', 'defi'],
-            'startup': ['startup', 'funding', 'venture', 'seed', 'series a', 'ipo'],
-            'big_tech': ['google', 'apple', 'microsoft', 'amazon', 'meta', 'facebook'],
-            'dev': ['developer', 'programming', 'code', 'api', 'framework', 'library'],
-            'science': ['research', 'study', 'discovery', 'breakthrough', 'science']        }
-        
-        for category, keywords in categories.items():
-            if any(keyword in text for keyword in keywords):
-                return category
-        
-        return 'tech'  # Default category
-    
-    def _extract_article_snippet_from_newsletter(self, link_element, soup: BeautifulSoup) -> Optional[str]:
-        """
-        Extract article snippet/preview from the newsletter page itself when external fetch fails.
-        
-        Args:
-            link_element: The link element for the article
-            soup: BeautifulSoup object of the newsletter page
-            
-        Returns:
-            Article snippet or None
-        """
+    def _has_article_like_structure(self, content: str) -> bool:
+        """Check if content has article-like structure patterns."""
         try:
-            # Look for content near the link (siblings, parent content, etc.)
-            parent = link_element.parent
+            # Count sentences (rough approximation)
+            sentence_count = len(re.findall(r'[.!?]+', content))
             
-            # Check for description paragraphs near the link
-            for _ in range(3):  # Check up to 3 levels
-                if parent is None:
-                    break
-                    
-                # Look for descriptive text in siblings
-                siblings = parent.find_all(['p', 'div', 'span'], recursive=False)
-                for sibling in siblings:
-                    text = sibling.get_text(strip=True)
-                    if len(text) > 50 and text.lower() not in link_element.get_text().lower():
-                        # Filter out navigation/header text
-                        if not self._is_navigation_content(text):
-                            return text[:500]  # Limit to reasonable snippet size
-                
-                # Look for content within the parent
-                text_content = parent.get_text(strip=True)
-                if len(text_content) > 100:
-                    # Remove the link text itself from the content
-                    link_text = link_element.get_text()
-                    content = text_content.replace(link_text, '').strip()
-                    if len(content) > 50 and not self._is_navigation_content(content):
-                        return content[:500]
-                
-                parent = parent.parent
+            # Count paragraphs (double newlines or substantial breaks)
+            paragraph_count = len(re.split(r'\n\s*\n|\. {2,}', content))
             
-            return None
+            # Look for article-like patterns
+            article_patterns = [
+                r'\b(according to|research shows|study finds|analysis reveals)\b',
+                r'\b(however|moreover|furthermore|additionally|meanwhile)\b',
+                r'\b(first|second|third|finally|in conclusion)\b',
+                r'\b(published|written|reported|says|explains|notes)\b'
+            ]
+            
+            pattern_matches = sum(len(re.findall(pattern, content, re.IGNORECASE)) for pattern in article_patterns)
+            
+            # Calculate structure score
+            word_count = len(content.split())
+            
+            # Article-like content should have:
+            # - Multiple sentences
+            # - Reasonable sentence length
+            # - Some article patterns
+            # - Not just a list of short phrases
+            
+            avg_sentence_length = word_count / max(1, sentence_count)
+            
+            structure_score = (
+                (sentence_count > 5) * 2 +  # Has multiple sentences
+                (paragraph_count > 2) * 2 +  # Has multiple paragraphs  
+                (pattern_matches > 0) * 3 +  # Has article-like patterns
+                (avg_sentence_length > 8) * 2 +  # Reasonable sentence length
+                (word_count > 100) * 1  # Substantial content
+            )
+            
+            return structure_score >= 5  # Threshold for article-like content
             
         except Exception as e:
-            logger.debug(f"Error extracting snippet from newsletter: {str(e)}")
-            return None
-    
+            logger.debug(f"Error checking article structure: {str(e)}")
+            return True  # Default to accepting content if check fails
+
     async def close(self):
         """Close the scraper session."""
         if self.session:
@@ -859,7 +1075,8 @@ class NewsletterScraper:
 async def fetch_latest_articles(max_age_hours: int = 24) -> List[Article]:
     """
     Convenience function to fetch latest articles.
-      Args:
+    
+    Args:
         max_age_hours: Maximum age of articles to fetch
         
     Returns:

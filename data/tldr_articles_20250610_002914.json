@@ -6,7 +6,9 @@
     "url": "https://www.bloomberg.com/news/articles/2025-06-06/apple-wwdc-2025-preview-ios-26-macos-26-new-ai-features-ipados-26-redesigns?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzb3VyY2UiOiJTdWJzY3JpYmVyR2lmdGVkQXJ0aWNsZSIsImlhdCI6MTc0OTQzOTIzMCwiZXhwIjoxNzUwMDQ0MDMwLCJhcnRpY2xlSWQiOiJTWEZUS0REV1gyUFMwMCIsImJjb25uZWN0SWQiOiI2NTc1NjkyN0UwMkM0N0MwQkQ0MDNEQTJGMEUyNzIyMyJ9.aZlWc8n-NMVZ4gSXwhmPWcqj9IHqbMYmKd4pnWNbVGI&utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "dev",
-    "word_count": 0
+    "word_count": 0,
+    "content_extraction_status": "failed",
+    "failure_reason": "Content validation failed - content too short, paywall detected, or formatting issues"
   },
   {
     "title": "Microsoft and Asus announce two Xbox Ally handhelds with new Xbox full-screen experience",
@@ -15,16 +17,20 @@
     "url": "https://www.theverge.com/news/682009/microsoft-asus-rog-xbox-ally-devices-new-windows-xbox-experience?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 67
+    "word_count": 67,
+    "content_extraction_status": "failed",
+    "failure_reason": "Insufficient content: got 67/1400 words (4.8%)"
   },
   {
     "title": "BYD's Five-Minute Charging Puts China in the Lead for EVs",
-    "content": "[CONTENT EXTRACTION FAILED] Expected ~800 words, got 61. URL: https://spectrum.ieee.org/byd-megawatt-charging?utm_source=tldrnewsletter",
+    "content": "[CONTENT EXTRACTION FAILED] Unable to extract content from: https://spectrum.ieee.org/byd-megawatt-charging?utm_source=tldrnewsletter",
     "summary": "4-minute read",
     "url": "https://spectrum.ieee.org/byd-megawatt-charging?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "dev",
-    "word_count": 61
+    "word_count": 0,
+    "content_extraction_status": "failed",
+    "failure_reason": "Content validation failed - content too short, paywall detected, or formatting issues"
   },
   {
     "title": "Breakthrough in search for HIV cure leaves researchers ‘overwhelmed'",
@@ -33,7 +39,9 @@
     "url": "https://www.theguardian.com/global-development/2025/jun/05/breakthrough-in-search-for-hiv-cure-leaves-researchers-overwhelmed?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 834
+    "word_count": 834,
+    "content_extraction_status": "success",
+    "failure_reason": null
   },
   {
     "title": "Field Notes From Shipping Real Code With Claude",
@@ -42,7 +50,9 @@
     "url": "https://diwank.space/field-notes-from-shipping-real-code-with-claude?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 4071
+    "word_count": 4071,
+    "content_extraction_status": "partial",
+    "failure_reason": "Partial extraction: got 4071/7400 words (55.0%)"
   },
   {
     "title": "MCP vs API",
@@ -51,16 +61,20 @@
     "url": "https://glama.ai/blog/2025-06-06-mcp-vs-api?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 1218
+    "word_count": 1218,
+    "content_extraction_status": "success",
+    "failure_reason": null
   },
   {
     "title": "Welcome to Campus. Here's Your ChatGPT",
-    "content": "[CONTENT EXTRACTION FAILED] Unable to extract content from: https://www.nytimes.com/2025/06/07/technology/chatgpt-openai-colleges.html?unlocked_article_code=1.Nk8.Z6qI.moAMRJaHP7t6&smid=url-share&utm_source=tldrnewsletter",
+    "content": "[CONTENT EXTRACTION FAILED] Expected ~1600 words, got 420. URL: https://www.nytimes.com/2025/06/07/technology/chatgpt-openai-colleges.html?unlocked_article_code=1.Nk8.Z6qI.moAMRJaHP7t6&smid=url-share&utm_source=tldrnewsletter",
     "summary": "8-minute read",
     "url": "https://www.nytimes.com/2025/06/07/technology/chatgpt-openai-colleges.html?unlocked_article_code=1.Nk8.Z6qI.moAMRJaHP7t6&smid=url-share&utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 0
+    "word_count": 420,
+    "content_extraction_status": "failed",
+    "failure_reason": "Insufficient content: got 420/1600 words (26.2%)"
   },
   {
     "title": "The hidden time bomb in the tax code that's fueling mass tech layoffs",
@@ -69,16 +83,20 @@
     "url": "https://qz.com/tech-layoffs-tax-code-trump-section-174-microsoft-meta-1851783502?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 0
+    "word_count": 0,
+    "content_extraction_status": "failed",
+    "failure_reason": "Content extraction failed - no content found using site-specific or generic strategies"
   },
   {
     "title": "SaaS Is Just Vendor Lock-In with Better Branding",
-    "content": "Docs \\ Personal Software \\ Blog \\ Discord \\ Loading... SaaS Is Just Vendor Lock-In with Better Branding Developers are told \"to focus on the product\" and let SaaS vendors handle the rest, but integrating third-party services, whether it's auth, queuing, file storage, or image optimization, comes at a cost. Not just in dollars but in time, friction, and mental overhead. There are five hidden taxes you pay every time you integrate a SaaS into your stack. 1. The Discovery Tax Before you can integrate anything, you first have to figure out what they're actually selling? What problems are they solving? Is it compatible with your stack? Is their price sane at your scale? a Are their docs clear and do they reveal any implementation weirdness? This unpaid research work is usually non-transferable. What you learn about \"Uploady\" or \"MegaQueue\" doesn't help you next time when you're evaluating something else. It's also subjective. It's marketing, and does the marketing message resonate with you? 2. The Sign-Up Tax You've decided on a service, and this is the moment when you hand over your email and credit card. Do they support usage-based pricing or only lock-in tiers? Can your team members access the dashboard, or do you have to pay more for that functionality? Despite only using the service the same amount! Can you even test the product without hitting a paywall? You're now on the hook, even if you haven't written a single line of code. 3. The Integration Tax Now the real work begins. You read the docs. You install the libraries You wire it into your framework. And figure out the edge cases that the docs don't mention, because docs are marketing! Often you're left fighting your own tooling. They're aiming for the lowest common denominator, and you're bleeding edge. Or the other way around! 4. The Local Development Tax You need the SaaS service to work locally. Does it even offer a local emulator? Can you stub it out in tests? Do you need to tunnel to the cloud just to test one feature? Now you've got branching configuration logic, one for production, one for staging, one for local… If you're lucky. 5. The Production Tax This is the part where you're \"done,\" except you're not. Can you use this in your staging environment? What about pull request previews? You need to securely manage the API keys. Monitoring, logging, and alerting Wondering why something worked in your laptop but fails in production? You've integrated the service, but now you're on the hook for its reliability in production. Conclusion The pitch of modern SaaS is \"don't reinvent the wheel.\" But every wheel you bolt on comes with some friction. It's not just a service: It's a contract. It's a dependency. It's a subtle architectural shift, and it comes with taxes. No matter what choice you make, it's always going to be vendor-locked in. Switching out something, even if it's open source and self-hosted, means that you're rewriting a lot of code. So, my argument is, don't make those decisions. Just pick a platform. The thing that matters is the software that you want to write, not the framework or the services that it runs on. Platforms like Cloudflare or Supabase shine. Where your database, queue, image service, and storage all live within the same platform and speak the same language. You avoid paying these taxes repeatedly. You simply pick the product that's already there. No context switching between vendors. No API key wrangling. No compatibility hacks or configuration forks. Just fast, local feeling integrations that work the same in dev and production. It feels like everything is running on the same machine, and in a way it kind of is. That's the hidden superpower of integrated platforms. They collapse the distance between your code and your services. And in doing so, they give you back the one thing no SaaS vendor can sell you: \"Flow.\"",
+    "content": "Developers are told \"to focus on the product\" and let SaaS vendors handle the rest, but integrating third-party services, whether it's auth, queuing, file storage, or image optimization, comes at a cost. Not just in dollars but in time, friction, and mental overhead. There are five hidden taxes you pay every time you integrate a SaaS into your stack. Before you can integrate anything, you first have to figure out what they're actually selling? This unpaid research work is usually non-transferable. What you learn about \"Uploady\" or \"MegaQueue\" doesn't help you next time when you're evaluating something else. It's also subjective. It's marketing, and does the marketing message resonate with you? You've decided on a service, and this is the moment when you hand over your email and credit card. You're now on the hook, even if you haven't written a single line of code. Now the real work begins. Often you're left fighting your own tooling. They're aiming for the lowest common denominator, and you're bleeding edge. Or the other way around! You need the SaaS service to work locally. Does it even offer a local emulator? Can you stub it out in tests? Do you need to tunnel to the cloud just to test one feature? Now you've got branching configuration logic, one for production, one for staging, one for local… If you're lucky. This is the part where you're \"done,\" except you're not. You've integrated the service, but now you're on the hook for its reliability in production. The pitch of modern SaaS is \"don't reinvent the wheel.\" But every wheel you bolt on comes with some friction. It's not just a service: It's a contract. It's a dependency. It's a subtle architectural shift, and it comes with taxes. No matter what choice you make, it's always going to be vendor-locked in. Switching out something, even if it's open source and self-hosted, means that you're rewriting a lot of code. So, my argument is, don't make those decisions. Just pick a platform. The thing that matters is the software that you want to write, not the framework or the services that it runs on. Platforms like Cloudflare or Supabase shine. Where your database, queue, image service, and storage all live within the same platform and speak the same language. You avoid paying these taxes repeatedly. You simply pick the product that's already there. It feels like everything is running on the same machine, and in a way it kind of is. That's the hidden superpower of integrated platforms. They collapse the distance between your code and your services. And in doing so, they give you back the one thing no SaaS vendor can sell you: \"Flow.\"",
     "summary": "3-minute read",
     "url": "https://rwsdk.com/blog/saas-is-just-vendor-lock-in-with-better-branding?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "dev",
-    "word_count": 656
+    "word_count": 449,
+    "content_extraction_status": "success",
+    "failure_reason": null
   },
   {
     "title": "Reverse Engineering Cursor's LLM Client",
@@ -87,7 +105,9 @@
     "url": "https://www.tensorzero.com/blog/reverse-engineering-cursors-llm-client/?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 2185
+    "word_count": 2185,
+    "content_extraction_status": "partial",
+    "failure_reason": "Partial extraction: got 2185/3400 words (64.3%)"
   },
   {
     "title": "Meta reportedly in talks to invest billions of dollars in Scale AI",
@@ -96,7 +116,9 @@
     "url": "https://techcrunch.com/2025/06/08/meta-reportedly-in-talks-to-invest-billions-of-dollars-in-scale-ai/?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 32
+    "word_count": 32,
+    "content_extraction_status": "failed",
+    "failure_reason": "Insufficient content: got 32/200 words (16.0%)"
   },
   {
     "title": "Specification Engineering",
@@ -105,7 +127,9 @@
     "url": "https://www.joshuapurtell.com/posts/spec_eng/?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 610
+    "word_count": 610,
+    "content_extraction_status": "success",
+    "failure_reason": null
   },
   {
     "title": "Maintaining an Android app is a lot of work",
@@ -114,15 +138,19 @@
     "url": "https://ashishb.net/programming/maintaining-android-app/?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "ai",
-    "word_count": 1367
+    "word_count": 1367,
+    "content_extraction_status": "success",
+    "failure_reason": null
   },
   {
     "title": "magic namerefs",
-    "content": "[CONTENT EXTRACTION FAILED] Unable to extract content from: https://gist.github.com/izabera/e4717562e20eb6cfb6e05f8019883efb?utm_source=tldrnewsletter",
+    "content": "namerefs (introduced in bash 4.0) act as aliases for other variables var=meow declare -n ref=var echo $ref # prints meow ref=moo echo $var # prints moo they can also reference a specific element in an array, using declare -n ref='array[1234]' using this, i have been playing with a neat nameref trick: tmp=() declare -n var= ' tmp[tmp[0]=some_expression_here, 0] ' it uses the auxiliary array tmp to force an arithmetic context, in which it assigns the result of any arbitrary expression to an element of that array, then expands that same element. we can now create magic variables that evaluate any arbitrary expression. here's a basic counter: tmp=() x=0 declare -n counter= ' tmp[tmp[0]=x++,0] ' for i in {1..10} ; do echo $counter done # prints 0 1 2 3 4 5 6 7 8 9 here's an example that computes the fibonacci numbers: f=(0 1) declare -n fib= ' f[f[2]=f[0], f[0]+=f[1], f[1]=f[2], 0] ' for i in {1..10} ; do echo $fib done # prints 1 1 2 3 5 8 13 21 34 55 this is already very powerful, as it can do many magic things with numbers. but as it turns out, we can do even more: we can use dollar expansions too! here's a silly clock with magic variables that show the current date and time: # \\D{your-format-here} passes that format to strftime # but it only works in prompts like $PS1 # ${var@P} expands $var as if it was in your $PS1 date=( ' \\D{% ' {Y,m,d,H,M,S}}) # the formats we'll use months=(- jan feb mar apr may jun jul aug sep oct nov dec) numbers=({00..60}) tmp=() declare -n year= ' tmp[tmp=${date[0]@P},0] ' declare -n month= ' months[10#${date[1]@P}] ' declare -n day= ' numbers[10#${date[2]@P}] ' declare -n hour= ' numbers[10#${date[3]@P}] ' declare -n minute= ' numbers[10#${date[4]@P}] ' declare -n second= ' numbers[10#${date[5]@P}] ' while : ; do echo $year / $month / $day $hour : $minute : $second sleep 1 done # 2025/jun/06 09:54:13 # 2025/jun/06 09:54:14 # 2025/jun/06 09:54:15 # 2025/jun/06 09:54:16 this is probably one of the coolest things i've ever seen in bash. honestly i am a bit horrified that this works at all, but the resulting code is just so simple and elegant. and it feels like i'm just scratching the surface, there's so much potential. previous: recursive expansions",
     "summary": "2-minute read",
     "url": "https://gist.github.com/izabera/e4717562e20eb6cfb6e05f8019883efb?utm_source=tldrnewsletter",
     "published_date": "2025-06-09T00:00:00",
     "category": "dev",
-    "word_count": 0
+    "word_count": 387,
+    "content_extraction_status": "success",
+    "failure_reason": null
   }
 ]
