@@ -8,9 +8,9 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:11.177912",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-06-10T23:11:44.332899",
+    "usage_count": 10,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "spectrum.ieee.org": {
@@ -20,8 +20,8 @@
       ".all-content-wrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:18.358152",
-    "usage_count": 10,
+    "last_used": "2025-06-10T23:11:19.396490",
+    "usage_count": 17,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -32,7 +32,7 @@
       ".skipcontent--3ZC8EDEr"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:12.215088",
+    "last_used": "2025-06-10T23:10:58.106598",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -44,9 +44,9 @@
       ".content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:13.354589",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-06-10T23:09:31.462510",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "quarter--mile.com": {
@@ -58,7 +58,7 @@
       ".content_padding"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:14.738827",
+    "last_used": "2025-06-10T23:09:54.014287",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -73,9 +73,9 @@
       "section"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:14.972865",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-06-10T23:09:54.225357",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "monadical.com": {
@@ -85,9 +85,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:16.044251",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-06-10T23:09:55.313764",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "www.strangeloopcanon.com": {
@@ -100,9 +100,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:16.304445",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-06-10T23:12:35.472845",
+    "usage_count": 11,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "blog.cryptographyengineering.com": {
@@ -115,9 +115,9 @@
       ".type-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:16.533867",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-06-10T23:10:16.834459",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "www.nytimes.com": {
@@ -128,9 +128,9 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:44.971389",
-    "usage_count": 4,
-    "confidence_score": 0.82,
+    "last_used": "2025-06-10T23:12:46.257676",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "rwsdk.com": {
@@ -143,9 +143,405 @@
       ".dark:prose-invert"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T22:48:46.617333",
+    "last_used": "2025-06-10T23:10:24.393000",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "9to5google.com": {
+    "domain": "9to5google.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:32.026994",
     "usage_count": 4,
     "confidence_score": 0.82,
+    "pattern_type": "ai_discovered"
+  },
+  "www.hollywoodreporter.com": {
+    "domain": "www.hollywoodreporter.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      "#post-1236255108",
+      ".a-article-grid",
+      ".lrv-a-wrapper",
+      ".lrv-u-margin-t-1"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:32.265868",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "tesseral.com": {
+    "domain": "tesseral.com",
+    "selectors": [
+      "article",
+      ".mt-8",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:33.811833",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "9to5mac.com": {
+    "domain": "9to5mac.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:11:18.776008",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.reuters.com": {
+    "domain": "www.reuters.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".regular-article-layout__container__3KL1R"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:35.283055",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "deepdream.substack.com": {
+    "domain": "deepdream.substack.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".single-post-container"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:35.494102",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.nbcnews.com": {
+    "domain": "www.nbcnews.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".articlePage",
+      ".news"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:57.361447",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "sparktoro.com": {
+    "domain": "sparktoro.com",
+    "selectors": [
+      "article",
+      "#post-10134",
+      ".post-10134",
+      ".post",
+      ".type-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:57.823531",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "invertedpassion.com": {
+    "domain": "invertedpassion.com",
+    "selectors": [
+      "article",
+      "#post-2249",
+      ".post-2249",
+      ".post",
+      ".type-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:10:59.806371",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.newsweek.com": {
+    "domain": "www.newsweek.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".html",
+      ".not-front",
+      ".not-logged-in",
+      ".no-sidebars"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:06.038394",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.cbsnews.com": {
+    "domain": "www.cbsnews.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".theme--responsive",
+      ".device--type-desktop",
+      ".device--platform-web",
+      ".device--size-"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:06.853248",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "fly.io": {
+    "domain": "fly.io",
+    "selectors": [
+      "article",
+      ".xl:grid",
+      ".grid-cols-auto-span-auto",
+      ".items-start",
+      ".sm:text-lg"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:07.118679",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "byteatatime.dev": {
+    "domain": "byteatatime.dev",
+    "selectors": [
+      "article",
+      "#article",
+      ".prose",
+      ".mx-auto",
+      ".mt-8"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:28.752225",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.theverge.com": {
+    "domain": "www.theverge.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".duet--page-layout--post",
+      "._1ymtmqp0",
+      "._1ymtmqp8",
+      "._1ymtmqp9"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:28.989442",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "balaji-amg.surge.sh": {
+    "domain": "balaji-amg.surge.sh",
+    "selectors": [
+      "article",
+      ".prose",
+      ".prose-blue",
+      ".dark:prose-invert",
+      ".max-w-none"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:35.931774",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.infoworld.com": {
+    "domain": "www.infoworld.com",
+    "selectors": [
+      "main",
+      "#primary",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:37.172887",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.tomsguide.com": {
+    "domain": "www.tomsguide.com",
+    "selectors": [
+      "article",
+      ".page-content-onecol",
+      ".flex-1",
+      ".news-article",
+      ".article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:38.997894",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "analyticsindiamag.com": {
+    "domain": "analyticsindiamag.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:39.269817",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.yahoo.com": {
+    "domain": "www.yahoo.com",
+    "selectors": [
+      "[id*=\"article\"]",
+      "#article-container",
+      ".box-border",
+      ".w-full",
+      ".scroll-mt-[76px]"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:45.856249",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "cacm.acm.org": {
+    "domain": "cacm.acm.org",
+    "selectors": [
+      "article",
+      "#post-767645",
+      ".post-767645",
+      ".digital-library",
+      ".type-digital-library"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:46.093640",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "rjp.io": {
+    "domain": "rjp.io",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:52.972950",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "justin.searls.co": {
+    "domain": "justin.searls.co",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:53.057620",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "filwd.substack.com": {
+    "domain": "filwd.substack.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:59.394842",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "omarabid.com": {
+    "domain": "omarabid.com",
+    "selectors": [
+      "article",
+      ".text-gray-800",
+      ".dark:text-gray-300",
+      ".mb-10",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:12:59.737651",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "patricia.no": {
+    "domain": "patricia.no",
+    "selectors": [
+      "article",
+      ".shade-two",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:11:44.952929",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "asteriskmag.com": {
+    "domain": "asteriskmag.com",
+    "selectors": [
+      ".article",
+      "#does-ai-progress-have-a-speed-limit",
+      ".article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:11:47.980727",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.uploadvr.com": {
+    "domain": "www.uploadvr.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".post-template",
+      ".tag-headset-hardware-tech"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:11:50.421609",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "steipete.me": {
+    "domain": "steipete.me",
+    "selectors": [
+      "[id*=\"content\"]",
+      "#main-content",
+      ".mx-auto",
+      ".w-full",
+      ".max-w-3xl"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T23:11:51.529241",
+    "usage_count": 1,
+    "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
   }
 }
