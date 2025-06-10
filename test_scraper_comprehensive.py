@@ -65,7 +65,7 @@ async def test_article_processing():
     
     try:        # Get latest newsletter articles
         print("Fetching latest newsletter articles from multiple recent entries...")
-        articles = await scraper.fetch_latest_newsletter(max_age_hours=48, max_entries=3)  # 48 hours, 3 entries for testing
+        articles = await scraper.fetch_latest_newsletter(max_age_hours=240, max_entries=10)  # 10 days, 10 entries for comprehensive testing
         
         if not articles:
             print("✗ No articles to process")
@@ -162,7 +162,7 @@ async def test_data_output():
     
     try:        # Test full scraping and save
         print("Fetching and processing articles from multiple recent newsletters...")
-        articles = await scraper.fetch_latest_newsletter(max_age_hours=48, max_entries=3)
+        articles = await scraper.fetch_latest_newsletter(max_age_hours=240, max_entries=10)
         
         if articles:
             print(f"✓ Processed {len(articles)} articles")
