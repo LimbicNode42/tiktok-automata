@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Test script for RSS scraping functionality.
+Comprehensive test script for TLDR Newsletter RSS scraping functionality.
+Includes detailed analytics, success rate analysis, and failure reporting.
 """
 
 import asyncio
@@ -249,16 +250,16 @@ async def test_data_output():
 
 
 async def main():
-    """Main test function."""
-    print("TLDR Newsletter Scraper Test")
-    print("=" * 40)
+    """Main comprehensive test function."""
+    print("TLDR Newsletter Scraper - Comprehensive Test")
+    print("=" * 50)
     
     await test_rss_scraping()
     await test_article_processing() 
-    await test_data_output()
-    
-    print("\n" + "=" * 40)
-    print("Testing complete!")
+    await test_data_output()    
+    print("\n" + "=" * 50)
+    print("Comprehensive testing complete!")
+    print("📊 Features tested: RSS parsing, content extraction, success analytics, failure reporting")
 
 
 if __name__ == "__main__":
