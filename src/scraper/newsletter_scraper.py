@@ -127,11 +127,9 @@ class NewsletterScraper:
             rss_entries = await self.fetch_rss_feed()
             if not rss_entries:
                 return []
-            
-            # Filter recent entries
+              # Filter recent entries
             cutoff_date = datetime.now() - timedelta(hours=max_age_hours)
             recent_entries = []
-            
             for entry in rss_entries:
                 # Parse published date
                 try:
@@ -148,16 +146,29 @@ class NewsletterScraper:
             
             logger.info(f"Processing {len(recent_entries)} recent entries")
             
-            # Process each entry
+            # Process the second last entry instead of all entries
             articles = []
-            for entry in recent_entries:
+            if len(recent_entries) >= 2:
+                # Get the second last entry (index -2)
+                second_last_entry = recent_entries[-2]
+                logger.info(f"Processing second last entry: {second_last_entry.get('title', 'Unknown')}")
                 try:
-                    entry_articles = await self._process_rss_entry(entry)
+                    entry_articles = await self._process_rss_entry(second_last_entry)
                     if entry_articles:
                         articles.extend(entry_articles)
                 except Exception as e:
-                    logger.error(f"Error processing entry '{entry.get('title', 'Unknown')}': {str(e)}")
-                    continue
+                    logger.error(f"Error processing second last entry '{second_last_entry.get('title', 'Unknown')}': {str(e)}")
+            elif len(recent_entries) == 1:
+                # If only one entry, process it
+                logger.info("Only one recent entry found, processing it instead")
+                try:
+                    entry_articles = await self._process_rss_entry(recent_entries[0])
+                    if entry_articles:
+                        articles.extend(entry_articles)
+                except Exception as e:
+                    logger.error(f"Error processing single entry '{recent_entries[0].get('title', 'Unknown')}': {str(e)}")
+            else:
+                logger.warning("No recent entries to process")
             
             logger.info(f"Successfully processed {len(articles)} articles")
             return articles

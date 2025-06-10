@@ -97,8 +97,61 @@ async def test_article_processing():
         traceback.print_exc()
 
 
+def analyze_extraction_results(articles):
+    """Analyze extraction success rates and provide detailed statistics."""
+    total_articles = len(articles)
+    if total_articles == 0:
+        return {}
+    
+    # Count status types
+    success_count = 0
+    partial_count = 0
+    failed_count = 0
+    
+    # Track detailed failure/partial info
+    failed_articles = []
+    partial_articles = []
+    
+    for article in articles:
+        status = article.content_extraction_status
+        if status == 'success':
+            success_count += 1
+        elif status == 'partial':
+            partial_count += 1
+            partial_articles.append({
+                'title': article.title,
+                'url': article.url,
+                'reason': article.failure_reason or 'Unknown partial extraction issue',
+                'word_count': article.word_count
+            })
+        elif status == 'failed':
+            failed_count += 1
+            failed_articles.append({
+                'title': article.title,
+                'url': article.url,
+                'reason': article.failure_reason or 'Unknown extraction failure'
+            })
+    
+    # Calculate percentages
+    success_rate = (success_count / total_articles) * 100
+    partial_rate = (partial_count / total_articles) * 100
+    failure_rate = (failed_count / total_articles) * 100
+    
+    return {
+        'total_articles': total_articles,
+        'success_count': success_count,
+        'partial_count': partial_count,
+        'failed_count': failed_count,
+        'success_rate': round(success_rate, 1),
+        'partial_rate': round(partial_rate, 1),
+        'failure_rate': round(failure_rate, 1),
+        'failed_articles': failed_articles,
+        'partial_articles': partial_articles
+    }
+
+
 async def test_data_output():
-    """Test data output functionality."""
+    """Test data output functionality with enhanced analytics."""
     print("\n=== Testing Data Output ===")
     
     # Create data directory if it doesn't exist
@@ -115,10 +168,41 @@ async def test_data_output():
         if articles:
             print(f"✓ Processed {len(articles)} articles")
             
-            # Save to JSON file
+            # Analyze extraction results
+            analysis = analyze_extraction_results(articles)
+            
+            # Print summary statistics
+            print(f"\n=== Extraction Success Analysis ===")
+            print(f"Total Articles: {analysis['total_articles']}")
+            print(f"Success Rate: {analysis['success_rate']}% ({analysis['success_count']} articles)")
+            print(f"Partial Rate: {analysis['partial_rate']}% ({analysis['partial_count']} articles)")
+            print(f"Failure Rate: {analysis['failure_rate']}% ({analysis['failed_count']} articles)")
+            
+            # Print detailed failure information
+            if analysis['failed_articles']:
+                print(f"\n=== Failed Extractions ({len(analysis['failed_articles'])}) ===")
+                for i, failed in enumerate(analysis['failed_articles'], 1):
+                    print(f"{i}. {failed['title']}")
+                    print(f"   URL: {failed['url']}")
+                    print(f"   Reason: {failed['reason']}")
+                    print()
+            
+            # Print detailed partial extraction information
+            if analysis['partial_articles']:
+                print(f"=== Partial Extractions ({len(analysis['partial_articles'])}) ===")
+                for i, partial in enumerate(analysis['partial_articles'], 1):
+                    print(f"{i}. {partial['title']}")
+                    print(f"   URL: {partial['url']}")
+                    print(f"   Words Extracted: {partial['word_count']}")
+                    print(f"   Reason: {partial['reason']}")
+                    print()
+            
+            # Save to JSON file with enhanced metadata
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"tldr_articles_{timestamp}.json"
-            filepath = data_dir / filename            # Convert articles to dict format for JSON serialization
+            filepath = data_dir / filename
+            
+            # Convert articles to dict format for JSON serialization
             articles_data = []
             for article in articles:
                 articles_data.append({
@@ -133,8 +217,18 @@ async def test_data_output():
                     'failure_reason': article.failure_reason
                 })
             
+            # Create final output with metadata
+            output_data = {
+                'metadata': {
+                    'extraction_timestamp': datetime.now().isoformat(),
+                    'scraper_version': '1.0',
+                    'extraction_statistics': analysis
+                },
+                'articles': articles_data
+            }
+            
             with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(articles_data, f, indent=2, ensure_ascii=False)
+                json.dump(output_data, f, indent=2, ensure_ascii=False)
             
             print(f"✓ Output file created: {filepath}")
             
