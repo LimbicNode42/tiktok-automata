@@ -11,6 +11,7 @@ from typing import List, Dict, Optional
 from loguru import logger
 from dataclasses import dataclass
 import re
+from .adaptive_extractor import AdaptiveContentExtractor
 
 
 @dataclass
@@ -34,6 +35,9 @@ class NewsletterScraper:
         self.base_url = "https://tldr.tech/"
         self.rss_url = "https://tldr.tech/rss"
         self.session = None
+        
+        # Initialize adaptive content extractor
+        self.adaptive_extractor = AdaptiveContentExtractor()
         
         # Headers to mimic a real browser
         self.headers = {
@@ -110,24 +114,25 @@ class NewsletterScraper:
             logger.error(f"Error fetching RSS feed: {str(e)}")
             return []
     
-    async def fetch_latest_newsletter(self, max_age_hours: int = 24) -> List[Article]:
+    async def fetch_latest_newsletter(self, max_age_hours: int = 24, max_entries: int = 3) -> List[Article]:
         """
-        Fetch articles from the latest TLDR newsletter.
+        Fetch articles from the latest TLDR newsletters.
         
         Args:
             max_age_hours: Maximum age of articles to fetch (in hours)
+            max_entries: Maximum number of recent newsletter entries to process
             
         Returns:
             List of Article objects
         """
         try:
             logger.info("Fetching latest newsletter content...")
-            
-            # Get RSS entries
+              # Get RSS entries
             rss_entries = await self.fetch_rss_feed()
             if not rss_entries:
                 return []
-              # Filter recent entries
+            
+            # Filter recent entries
             cutoff_date = datetime.now() - timedelta(hours=max_age_hours)
             recent_entries = []
             for entry in rss_entries:
@@ -146,31 +151,27 @@ class NewsletterScraper:
             
             logger.info(f"Processing {len(recent_entries)} recent entries")
             
-            # Process the second last entry instead of all entries
+            # Process the last few entries instead of just one
             articles = []
-            if len(recent_entries) >= 2:
-                # Get the second last entry (index -2)
-                second_last_entry = recent_entries[-2]
-                logger.info(f"Processing second last entry: {second_last_entry.get('title', 'Unknown')}")
-                try:
-                    entry_articles = await self._process_rss_entry(second_last_entry)
-                    if entry_articles:
-                        articles.extend(entry_articles)
-                except Exception as e:
-                    logger.error(f"Error processing second last entry '{second_last_entry.get('title', 'Unknown')}': {str(e)}")
-            elif len(recent_entries) == 1:
-                # If only one entry, process it
-                logger.info("Only one recent entry found, processing it instead")
-                try:
-                    entry_articles = await self._process_rss_entry(recent_entries[0])
-                    if entry_articles:
-                        articles.extend(entry_articles)
-                except Exception as e:
-                    logger.error(f"Error processing single entry '{recent_entries[0].get('title', 'Unknown')}': {str(e)}")
-            else:
-                logger.warning("No recent entries to process")
+            entries_to_process = recent_entries[-max_entries:] if len(recent_entries) >= max_entries else recent_entries
             
-            logger.info(f"Successfully processed {len(articles)} articles")
+            logger.info(f"Processing {len(entries_to_process)} recent newsletter entries (last {max_entries} available)")
+            
+            for i, entry in enumerate(entries_to_process, 1):
+                entry_title = entry.get('title', 'Unknown')
+                logger.info(f"Processing entry {i}/{len(entries_to_process)}: {entry_title}")
+                try:
+                    entry_articles = await self._process_rss_entry(entry)
+                    if entry_articles:
+                        articles.extend(entry_articles)
+                        logger.info(f"Extracted {len(entry_articles)} articles from entry {i}")
+                    else:
+                        logger.warning(f"No articles extracted from entry {i}: {entry_title}")
+                except Exception as e:
+                    logger.error(f"Error processing entry {i} '{entry_title}': {str(e)}")
+                    continue
+            
+            logger.info(f"Successfully processed {len(articles)} total articles from {len(entries_to_process)} newsletter entries")
             return articles
             
         except Exception as e:
@@ -464,16 +465,20 @@ class NewsletterScraper:
                 for selector in unwanted_selectors:
                     for element in soup.select(selector):
                         element.decompose()
-                
-                # Site-specific content extraction
+                  # Site-specific content extraction
                 content = self._extract_content_by_site(soup, article_url)
                 failure_reason = None
                 
                 if not content:
-                    # Generic content extraction with multiple strategies
-                    content = self._extract_content_generic(soup)
-                    if not content:
-                        failure_reason = "Content extraction failed - no content found using site-specific or generic strategies"
+                    # Try adaptive AI-powered extraction
+                    content, extraction_method = await self.adaptive_extractor.extract_content(soup, article_url)
+                    if content:
+                        logger.info(f"Adaptive extraction successful using: {extraction_method}")
+                    else:
+                        # Fallback to generic content extraction
+                        content = self._extract_content_generic(soup)
+                        if not content:
+                            failure_reason = "Content extraction failed - no content found using site-specific, adaptive, or generic strategies"
                 
                 if content:
                     # Clean and validate content
@@ -1064,8 +1069,7 @@ class NewsletterScraper:
             
             structure_score = (
                 (sentence_count > 5) * 2 +  # Has multiple sentences
-                (paragraph_count > 2) * 2 +  # Has multiple paragraphs  
-                (pattern_matches > 0) * 3 +  # Has article-like patterns
+                (paragraph_count > 2) * 2 +  # Has multiple paragraphs                (pattern_matches > 0) * 3 +  # Has article-like patterns
                 (avg_sentence_length > 8) * 2 +  # Reasonable sentence length
                 (word_count > 100) * 1  # Substantial content
             )
@@ -1075,11 +1079,21 @@ class NewsletterScraper:
         except Exception as e:
             logger.debug(f"Error checking article structure: {str(e)}")
             return True  # Default to accepting content if check fails
-
+    
     async def close(self):
         """Close the scraper session."""
         if self.session:
             await self.session.close()
+        
+        # Save learned patterns before closing
+        if self.adaptive_extractor:
+            self.adaptive_extractor.save_patterns()
+            logger.info("Saved adaptive extraction patterns")
+            
+            # Show pattern learning statistics
+            stats = self.adaptive_extractor.get_pattern_stats()
+            if stats.get('total_patterns', 0) > 0:
+                logger.info(f"Adaptive extractor learned {stats['total_patterns']} patterns with {stats.get('avg_success_rate', 0):.2f} avg success rate")
 
 
 # Convenience function for one-off usage

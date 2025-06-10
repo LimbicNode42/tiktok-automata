@@ -1,0 +1,151 @@
+{
+  "www.cnbc.com": {
+    "domain": "www.cnbc.com",
+    "selectors": [
+      "[class*=\"content\"]",
+      "#MainContentContainer",
+      ".BrandPageWrapper-liveAlertAd",
+      ".BrandPageWrapper-contentWrapper"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:11.177912",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "spectrum.ieee.org": {
+    "domain": "spectrum.ieee.org",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".all-content-wrapper"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:18.358152",
+    "usage_count": 10,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "www.macrumors.com": {
+    "domain": "www.macrumors.com",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".skipcontent--3ZC8EDEr"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:12.215088",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.snellman.net": {
+    "domain": "www.snellman.net",
+    "selectors": [
+      ".content",
+      ".content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:13.354589",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "quarter--mile.com": {
+    "domain": "quarter--mile.com",
+    "selectors": [
+      ".content",
+      ".bodycopy",
+      ".content",
+      ".content_padding"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:14.738827",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.signalfire.com": {
+    "domain": "www.signalfire.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".section",
+      ".blog-article",
+      ".border-bottom-tab---1",
+      "section"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:14.972865",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "monadical.com": {
+    "domain": "monadical.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:16.044251",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.strangeloopcanon.com": {
+    "domain": "www.strangeloopcanon.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:16.304445",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.cryptographyengineering.com": {
+    "domain": "blog.cryptographyengineering.com",
+    "selectors": [
+      "article",
+      "#post-8540",
+      ".post-8540",
+      ".post",
+      ".type-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:16.533867",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.nytimes.com": {
+    "domain": "www.nytimes.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".story",
+      ".nytapp-vi-article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:44.971389",
+    "usage_count": 4,
+    "confidence_score": 0.82,
+    "pattern_type": "ai_discovered"
+  },
+  "rwsdk.com": {
+    "domain": "rwsdk.com",
+    "selectors": [
+      ".prose",
+      ".prose",
+      ".prose-lg",
+      ".prose-slate",
+      ".dark:prose-invert"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-10T22:48:46.617333",
+    "usage_count": 4,
+    "confidence_score": 0.82,
+    "pattern_type": "ai_discovered"
+  }
+}
