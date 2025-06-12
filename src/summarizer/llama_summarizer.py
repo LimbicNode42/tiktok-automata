@@ -5,6 +5,10 @@ Simplified to use only Llama 3.2-3B-Instruct for optimal GTX 1060 6GB performanc
 
 import asyncio
 import torch
+import json
+import re
+import random
+from pathlib import Path
 from transformers import (
     AutoTokenizer, 
     AutoModelForCausalLM, 
@@ -29,7 +33,7 @@ except ImportError:
 class TikTokSummaryConfig:
     """Configuration for TikTok summary generation."""
     target_duration: int = 120  # Target seconds for TikTok video
-    max_tokens: int = 1200  # Max tokens in summary (increased significantly for 120s TTS)
+    max_tokens: int = 3000  # Max tokens in summary (increased further for full 120s TTS content)
     temperature: float = 0.7  # Creativity level
     top_p: float = 0.9  # Nucleus sampling
     use_gpu: bool = True  # Use GPU acceleration
@@ -40,7 +44,6 @@ class LlamaSummarizer:
     Llama 3.2-3B-Instruct summarizer optimized for RTX 3070 and TikTok content.
     Fixed to the optimal model for your hardware - no complex model selection needed.
     """
-    
     def __init__(self, config: TikTokSummaryConfig = None):
         """
         Initialize the Llama summarizer with the 3.2-3B instruction-tuned model.
@@ -57,8 +60,41 @@ class LlamaSummarizer:
         self.model = None
         self.pipeline = None
         self.device = "cuda" if torch.cuda.is_available() and self.config.use_gpu else "cpu"
+        
+        # Load dynamic hooks configuration
+        self.hooks_config = self._load_hooks_config()
+        
         logger.info(f"Initializing {self.model_name} for TikTok summarization")
         logger.info(f"Expected VRAM usage: {self.expected_vram} on {self.device}")
+
+    def _load_hooks_config(self) -> Dict:
+        """Load dynamic hooks configuration from JSON file."""
+        try:
+            hooks_file = Path(__file__).parent / "data" / "tiktok_hooks.json"
+            with open(hooks_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning(f"Failed to load hooks config: {e}, using fallback")
+            return self._get_fallback_hooks()
+
+    def _get_fallback_hooks(self) -> Dict:
+        """Fallback hooks if JSON file can't be loaded."""
+        return {
+            "category_hooks": {
+                "ai": {
+                    "hooks": ["AI just did something INSANE:"],
+                    "style": "mind-blowing, tech-savvy",
+                    "ctas": ["Follow for more AI chaos! What's your wildest AI prediction? 🤖"]
+                },
+                "tech": {
+                    "hooks": ["This tech news is EVERYWHERE:"],
+                    "style": "trendy, shareable", 
+                    "ctas": ["Follow for daily tech! Tag someone who needs to see this! 📱"]
+                }
+            },
+            "engagement_hooks": ["But here's where it gets crazy:"],
+            "tiktok_specific_ctas": ["Follow for mind-bending tech content! 🔥"]
+        }
     
     def _setup_authentication(self):
         """Setup Hugging Face authentication for accessing Llama models."""
@@ -183,52 +219,173 @@ class LlamaSummarizer:
             
         except Exception as e:
             logger.warning(f"Benchmark failed: {str(e)}")
-    
-    def create_tiktok_prompt(self, article: Article, target_duration: int = None) -> str:
-        """Create engaging TikTok-optimized prompts for Llama 3.2."""
-        duration = target_duration or self.config.target_duration
+
+    def _analyze_article_content(self, article: Article) -> Dict[str, any]:
+        """Analyze article content to determine appropriate hooks and style."""
+        content_lower = article.content.lower()
+        title_lower = article.title.lower()
+        full_text = f"{title_lower} {content_lower}"
         
-        # Category-specific hooks and styles
-        category_styles = {
-            'ai': {
-                'hook': "AI just did something INSANE:",
-                'style': "mind-blowing, tech-savvy",
-                'cta': "What AI breakthrough shocked you most? Drop it below!"
-            },
-            'big_tech': {
-                'hook': "Big Tech just changed EVERYTHING:",
-                'style': "dramatic, insider knowledge",
-                'cta': "Are you Team Apple or Team Google? Let me know!"
-            },
-            'dev': {
-                'hook': "Developers, this will blow your mind:",
-                'style': "technical but accessible, excited",
-                'cta': "Which programming tip changed your life? Share it!"
-            },
-            'science': {
-                'hook': "Scientists just discovered something WILD:",
-                'style': "fascinating, educational",
-                'cta': "What science fact still amazes you? Tell me!"
-            },
-            'crypto': {
-                'hook': "Crypto world is going CRAZY:",
-                'style': "hype, financial excitement",
-                'cta': "Diamond hands or paper hands? Comment below!"
-            },
-            'tech': {
-                'hook': "This tech news is EVERYWHERE:",
-                'style': "trendy, shareable",
-                'cta': "Tag someone who needs to see this!"
-            }
+        analysis = {
+            'content_type': 'standard',
+            'urgency_level': 'medium',
+            'controversy_score': 0,
+            'has_funding': False,
+            'funding_amount': None,
+            'is_breakthrough': False,
+            'is_partnership': False,
+            'is_acquisition': False,
+            'is_first_person': False
         }
         
-        style_info = category_styles.get(article.category, category_styles['tech'])
-          # Use modern chat template format for Llama 3.2
+        # Check for first-person indicators
+        first_person_patterns = [
+            r'\b(i|me|my|mine|myself|we|us|our|ours|ourselves)\b',
+            r'\bi\s+(am|was|have|had|will|can|should|would|think|believe|feel)',
+            r'\bmy\s+(thoughts|experience|opinion|view|perspective)',
+            r'\bwe\s+(are|were|have|had|will|can|should|would|think|believe)',
+            r'\bin\s+my\s+(opinion|view|experience)',
+            r'\bi\s+(wrote|published|created|built|founded)'
+        ]
+        
+        first_person_matches = 0
+        for pattern in first_person_patterns:
+            matches = re.findall(pattern, full_text, re.IGNORECASE)
+            first_person_matches += len(matches)
+        
+        # If we find 3+ first-person indicators, treat as first-person content
+        if first_person_matches >= 3:
+            analysis['is_first_person'] = True
+            analysis['content_type'] = 'first_person'
+        
+        # Check for funding/money mentions
+        funding_patterns = [r'\$(\d+(?:\.\d+)?)\s*(?:billion|million|b|m)', r'raised\s+\$', r'funding\s+round', r'investment']
+        for pattern in funding_patterns:
+            match = re.search(pattern, full_text)
+            if match:
+                analysis['has_funding'] = True
+                analysis['content_type'] = 'high_funding'
+                if match.groups():
+                    analysis['funding_amount'] = match.group(1)
+                break
+        
+        # Check for controversy indicators
+        controversy_words = ['controversy', 'backlash', 'criticism', 'outrage', 'scandal', 'debate', 'divided', 'polarizing']
+        analysis['controversy_score'] = sum(1 for word in controversy_words if word in full_text)
+        if analysis['controversy_score'] > 0:
+            analysis['content_type'] = 'controversy'
+        
+        # Check for breakthrough/innovation
+        breakthrough_words = ['breakthrough', 'revolutionary', 'game-changing', 'unprecedented', 'historic', 'first time', 'never before']
+        if any(word in full_text for word in breakthrough_words):
+            analysis['is_breakthrough'] = True
+            analysis['content_type'] = 'breakthrough'
+        
+        # Check for partnerships
+        partnership_words = ['partnership', 'collaboration', 'teams up', 'joins forces', 'alliance', 'together']
+        if any(word in full_text for word in partnership_words):
+            analysis['is_partnership'] = True
+            analysis['content_type'] = 'partnership'
+        
+        # Check for acquisitions
+        acquisition_words = ['acquires', 'acquisition', 'buys', 'purchased', 'bought', 'merger']
+        if any(word in full_text for word in acquisition_words):
+            analysis['is_acquisition'] = True
+            analysis['content_type'] = 'acquisition'
+        
+        # Check for major announcements
+        announcement_words = ['announces', 'reveals', 'unveils', 'launches', 'introduces', 'release']
+        if any(word in title_lower for word in announcement_words):
+            analysis['content_type'] = 'major_announcement'
+        
+        # Determine urgency level
+        urgent_words = ['breaking', 'urgent', 'just in', 'developing', 'alert', 'emergency']
+        if any(word in full_text for word in urgent_words):
+            analysis['urgency_level'] = 'high'
+        
+        return analysis
+
+    def _select_dynamic_hook(self, article: Article, analysis: Dict) -> str:
+        """Select the most appropriate hook based on article analysis."""
+        category = article.category
+        hooks_data = self.hooks_config.get('category_hooks', {})
+        content_hooks = self.hooks_config.get('content_based_hooks', {})
+        
+        # Get category-specific hooks as fallback
+        category_data = hooks_data.get(category, hooks_data.get('tech', {}))
+        category_hooks = category_data.get('hooks', ["This tech news is EVERYWHERE:"])
+        
+        # Try to get content-specific hook first
+        content_type = analysis.get('content_type', 'standard')
+        if content_type in content_hooks:
+            content_specific_hooks = content_hooks[content_type]
+            selected_hook = random.choice(content_specific_hooks)
+            
+            # Replace placeholders if needed
+            if analysis.get('funding_amount') and '${amount}' in selected_hook:
+                amount = analysis['funding_amount']
+                # Format amount nicely
+                if float(amount) >= 1000:
+                    amount = f"{float(amount)/1000:.1f}B" if float(amount) >= 1000 else f"{amount}M"
+                selected_hook = selected_hook.replace('${amount}', f"${amount}")
+            
+            return selected_hook
+        
+        # Fall back to category-specific hook
+        return random.choice(category_hooks)
+
+    def _select_dynamic_cta(self, article: Article) -> str:
+        """Select appropriate call-to-action based on article category."""
+        category = article.category
+        hooks_data = self.hooks_config.get('category_hooks', {})
+        tiktok_ctas = self.hooks_config.get('tiktok_specific_ctas', [])
+        
+        # Get category-specific CTAs
+        category_data = hooks_data.get(category, hooks_data.get('tech', {}))
+        category_ctas = category_data.get('ctas', [])
+        
+        # 70% chance to use category-specific CTA, 30% chance to use generic TikTok CTA
+        if category_ctas and random.random() < 0.7:
+            return random.choice(category_ctas)
+        else:
+            return random.choice(tiktok_ctas) if tiktok_ctas else "Follow for more amazing content! 🔥"
+
+    def create_tiktok_prompt(self, article: Article, target_duration: int = None) -> str:
+        """Create engaging TikTok-optimized prompts using dynamic hooks."""
+        duration = target_duration or self.config.target_duration
+        
+        # Analyze article content for appropriate hooks
+        analysis = self._analyze_article_content(article)
+        
+        # Select dynamic hook and CTA
+        selected_hook = self._select_dynamic_hook(article, analysis)
+        selected_cta = self._select_dynamic_cta(article)
+        selected_engagement_hook = random.choice(self.hooks_config.get('engagement_hooks', ["But here's where it gets crazy:"]))
+          # Get category style information
+        category_data = self.hooks_config.get('category_hooks', {}).get(
+            article.category, 
+            self.hooks_config.get('category_hooks', {}).get('tech', {})
+        )
+        style_description = category_data.get('style', 'engaging, energetic')
+          # Determine content approach based on analysis
+        if analysis.get('is_first_person', False):
+            content_approach = """
+IMPORTANT: This article is written in first person. DO NOT copy the first-person perspective. Instead:
+- Analyze what the author is saying from a third-person perspective
+- Use phrases like "The author claims...", "According to the writer...", "The CEO explains..."
+- Maintain analytical distance while keeping the TikTok energy
+- Focus on the implications and significance of their statements"""
+        else:
+            content_approach = """
+- Present the information with TikTok energy and enthusiasm
+- Use engaging storytelling techniques"""
+
+        # Use modern chat template format for Llama 3.2
         prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 You are a viral TikTok content creator specializing in tech news. Create engaging {duration}-second TikTok scripts that hook viewers immediately and keep them watching until the end.
 
-Your style should be: {style_info['style']}
+Your style should be: {style_description}
 Target audience: Tech-curious Gen Z and Millennials<|eot_id|><|start_header_id|>user<|end_header_id|>
 
 Create a {duration}-second TikTok script from this article:
@@ -238,19 +395,20 @@ Category: {article.category}
 Content: {article.content[:1000]}{"..." if len(article.content) > 1000 else ""}
 
 Requirements:
-- Start with: "{style_info['hook']}"
-- Target EXACTLY {duration} seconds when read aloud (approximately 300-350 words)
-- Hook viewers in first 3 seconds
+- Start with: "{selected_hook}"
+- Target EXACTLY {duration} seconds when read aloud (approximately 500-600 words for full 2-minute content)
+- Hook viewers in first 3 seconds{content_approach}
 - Use short, punchy sentences with dramatic pauses
+- Include the engagement hook "{selected_engagement_hook}" somewhere in the middle
 - Include 3-4 surprising facts or "wait, what?" moments throughout
 - Build tension/curiosity and maintain high energy
-- Add multiple engagement hooks ("But here's the crazy part...", "Wait until you hear this...")
-- End with: "{style_info['cta']}"
+- Add multiple engagement hooks and dramatic moments
+- End with: "{selected_cta}"
 - Keep it conversational and energetic
 - Use strategic pauses for emphasis and dramatic effect
 - Make it feel like a 2-minute story that flies by
 - DO NOT include timestamps or time markers
-- DO NOT use emojis
+- DO NOT use emojis in the main script
 
 Format as a natural speech script with clear paragraph breaks for emphasis. Make it substantial enough to fill the full {duration} seconds of speaking time.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
@@ -322,24 +480,35 @@ Format as a natural speech script with clear paragraph breaks for emphasis. Make
         
         for pattern in cleanup_patterns:
             summary = summary.replace(pattern, "")
+          # Remove timestamps - comprehensive patterns
+        timestamp_patterns = [
+            r'\*\*\[[\d\s\-:]+\]\*\*',  # **[0s-3s]**
+            r'\[[\d\s\-:]+\]',          # [10s-15s]
+            r'\([\d\s\-:]+\)',          # (20s-25s)
+            r'\d+s\s*-\s*\d+s',         # 30s - 35s
+            r'\d+:\d+\s*-\s*\d+:\d+',   # 1:20 - 1:25
+            r'at\s+\d+\s*seconds?',     # at 45 seconds
+            r'from\s+\d+\s*to\s+\d+\s*seconds?',  # from 10 to 15 seconds
+            r'\d+\s*sec\s*-\s*\d+\s*sec',  # 5 sec - 10 sec
+            r'timestamp:\s*\d+',        # timestamp: 30
+            r'\[\d+\]',                 # [1], [2], etc. (numbered markers)
+        ]
         
-        # Remove timestamps (e.g., **[0s - 3s]**, [10s-15s], etc.)
-        summary = re.sub(r'\*\*\[[\d\s\-:]+\]\*\*', '', summary)
-        summary = re.sub(r'\[[\d\s\-:]+\]', '', summary)
+        for pattern in timestamp_patterns:
+            summary = re.sub(pattern, '', summary, flags=re.IGNORECASE)
         
         # Remove emojis
         summary = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002600-\U000027BF]+', '', summary)
           # Clean up extra whitespace
         summary = " ".join(summary.split())
-        
-        # Ensure it doesn't exceed reasonable length (increased for 120s videos)
-        if len(summary) > 1200:  # Increased from 800 to 1200 for 120s target
+          # Ensure it doesn't exceed reasonable length (increased for 120s videos)
+        if len(summary) > 1800:  # Increased from 1200 to 1800 for 120s target
             sentences = summary.split(". ")
             # Keep sentences until we hit a reasonable length
             truncated = []
             char_count = 0
             for sentence in sentences:
-                if char_count + len(sentence) < 1100:  # Increased from 750 to 1100
+                if char_count + len(sentence) < 1600:  # Increased from 1100 to 1600
                     truncated.append(sentence)
                     char_count += len(sentence)
                 else:

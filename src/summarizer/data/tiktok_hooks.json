@@ -1,0 +1,193 @@
+{
+  "category_hooks": {
+    "ai": {
+      "hooks": [
+        "AI just broke the internet and here's why:",
+        "This AI breakthrough changes EVERYTHING:",
+        "AI just did something that scared even the experts:",
+        "The AI revolution just hit a new level:",
+        "AI researchers are freaking out about this:",
+        "This AI discovery will blow your mind:",
+        "AI just crossed a line we thought was impossible:"
+      ],
+      "style": "mind-blowing, tech-savvy, slightly dramatic",      
+      "ctas": [
+        "Follow for more AI chaos! What's your wildest AI prediction?",
+        "Smash that follow if this blew your mind! Drop your AI predictions below!",
+        "This is why I'm obsessed with AI! Are you team human or team robot? Comment!",
+        "Follow me for the latest AI madness! What AI tool changed your life? Tell me!",
+        "Hit follow for more tech that'll make your brain hurt! Thoughts?"
+      ]
+    },
+    "big_tech": {
+      "hooks": [
+        "Big Tech just made a move that changes everything:",
+        "The tech giants are at war and this is insane:",
+        "Big Tech's latest power play will shock you:",
+        "This Big Tech decision affects every single one of us:",
+        "The tech billionaires just made their boldest move yet:",
+        "Big Tech drama just reached a whole new level:",
+        "This Big Tech conspiracy theory might actually be real:"
+      ],
+      "style": "dramatic, insider knowledge, slightly conspiratorial",      
+      "ctas": [
+        "Follow for Big Tech tea! Which tech CEO would you want to have dinner with?",
+        "This is why I track every Big Tech move! Team Apple or Team Google? Fight me!",
+        "Follow for more corporate drama! What Big Tech decision made you mad? Rant below!",
+        "Hit that follow for insider tech knowledge! Predict the next Big Tech scandal!",
+        "Follow me for the tech industry gossip! Who's winning the tech war?"
+      ]
+    },
+    "dev": {
+      "hooks": [
+        "Developers, this will literally change how you code:",
+        "Every programmer needs to know about this RIGHT NOW:",
+        "This coding breakthrough just made developers obsolete:",
+        "Developers are losing their minds over this:",
+        "The programming world just got flipped upside down:",
+        "This developer tool is pure magic:",
+        "Coding just got 10x easier with this insane discovery:"
+      ],
+      "style": "technical but accessible, excited, relatable to coders",      
+      "ctas": [
+        "Follow for dev life hacks! What's your biggest coding struggle? Share!",
+        "Smash follow if you're a developer! Drop your favorite programming language!",
+        "This is developer life! Follow for more! What's the weirdest bug you've ever fixed?",
+        "Hit follow for coding content! Tabs or spaces? This is a safe space... mostly",
+        "Follow me for dev insights! What programming skill should I learn next?"
+      ]
+    },
+    "science": {
+      "hooks": [
+        "Scientists just discovered something that defies logic:",
+        "This scientific breakthrough sounds like science fiction:",
+        "Researchers just proved something impossible is actually real:",
+        "Science just answered a question that's puzzled us for centuries:",
+        "This discovery just rewrote the textbooks:",
+        "Scientists are calling this the discovery of the century:",
+        "This scientific finding will blow your mind:"
+      ],
+      "style": "fascinating, educational, wonder-inducing",      
+      "ctas": [
+        "Follow for mind-bending science! What scientific fact still amazes you?",
+        "This is why I love science! Hit follow for more! What do you want scientists to discover next?",
+        "Follow for science that sounds fake but isn't! Share your favorite science fact!",
+        "Smash follow for weekly science doses! What's the coolest experiment you know?",
+        "Follow me for science that breaks brains! What scientific mystery keeps you up at night?"
+      ]
+    },
+    "crypto": {
+      "hooks": [
+        "The crypto world is having a complete meltdown:",
+        "This crypto move just broke the entire market:",
+        "Crypto bros are either celebrating or crying right now:",
+        "This cryptocurrency news is absolutely UNHINGED:",
+        "The blockchain just witnessed something historic:",
+        "Crypto Twitter is losing its collective mind over this:",
+        "This crypto development is either genius or complete chaos:"
+      ],
+      "style": "hype, financial excitement, slightly chaotic",      
+      "ctas": [
+        "Follow for crypto chaos! Diamond hands or paper hands? Confess!",
+        "This is crypto life! Hit follow! What's your biggest crypto win or loss? Share the pain!",
+        "Follow for market madness! Which crypto do you think will moon next?",
+        "Smash follow for financial content! Are you DCA'ing or YOLOing? No judgment!",
+        "Follow me for crypto reality checks! What crypto advice do you wish you'd ignored?"
+      ]
+    },
+    "tech": {
+      "hooks": [
+        "The tech world just had its biggest plot twist yet:",
+        "This technology news is spreading like wildfire:",
+        "Tech Twitter is absolutely losing it over this:",
+        "This innovation just changed the game forever:",
+        "The tech industry just witnessed something unprecedented:",
+        "This technological advancement sounds too good to be true:",
+        "Tech enthusiasts are calling this the future:"
+      ],
+      "style": "trendy, shareable, zeitgeist-capturing",      
+      "ctas": [
+        "Follow for the latest tech chaos! What tech trend do you think is overrated? Spill!",
+        "This is why tech is wild! Hit follow! Tag someone who needs to see this!",
+        "Follow for tech that matters! What technology do you wish existed? Dream big!",
+        "Smash follow for daily tech doses! What's the oldest tech you still use daily?",
+        "Follow me for tech reality! Which tech company do you trust the least? Anonymous answers only!"
+      ]
+    },
+    "startup": {
+      "hooks": [
+        "This startup just raised money for the wildest idea:",
+        "Startup world drama just reached peak absurdity:",
+        "This entrepreneur's story will restore your faith in startups:",
+        "The startup that everyone said would fail just proved them wrong:",
+        "This startup pivot story is absolutely insane:",
+        "VCs are throwing money at this crazy startup idea:",
+        "This startup founder just dropped the most honest take ever:"
+      ],
+      "style": "entrepreneurial, inspiring, slightly cynical",      
+      "ctas": [
+        "Follow for startup reality! What's your million-dollar startup idea? Share it!",
+        "This is startup life! Hit follow! Would you rather be rich or change the world?",
+        "Follow for entrepreneurial chaos! What startup do you think is a total scam?",
+        "Smash follow for founder stories! What's stopping you from starting a business?",
+        "Follow me for startup truth bombs! Biggest business mistake you've made? Learn together!"
+      ]
+    }
+  },
+  "content_based_hooks": {
+    "high_funding": [
+      "Someone just raised ${amount} for the most unexpected thing:",
+      "VCs are throwing ${amount} at this wild idea:",
+      "This ${amount} funding round is breaking the internet:"
+    ],
+    "controversy": [
+      "The internet is divided and here's why:",
+      "This decision has everyone picking sides:",
+      "The controversy that's tearing the tech world apart:"
+    ],
+    "major_announcement": [
+      "The announcement that no one saw coming:",
+      "This reveal just changed everything we thought we knew:",
+      "The big announcement that's got everyone talking:"
+    ],
+    "partnership": [
+      "This partnership just created the ultimate power duo:",
+      "Two giants just teamed up and it's game-changing:",
+      "This collaboration is either genius or complete chaos:"
+    ],
+    "acquisition": [
+      "This acquisition just shocked the entire industry:",
+      "Someone just got bought for an absolutely insane amount:",
+      "This buyout is either the deal of the century or total madness:"
+    ],
+    "breakthrough": [
+      "The breakthrough that science fiction writers predicted:",
+      "This discovery just made the impossible possible:",
+      "The innovation that's rewriting all the rules:"
+    ]
+  },
+  "engagement_hooks": [
+    "But here's where it gets absolutely insane:",
+    "Wait until you hear the plot twist:",
+    "But here's the part that'll blow your mind:",
+    "The crazy part? That's not even the wildest part:",
+    "But wait, there's more and it's unhinged:",
+    "Here's where things get really spicy:",
+    "Plot twist - it gets even crazier:",
+    "But the real tea is this:",
+    "Here's the kicker that nobody saw coming:",
+    "But the most insane part is still coming:"
+  ],  
+  "tiktok_specific_ctas": [
+    "Follow for daily tech chaos that'll melt your brain! What's your hottest tech take?",
+    "Smash that follow button if this made you question reality! Drop your predictions below!",
+    "This is exactly why I'm obsessed with tech! Follow for more mind-bending content! What blew your mind today?",
+    "Hit follow for the latest in tech madness! Tag three friends who need their minds blown!",
+    "Follow me for weekly doses of 'wait, that's actually possible?' What technology seems like magic to you?",
+    "This is why I live on tech Twitter! Smash follow! What's the weirdest tech news you've seen this week?",
+    "Follow for content that makes you go 'humans are wild!' Share this if it broke your brain!",
+    "Hit that follow for daily reality checks! What's your boldest prediction for the next 5 years?",
+    "Follow me for tech content that hits different! What's the one piece of tech you can't live without?",
+    "This is peak human innovation! Follow for more! What would you invent if you had unlimited resources?"
+  ]
+}
