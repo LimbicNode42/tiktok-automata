@@ -112,10 +112,13 @@ def test_summarizer_batch(articles: List[Dict[str, Any]], max_articles: int = 10
         logger.info(f"Success rate: {success_rate:.1f}%")
         logger.info(f"Average processing time: {avg_time:.2f}s")
         logger.info(f"Total time: {total_time:.2f}s")
-        
-        # Save results
+          # Save results
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        results_file = f"data/llama_test_results_{timestamp}.json"
+        
+        # Save to summarizer data directory
+        data_dir = Path(__file__).parent.parent / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        results_file = data_dir / f"llama_test_results_{timestamp}.json"
         
         test_results = {
             'metadata': {
@@ -157,9 +160,19 @@ def main():
     """Main test function."""
     logger.info("Starting Llama summarizer batch test...")
     
-    # Load test data
-    json_file = "data/tldr_articles_20250610_231259.json"
-    articles = load_test_data(json_file)
+    # Load test data from scraper data directory
+    scraper_data_dir = Path(__file__).parent.parent.parent / "scraper" / "data"
+    json_files = list(scraper_data_dir.glob("tldr_articles_*.json"))
+    
+    if not json_files:
+        logger.error("No article data files found in scraper data directory")
+        return
+    
+    # Use the most recent file
+    json_file = max(json_files, key=lambda p: p.stat().st_mtime)
+    logger.info(f"Loading articles from: {json_file}")
+    
+    articles = load_test_data(str(json_file))
     
     if not articles:
         logger.error("No articles loaded - cannot proceed with test")

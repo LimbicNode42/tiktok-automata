@@ -71,7 +71,10 @@ class AdaptiveContentExtractor:
     AI-powered content extractor that learns and adapts to new websites.
     """
     
-    def __init__(self, patterns_file: str = "data/extraction_patterns.json"):
+    def __init__(self, patterns_file: str = None):
+        if patterns_file is None:
+            # Default to the module's data directory
+            patterns_file = Path(__file__).parent / "data" / "extraction_patterns.json"
         self.patterns_file = Path(patterns_file)
         self.patterns: Dict[str, ExtractionPattern] = {}
         self.load_patterns()

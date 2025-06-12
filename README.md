@@ -98,14 +98,21 @@ The system includes an AI-powered adaptive extraction system that automatically 
 
 ```
 tiktok-automata/
+├── data/                             # Legacy data directory (empty)
 ├── src/
 │   ├── scraper/
 │   │   ├── newsletter_scraper.py      # Main scraper with RSS processing
 │   │   ├── adaptive_extractor.py      # AI-powered content extraction
+│   │   ├── data/                      # Scraper output files
+│   │   │   ├── extraction_patterns.json    # Learned extraction patterns
+│   │   │   └── tldr_articles_*.json        # Extracted articles
 │   │   └── tests/
 │   │       └── test_scraper_comprehensive.py  # Scraper tests
 │   ├── summarizer/
 │   │   ├── llama_summarizer.py        # Llama 3.2-3B summarizer
+│   │   ├── data/                      # Summarizer output files
+│   │   │   ├── tiktok_summaries_*.json     # Batch TikTok summaries
+│   │   │   └── tiktok_summary_*.json       # Single TikTok summaries
 │   │   └── tests/
 │   │       ├── test_llama_summarizer.py       # Basic summarizer tests
 │   │       └── test_llama_batch.py            # Batch processing tests
@@ -114,10 +121,6 @@ tiktok-automata/
 ├── tests/
 │   ├── test_cuda_setup.py            # CUDA validation utility
 │   └── test_full_pipeline.py         # End-to-end pipeline tests
-├── data/
-│   ├── tldr_articles_*.json          # Extracted articles
-│   ├── tiktok_summary_*.json         # Generated summaries
-│   └── extraction_patterns.json      # Learned extraction patterns
 ├── main.py                           # Main entry point
 └── requirements.txt                  # Dependencies
 ```
@@ -156,8 +159,8 @@ python tests/test_full_pipeline.py
 
 ### 4. View Results
 Generated files:
-- `data/tldr_articles_*.json` - Extracted articles
-- `data/tiktok_summary_*.json` - Generated TikTok summaries
+- `src/scraper/data/tldr_articles_*.json` - Extracted articles
+- `src/summarizer/data/tiktok_summary_*.json` - Generated TikTok summaries
 
 ## 📋 Development History
 

@@ -126,10 +126,10 @@ async def full_tiktok_pipeline_demo():
             print(f"   📝 Script preview:")
             print(f"      {result['tiktok_summary'][:120]}...")
             print(f"   🔗 Source: {result['url']}")
-        
-        # Save results to file
-        output_file = f"data/tiktok_summaries_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        Path("data").mkdir(exist_ok=True)
+          # Save results to file
+        summarizer_data_dir = Path("src/summarizer/data")
+        summarizer_data_dir.mkdir(parents=True, exist_ok=True)
+        output_file = summarizer_data_dir / f"tiktok_summaries_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False, default=str)
@@ -162,9 +162,9 @@ async def full_tiktok_pipeline_demo():
 async def quick_demo_with_sample_data():
     """Quick demo using sample data when live scraping isn't available."""
     print("\n🔄 Running Quick Demo with Sample Data...")
-    
-    # Load existing scraped data if available
-    data_files = list(Path("data").glob("tldr_articles_*.json"))
+      # Load existing scraped data if available
+    scraper_data_dir = Path("src/scraper/data")
+    data_files = list(scraper_data_dir.glob("tldr_articles_*.json"))
     
     if data_files:
         latest_file = max(data_files, key=lambda p: p.stat().st_mtime)

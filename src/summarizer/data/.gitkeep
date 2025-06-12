@@ -1,0 +1,3 @@
+# This directory contains summarizer output files
+# - tiktok_summaries_*.json (batch TikTok summaries)
+# - tiktok_summary_*.json (single TikTok summaries)

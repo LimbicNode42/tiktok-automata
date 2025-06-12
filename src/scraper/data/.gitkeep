@@ -1,0 +1,3 @@
+# This directory contains scraper output files
+# - extraction_patterns.json (learned extraction patterns)
+# - tldr_articles_*.json (extracted newsletter articles)

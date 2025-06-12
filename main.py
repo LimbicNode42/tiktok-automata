@@ -61,7 +61,10 @@ def save_articles_to_json(articles: List[Article], filename: str = "articles.jso
             "word_count": article.word_count
         })
     
-    output_file = config.output_dir / filename
+    # Save to scraper data directory
+    scraper_data_dir = Path("src/scraper/data")
+    scraper_data_dir.mkdir(parents=True, exist_ok=True)
+    output_file = scraper_data_dir / filename
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(articles_data, f, indent=2, ensure_ascii=False)
     
