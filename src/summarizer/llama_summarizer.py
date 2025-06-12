@@ -28,8 +28,8 @@ except ImportError:
 @dataclass
 class TikTokSummaryConfig:
     """Configuration for TikTok summary generation."""
-    target_duration: int = 60  # Target seconds for TikTok video
-    max_tokens: int = 150  # Max tokens in summary
+    target_duration: int = 120  # Target seconds for TikTok video
+    max_tokens: int = 300  # Max tokens in summary (increased for longer content)
     temperature: float = 0.7  # Creativity level
     top_p: float = 0.9  # Nucleus sampling
     use_gpu: bool = True  # Use GPU acceleration
@@ -154,8 +154,7 @@ class LlamaSummarizer:
             
             load_time = time.time() - start_time
             logger.success(f"Model loaded successfully in {load_time:.1f}s")
-            
-            # Test generation speed
+              # Test generation speed
             await self._benchmark_speed()
             
         except Exception as e:
@@ -192,34 +191,34 @@ class LlamaSummarizer:
         # Category-specific hooks and styles
         category_styles = {
             'ai': {
-                'hook': "🤖 AI just did something INSANE:",
+                'hook': "AI just did something INSANE:",
                 'style': "mind-blowing, tech-savvy",
-                'cta': "What AI breakthrough shocked you most? Drop it below! 👇"
+                'cta': "What AI breakthrough shocked you most? Drop it below!"
             },
             'big_tech': {
-                'hook': "🚨 Big Tech just changed EVERYTHING:",
+                'hook': "Big Tech just changed EVERYTHING:",
                 'style': "dramatic, insider knowledge",
-                'cta': "Are you Team Apple or Team Google? Let me know! 💬"
+                'cta': "Are you Team Apple or Team Google? Let me know!"
             },
             'dev': {
-                'hook': "💻 Developers, this will blow your mind:",
+                'hook': "Developers, this will blow your mind:",
                 'style': "technical but accessible, excited",
-                'cta': "Which programming tip changed your life? Share it! 🔥"
+                'cta': "Which programming tip changed your life? Share it!"
             },
             'science': {
-                'hook': "🧬 Scientists just discovered something WILD:",
+                'hook': "Scientists just discovered something WILD:",
                 'style': "fascinating, educational",
-                'cta': "What science fact still amazes you? Tell me! 🤯"
+                'cta': "What science fact still amazes you? Tell me!"
             },
             'crypto': {
-                'hook': "💰 Crypto world is going CRAZY:",
+                'hook': "Crypto world is going CRAZY:",
                 'style': "hype, financial excitement",
-                'cta': "Diamond hands or paper hands? Comment below! 💎"
+                'cta': "Diamond hands or paper hands? Comment below!"
             },
             'tech': {
-                'hook': "🔥 This tech news is EVERYWHERE:",
+                'hook': "This tech news is EVERYWHERE:",
                 'style': "trendy, shareable",
-                'cta': "Tag someone who needs to see this! 👆"
+                'cta': "Tag someone who needs to see this!"
             }
         }
         
@@ -249,8 +248,10 @@ Requirements:
 - Keep it conversational and energetic
 - Target exactly {duration} seconds when read aloud
 - Use strategic pauses for emphasis
+- DO NOT include timestamps or time markers
+- DO NOT use emojis
 
-Format as a natural speech script with [PAUSE] markers where needed.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+Format as a natural speech script with clear paragraph breaks for emphasis.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 """
         
@@ -284,8 +285,7 @@ Format as a natural speech script with [PAUSE] markers where needed.<|eot_id|><|
             
             # Extract and clean the response
             generated_text = result[0]['generated_text']
-            
-            # Extract just the assistant's response
+              # Extract just the assistant's response
             if "<|start_header_id|>assistant<|end_header_id|>" in generated_text:
                 summary = generated_text.split("<|start_header_id|>assistant<|end_header_id|>")[-1]
             else:
@@ -303,9 +303,11 @@ Format as a natural speech script with [PAUSE] markers where needed.<|eot_id|><|
         except Exception as e:
             logger.error(f"TikTok summarization failed: {str(e)}")
             return None
-    
+
     def _clean_summary(self, summary: str) -> str:
         """Clean and format the generated summary."""
+        import re
+        
         # Remove common artifacts
         summary = summary.strip()
         
@@ -320,17 +322,24 @@ Format as a natural speech script with [PAUSE] markers where needed.<|eot_id|><|
         for pattern in cleanup_patterns:
             summary = summary.replace(pattern, "")
         
+        # Remove timestamps (e.g., **[0s - 3s]**, [10s-15s], etc.)
+        summary = re.sub(r'\*\*\[[\d\s\-:]+\]\*\*', '', summary)
+        summary = re.sub(r'\[[\d\s\-:]+\]', '', summary)
+        
+        # Remove emojis
+        summary = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002600-\U000027BF]+', '', summary)
+        
         # Clean up extra whitespace
         summary = " ".join(summary.split())
         
-        # Ensure it doesn't exceed reasonable length
-        if len(summary) > 500:
+        # Ensure it doesn't exceed reasonable length (increased for 120s videos)
+        if len(summary) > 800:
             sentences = summary.split(". ")
             # Keep sentences until we hit a reasonable length
             truncated = []
             char_count = 0
             for sentence in sentences:
-                if char_count + len(sentence) < 450:
+                if char_count + len(sentence) < 750:
                     truncated.append(sentence)
                     char_count += len(sentence)
                 else:

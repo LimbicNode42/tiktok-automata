@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "test_timestamp": "20250612_222349",
+    "articles_processed": 10,
+    "successful_summaries": 10,
+    "success_rate": 100.0,
+    "average_processing_time": 9.828309965133666,
+    "total_time": 98.28309965133667,
+    "configuration": {
+      "target_duration": 120,
+      "no_timestamps": true,
+      "no_emojis": true
+    }
+  },
+  "results": [
+    {
+      "title": "A frustrated Zuckerberg makes his biggest AI bet as Meta nears $14 billion stake in Scale AI, hires founder Wang",
+      "category": "big_tech",
+      "url": "https://www.cnbc.com/2025/06/10/zuckerberg-makes-metas-biggest-bet-on-ai-14-billion-scale-ai-deal.html?utm_source=tldrnewsletter",
+      "word_count": 1296,
+      "summary": "Here is a 120-second script based on the article: \"Big Tech just changed EVERYTHING: Mark Zuckerberg is putting his neck on the line! He's investing a whopping $14 billion in Scale AI, and I've got the tea on why. Meta's been playing catch-up in the AI game, and it's getting embarrassing. They're not just talking about acquiring smaller startups anymore - they're going all-in with a major player. And the reason? Because Zuckerberg is FED UP with their lack of progress. I mean, have you seen the latest chatbots from OpenAI? It's like they're speaking human language! Meanwhile, Meta's trying to catch up with their own models. But here's the thing: Zhang's making a bold move by hiring Scale AI's co-founder, Alexandr Wang.",
+      "processing_time": 9.384764671325684,
+      "has_timestamps": false,
+      "has_emojis": false,
+      "summary_length": 728,
+      "estimated_reading_time": 49.199999999999996,
+      "status": "success"
+    },
+    {
+      "title": "OpenAI releases o3-pro, a souped-up version of its o3 AI reasoning model",
+      "category": "ai",
+      "url": "https://techcrunch.com/2025/06/10/openai-releases-o3-pro-a-souped-up-version-of-its-o3-ai-reasoning-model/?utm_source=tldrnewsletter",
+      "word_count": 471,
+      "summary": "Here's the script: \"AI just did something INSANE! OpenAI just dropped the most powerful AI model they've ever created - o3-pro! That's right, folks, it's the upgraded, supercharged version of their o3 AI reasoning model. But here's the thing: it's not just another incremental update. No way! This baby can tackle complex problems like physics, math, and coding like a boss. I mean, think about it - we're talking about an AI that can reason, learn, and adapt like never before. It's like having a superhuman sidekick that's always one step ahead. And the best part? It's already available for ChatGPT Pro and Team users! But wait, what's the catch? The pricing is steep - $20 per million input tokens and $80 per million output tokens in the API.",
+      "processing_time": 10.341063737869263,
+      "has_timestamps": false,
+      "has_emojis": false,
+      "summary_length": 747,
+      "estimated_reading_time": 51.6,
+      "status": "success"
+    },
+    {
+      "title": "Snap to launch smaller, lighter augmented reality Specs smartglasses in 2026",
+      "category": "ai",
+      "url": "https://www.cnbc.com/2025/06/10/snap-specs-smart-glasses-ar.html?utm_source=tldrnewsletter",
+      "word_count": 607,
+      "summary": "Here is a 120-second script based on the article: \"AI just did something INSANE! Snap is ditching its Spectacles name for good and launching a whole new line of smart glasses in 2026 - call them Specs! I know, I know, we've been hearing rumors about these new specs for ages, but now we finally have confirmation. And let me tell you, they're going to change the game. Not only will they be smaller and lighter than before, but they'll also be way more powerful. Think about it, folks, the smart glasses market is getting crazier by the day. Meta, Apple, and Alphabet are all throwing their hats into the ring, trying to outdo each other with their own fancy head-worn devices. But Snap is taking a different approach.",
+      "processing_time": 9.786570072174072,
+      "has_timestamps": false,
+      "has_emojis": false,
+      "summary_length": 718,
+      "estimated_reading_time": 51.6,
+      "status": "success"
+    },
+    {
+      "title": "Google offers buyouts to employees across the company, including Search",
+      "category": "ai",
+      "url": "https://www.cnbc.com/2025/06/10/google-buyouts-search-ads-unit.html?utm_source=tldrnewsletter",
+      "word_count": 1019,
+      "summary": "Here is a script based on the article: \"AI just did something INSANE! You know how Google is always trying to stay ahead of the game with artificial intelligence? Well, it just took their own employees by surprise. Google's been cutting costs left and right, but this latest move is huge. They're offering buyouts to entire departments across the company - including search, ads, commerce, marketing, research, and even communications. That's right, folks, the team behind your favorite search engine is getting axed. But here's the kicker - some teams are being told to come back to the office if they live within 50 miles of one. Talk about a commute. Now, we all know Google's been cutting jobs since last year, but this is on a whole different level.",
+      "processing_time": 8.327525854110718,
+      "has_timestamps": false,
+      "has_emojis": false,
+      "summary_length": 754,
+      "estimated_reading_time": 52.0,
+      "status": "success"
+    },
+    {
+      "title": "Reflections from Sam Altman",
+      "category": "ai",
+      "url": "https://blog.samaltman.com/reflections?utm_source=tldrnewsletter",
+      "word_count": 1951,
+      "summary": "Here's a script based on the article: \"AI just did something INSANE! Can you believe it's already been a month since the second birthday of ChatGPT? I'm sitting here thinking about how far we've come and reflecting on what we've learned so far. We thought we knew what we were getting into when we created OpenAI almost nine years ago - we believed AGI was possible and could change the game. But what we didn't realize was just how fast we'd advance. I mean, think about it - we're talking complex reasoning, not just basic chatbots. It's like going from zero to hero in record time! Now, I know some of you might be wondering if we're playing God or messing with fire. And honestly, there are still so many questions.",
+      "processing_time": 10.310576677322388,
+      "has_timestamps": false,
+      "has_emojis": false,
+      "summary_length": 719,
+      "estimated_reading_time": 52.4,
+      "status": "success"
+    },
+    {
+      "title": "Partial Keyframes",
+      "category": "ai",
+      "url": "https://www.joshwcomeau.com/animation/partial-keyframes/?utm_source=tldrnewsletter",
+      "word_count": 1972,
+      "summary": "Here's a 120-second script based on the provided article: \"AI just did something INSANE... You know how we've been writing CSS keyframe animations for ages? From and to? It's like, start at this point, end at that point... (pause) But have you ever wondered what happens if you omit one of those blocks? Think about it. If you only specify the ending point, your element will still fade out, right? (pausing for emphasis) Wait, what?! How does it even work?! This lil' trick I'm about to share with you today is going to blow your mind. (excited tone) See, when you omit the starting point, your keyframe animation becomes... wait for it..",
+      "processing_time": 10.692155838012695,
+      "has_timestamps": false,
+      "has_emojis": false,
+      "summary_length": 639,
+      "estimated_reading_time": 44.800000000000004,
+      "status": "success"
+    },
+    {
+      "title": "OpenAI announces 80% price drop for o3, its most powerful reasoning model",
+      "category": "ai",
+      "url": "https://venturebeat.com/ai/openai-announces-80-price-drop-for-o3-its-most-powerful-reasoning-model/?utm_source=tldrnewsletter",
+      "word_count": 899,
+      "summary": "Here is the script: \"AI just did something INSANE! Get ready for some mind-blowing news about OpenAI's o3, its most powerful reasoning model. So, here's the thing - o3 was previously priced out of reach for all but the biggest players in the game. But now, they're slashing the cost by a whopping 80%. That's right, folks, 80%! For those who don't speak tokenomics, think of it like this - recall tokens are the tiny strings that represent everything from words to math equations in these massive language models. And with o3, you get access to the same level of advanced reasoning capabilities... at a fraction of the cost.",
+      "processing_time": 9.864833354949951,
+      "has_timestamps": true,
+      "has_emojis": false,
+      "summary_length": 624,
+      "estimated_reading_time": 43.6,
+      "status": "success"
+    },
+    {
+      "title": "OpenAI hits $10 billion in annual recurring revenue fueled by ChatGPT growth",
+      "category": "ai",
+      "url": "https://www.cnbc.com/2025/06/09/openai-hits-10-billion-in-annualized-revenue-fueled-by-chatgpt-growth.html?utm_source=tldrnewsletter",
+      "word_count": 422,
+      "summary": "Here is the script: \"AI just did something INSANE! OpenAI has officially reached $10 BILLION in annual recurring revenue... in just THREE YEARS since launching their revolutionary chatbot ChatGPT! That's right, folks, this AI powerhouse is crushing it! You might be thinking, how did they do it? Well, let me break it down. Their consumer products, business products, and API - yes, that's right, the underlying technology that powers all these other companies' AI tools - are generating a combined $10 billion in revenue annually.",
+      "processing_time": 9.276683568954468,
+      "has_timestamps": true,
+      "has_emojis": false,
+      "summary_length": 531,
+      "estimated_reading_time": 34.0,
+      "status": "success"
+    },
+    {
+      "title": "XRobotics' countertop robots are cooking up 25,000 pizzas a month",
+      "category": "ai",
+      "url": "https://techcrunch.com/2025/06/09/xrobotics-countertop-robots-are-cooking-up-25000-pizzas-a-month/?utm_source=tldrnewsletter",
+      "word_count": 658,
+      "summary": "Here's a 120-second script based on the article: \"AI just did something INSANE! Imagine a world where pizza is made faster than ever before. Meet xPizza Cube, a countertop robot that's changing the game for pizza joints everywhere. This tiny titan can churn out up to 100 pizzas an hour, saving restaurants a whopping 70% of labor time. But here's the kicker - these robots aren't just limited to traditional Neapolitan-style pies. They can handle anything from thick-crusted Detroit deep dish to thin-crust Chicago-style. It's like having a personal pizza chef at your service, without the hefty price tag. And the best part? These babies cost a mere $1,300 per month for three years - a small price to pay for increased efficiency.",
+      "processing_time": 10.072912693023682,
+      "has_timestamps": true,
+      "has_emojis": false,
+      "summary_length": 733,
+      "estimated_reading_time": 49.199999999999996,
+      "status": "success"
+    },
+    {
+      "title": "Apple Announces Foundation Models Framework for Developers to Leverage AI",
+      "category": "ai",
+      "url": "https://www.macrumors.com/2025/06/09/foundation-models-framework/?utm_source=tldrnewsletter",
+      "word_count": 471,
+      "summary": "Here is a script for a 120-second TikTok video based on the article: \"AI just did something INSANE! Apple just dropped a game-changer for developers - the Foundation Models Framework! Imagine having the power of Apple's massive language models, like the one powering Siri, at your fingertips. You'll be able to integrate these models directly into your own apps, unlocking a whole new world of possibilities. No more relying on cloud-based services, no more bandwidth-hungry APIs... just pure, unadulterated power on-device. But here's the kicker - this isn't just about making AI more accessible, it's about making it more private too.",
+      "processing_time": 10.22601318359375,
+      "has_timestamps": true,
+      "has_emojis": false,
+      "summary_length": 636,
+      "estimated_reading_time": 40.4,
+      "status": "success"
+    }
+  ]
+}

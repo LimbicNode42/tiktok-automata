@@ -39,7 +39,7 @@ def main():
     tests = [
         ("tests/test_cuda_setup.py", "CUDA Setup Validation"),
         ("src/scraper/tests/test_scraper_comprehensive.py", "Newsletter Scraper Tests"),
-        ("src/summarizer/tests/test_llama_summarizer.py", "Llama Summarizer Tests"),
+        ("src/summarizer/tests/test_llama_batch.py", "Llama Summarizer Tests"),
         ("tests/test_full_pipeline.py", "Full Pipeline Integration"),
     ]
     
