@@ -8,8 +8,8 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:11:44.332899",
-    "usage_count": 10,
+    "last_used": "2025-06-12T17:44:52.211107",
+    "usage_count": 23,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -20,8 +20,8 @@
       ".all-content-wrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:11:19.396490",
-    "usage_count": 17,
+    "last_used": "2025-06-12T17:44:52.922164",
+    "usage_count": 23,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -32,7 +32,7 @@
       ".skipcontent--3ZC8EDEr"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:58.106598",
+    "last_used": "2025-06-12T17:44:53.383096",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -44,9 +44,9 @@
       ".content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:09:31.462510",
-    "usage_count": 9,
-    "confidence_score": 0.97,
+    "last_used": "2025-06-12T17:44:54.553320",
+    "usage_count": 12,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "quarter--mile.com": {
@@ -58,7 +58,7 @@
       ".content_padding"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:09:54.014287",
+    "last_used": "2025-06-12T17:44:55.966110",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -73,9 +73,9 @@
       "section"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:09:54.225357",
-    "usage_count": 9,
-    "confidence_score": 0.97,
+    "last_used": "2025-06-12T17:44:57.426967",
+    "usage_count": 12,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "monadical.com": {
@@ -85,9 +85,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:09:55.313764",
-    "usage_count": 9,
-    "confidence_score": 0.97,
+    "last_used": "2025-06-12T17:45:19.903891",
+    "usage_count": 12,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "www.strangeloopcanon.com": {
@@ -100,8 +100,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:35.472845",
-    "usage_count": 11,
+    "last_used": "2025-06-12T17:45:20.160462",
+    "usage_count": 16,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -115,9 +115,9 @@
       ".type-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:16.834459",
-    "usage_count": 9,
-    "confidence_score": 0.97,
+    "last_used": "2025-06-12T17:45:20.538716",
+    "usage_count": 12,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "www.nytimes.com": {
@@ -128,9 +128,9 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:46.257676",
-    "usage_count": 9,
-    "confidence_score": 0.97,
+    "last_used": "2025-06-12T17:40:36.219320",
+    "usage_count": 11,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "rwsdk.com": {
@@ -143,9 +143,9 @@
       ".dark:prose-invert"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:24.393000",
-    "usage_count": 7,
-    "confidence_score": 0.9099999999999999,
+    "last_used": "2025-06-12T17:40:37.414911",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "9to5google.com": {
@@ -158,9 +158,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:32.026994",
-    "usage_count": 4,
-    "confidence_score": 0.82,
+    "last_used": "2025-06-12T17:40:44.906726",
+    "usage_count": 8,
+    "confidence_score": 0.94,
     "pattern_type": "ai_discovered"
   },
   "www.hollywoodreporter.com": {
@@ -173,9 +173,9 @@
       ".lrv-u-margin-t-1"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:32.265868",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:40:45.123259",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "tesseral.com": {
@@ -186,9 +186,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:33.811833",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:40:46.628026",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "9to5mac.com": {
@@ -201,9 +201,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:11:18.776008",
-    "usage_count": 3,
-    "confidence_score": 0.7899999999999999,
+    "last_used": "2025-06-12T17:41:11.768205",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
     "pattern_type": "ai_discovered"
   },
   "www.reuters.com": {
@@ -213,9 +213,9 @@
       ".regular-article-layout__container__3KL1R"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:35.283055",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:40:48.518756",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "deepdream.substack.com": {
@@ -225,9 +225,9 @@
       ".single-post-container"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:35.494102",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:40:48.735239",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "www.nbcnews.com": {
@@ -238,9 +238,9 @@
       ".news"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:57.361447",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:40:49.870239",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "sparktoro.com": {
@@ -253,9 +253,9 @@
       ".type-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:57.823531",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:40:50.849903",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "invertedpassion.com": {
@@ -268,9 +268,9 @@
       ".type-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:10:59.806371",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:40:52.865349",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "www.newsweek.com": {
@@ -283,9 +283,9 @@
       ".no-sidebars"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:06.038394",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:41:58.287155",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "www.cbsnews.com": {
@@ -298,9 +298,9 @@
       ".device--size-"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:06.853248",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:41:59.113392",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "fly.io": {
@@ -313,9 +313,9 @@
       ".sm:text-lg"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:07.118679",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:42:22.492494",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "byteatatime.dev": {
@@ -328,9 +328,9 @@
       ".mt-8"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:28.752225",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:42:23.098421",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "www.theverge.com": {
@@ -343,9 +343,9 @@
       "._1ymtmqp9"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:28.989442",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:42:23.338961",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "balaji-amg.surge.sh": {
@@ -358,9 +358,9 @@
       ".max-w-none"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:35.931774",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:42:32.026122",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "www.infoworld.com": {
@@ -371,9 +371,9 @@
       "main"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:37.172887",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-12T17:42:33.267220",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "www.tomsguide.com": {
@@ -498,9 +498,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:11:44.952929",
-    "usage_count": 1,
-    "confidence_score": 0.8,
+    "last_used": "2025-06-12T17:41:38.900371",
+    "usage_count": 2,
+    "confidence_score": 0.76,
     "pattern_type": "ai_discovered"
   },
   "asteriskmag.com": {
@@ -511,9 +511,9 @@
       ".article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:11:47.980727",
-    "usage_count": 1,
-    "confidence_score": 0.8,
+    "last_used": "2025-06-12T17:41:41.695033",
+    "usage_count": 2,
+    "confidence_score": 0.76,
     "pattern_type": "ai_discovered"
   },
   "www.uploadvr.com": {
@@ -524,9 +524,9 @@
       ".tag-headset-hardware-tech"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:11:50.421609",
-    "usage_count": 1,
-    "confidence_score": 0.8,
+    "last_used": "2025-06-12T17:41:42.783462",
+    "usage_count": 2,
+    "confidence_score": 0.76,
     "pattern_type": "ai_discovered"
   },
   "steipete.me": {
@@ -539,9 +539,92 @@
       ".max-w-3xl"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:11:51.529241",
+    "last_used": "2025-06-12T17:41:43.442401",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "android-developers.googleblog.com": {
+    "domain": "android-developers.googleblog.com",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".widget-content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-12T17:44:30.916268",
     "usage_count": 1,
     "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.samaltman.com": {
+    "domain": "blog.samaltman.com",
+    "selectors": [
+      "article",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-12T17:44:42.189687",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.joshwcomeau.com": {
+    "domain": "www.joshwcomeau.com",
+    "selectors": [
+      "article",
+      ".t1e31uhj",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-12T17:44:42.647352",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.latent.space": {
+    "domain": "www.latent.space",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-12T17:44:43.086530",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "tylertringas.com": {
+    "domain": "tylertringas.com",
+    "selectors": [
+      "article",
+      "#post-670",
+      ".clearfix",
+      ".post-670",
+      ".post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-12T17:44:49.380601",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "stratechery.com": {
+    "domain": "stratechery.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-12T17:44:50.299171",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
     "pattern_type": "ai_discovered"
   }
 }

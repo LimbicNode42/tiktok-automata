@@ -10,11 +10,11 @@ import os
 from datetime import datetime
 
 # Add the src directory to the Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
 
 try:
-    from summarizer.llama_summarizer import LlamaSummarizer, TikTokSummaryConfig, create_tiktok_summarizer
-    from scraper.newsletter_scraper import Article
+    from src.summarizer.llama_summarizer import LlamaSummarizer, TikTokSummaryConfig, create_tiktok_summarizer
+    from src.scraper.newsletter_scraper import Article
     print("✓ Successfully imported Llama Summarizer")
 except ImportError as e:
     print(f"✗ Failed to import Llama Summarizer: {e}")

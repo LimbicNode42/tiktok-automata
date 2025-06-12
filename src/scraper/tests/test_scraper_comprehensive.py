@@ -12,10 +12,10 @@ from pathlib import Path
 from datetime import datetime
 
 # Add the src directory to the Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
 
 try:
-    from scraper.newsletter_scraper import NewsletterScraper, Article
+    from src.scraper.newsletter_scraper import NewsletterScraper, Article
     print("✓ Successfully imported NewsletterScraper and Article")
 except ImportError as e:
     print(f"✗ Failed to import NewsletterScraper: {e}")

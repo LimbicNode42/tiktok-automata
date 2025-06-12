@@ -7,8 +7,13 @@ This script processes the 41 successful articles and evaluates the summarizer pe
 import json
 import time
 import logging
+import sys
+import os
 from pathlib import Path
 from typing import List, Dict, Any
+
+# Add the src directory to the Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../..'))
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

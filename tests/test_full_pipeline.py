@@ -12,11 +12,11 @@ import json
 from pathlib import Path
 
 # Add the src directory to the Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 try:
-    from scraper.newsletter_scraper import NewsletterScraper
-    from summarizer.llama_summarizer import create_tiktok_summarizer, TikTokSummaryConfig
+    from src.scraper.newsletter_scraper import NewsletterScraper
+    from src.summarizer.llama_summarizer import create_tiktok_summarizer, TikTokSummaryConfig
     print("✓ Successfully imported all components")
 except ImportError as e:
     print(f"✗ Failed to import components: {e}")
