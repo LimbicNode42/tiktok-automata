@@ -29,7 +29,7 @@ except ImportError:
 class TikTokSummaryConfig:
     """Configuration for TikTok summary generation."""
     target_duration: int = 120  # Target seconds for TikTok video
-    max_tokens: int = 300  # Max tokens in summary (increased for longer content)
+    max_tokens: int = 1200  # Max tokens in summary (increased significantly for 120s TTS)
     temperature: float = 0.7  # Creativity level
     top_p: float = 0.9  # Nucleus sampling
     use_gpu: bool = True  # Use GPU acceleration
@@ -223,8 +223,7 @@ class LlamaSummarizer:
         }
         
         style_info = category_styles.get(article.category, category_styles['tech'])
-        
-        # Use modern chat template format for Llama 3.2
+          # Use modern chat template format for Llama 3.2
         prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 You are a viral TikTok content creator specializing in tech news. Create engaging {duration}-second TikTok scripts that hook viewers immediately and keep them watching until the end.
@@ -240,18 +239,20 @@ Content: {article.content[:1000]}{"..." if len(article.content) > 1000 else ""}
 
 Requirements:
 - Start with: "{style_info['hook']}"
+- Target EXACTLY {duration} seconds when read aloud (approximately 300-350 words)
 - Hook viewers in first 3 seconds
-- Use short, punchy sentences
-- Include 1-2 surprising facts or "wait, what?" moments
-- Build tension/curiosity throughout
+- Use short, punchy sentences with dramatic pauses
+- Include 3-4 surprising facts or "wait, what?" moments throughout
+- Build tension/curiosity and maintain high energy
+- Add multiple engagement hooks ("But here's the crazy part...", "Wait until you hear this...")
 - End with: "{style_info['cta']}"
 - Keep it conversational and energetic
-- Target exactly {duration} seconds when read aloud
-- Use strategic pauses for emphasis
+- Use strategic pauses for emphasis and dramatic effect
+- Make it feel like a 2-minute story that flies by
 - DO NOT include timestamps or time markers
 - DO NOT use emojis
 
-Format as a natural speech script with clear paragraph breaks for emphasis.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+Format as a natural speech script with clear paragraph breaks for emphasis. Make it substantial enough to fill the full {duration} seconds of speaking time.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 """
         
@@ -328,18 +329,17 @@ Format as a natural speech script with clear paragraph breaks for emphasis.<|eot
         
         # Remove emojis
         summary = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002600-\U000027BF]+', '', summary)
-        
-        # Clean up extra whitespace
+          # Clean up extra whitespace
         summary = " ".join(summary.split())
         
         # Ensure it doesn't exceed reasonable length (increased for 120s videos)
-        if len(summary) > 800:
+        if len(summary) > 1200:  # Increased from 800 to 1200 for 120s target
             sentences = summary.split(". ")
             # Keep sentences until we hit a reasonable length
             truncated = []
             char_count = 0
             for sentence in sentences:
-                if char_count + len(sentence) < 750:
+                if char_count + len(sentence) < 1100:  # Increased from 750 to 1100
                     truncated.append(sentence)
                     char_count += len(sentence)
                 else:
