@@ -21,3 +21,10 @@ This is a Python automation project for creating TikTok videos from TLDR newslet
 - Include comprehensive docstrings
 - Implement proper exception handling
 - Use logging instead of print statements
+
+## Terminal Usage Guidelines
+
+- **AVOID**: Interactive Python commands in terminal (e.g., `python -c "..."`) as they can cause the assistant to get stuck
+- **PREFER**: Create temporary test scripts and run them with `python script_name.py`
+- **USE**: Non-interactive commands like `pip install`, `git status`, `ls`, etc.
+- **TESTING**: Write test scripts to validate functionality instead of inline Python execution

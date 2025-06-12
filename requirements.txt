@@ -5,6 +5,13 @@ lxml>=4.9.0
 feedparser>=6.0.10
 aiohttp>=3.8.0
 
+# Modern Llama Models & AI (simplified for 3B model)
+torch>=2.1.0
+transformers>=4.36.0
+accelerate>=0.25.0
+sentencepiece>=0.1.99
+protobuf>=4.25.0
+
 # Utilities
 python-dotenv>=1.0.0
 pyyaml>=6.0
