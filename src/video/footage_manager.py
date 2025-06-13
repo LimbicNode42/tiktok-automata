@@ -64,10 +64,9 @@ class FootageManager:
         
         # Load metadata
         self.metadata = self._load_metadata()
-        
-        # Configure yt-dlp with network-friendly settings
+          # Configure yt-dlp with network-friendly settings
         self.ydl_opts = {
-            'format': 'best[height<=720][ext=mp4]/best[height<=720]/best[ext=mp4]/best',
+            'format': 'best[height<=720][ext=mp4][acodec!=none]/best[height<=720][acodec!=none]/best[ext=mp4][acodec!=none]/best[acodec!=none]/best',
             'outtmpl': str(self.raw_footage_dir / '%(id)s_%(title)s.%(ext)s'),
             'writeinfojson': True,
             'quiet': False,

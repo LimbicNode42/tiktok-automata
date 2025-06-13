@@ -246,15 +246,14 @@ class VideoProcessor:
                 gaming_video = gaming_video.resized((self.config.width, self.config.height))
                 # Set duration to match audio
                 gaming_video = gaming_video.with_duration(duration)
-                
-                # If the video is shorter than needed, loop it
+                  # If the video is shorter than needed, loop it
                 if gaming_video.duration < duration:
                     loops_needed = int(duration / gaming_video.duration) + 1
                     gaming_video = concatenate_videoclips([gaming_video] * loops_needed)
                     gaming_video = gaming_video.subclipped(0, duration)
                 
-                # Remove audio from gaming footage (we'll use TTS audio instead)
-                gaming_video = gaming_video.without_audio()
+                # Keep gaming footage audio for now (comment out removal for testing)
+                # gaming_video = gaming_video.without_audio()  # TODO: Uncomment when using TTS
                 
                 logger.success(f"✅ Processed real gaming footage to {self.config.width}x{self.config.height}")
                 return gaming_video
@@ -439,13 +438,19 @@ class VideoProcessor:
         text_overlays: List[TextClip],
         audio_clip: AudioFileClip    ) -> CompositeVideoClip:
         """Composite all elements into the final video."""
-        try:
-            # Combine background with text overlays
+        try:            # Combine background with text overlays
             all_clips = [background_video] + text_overlays
             final_video = CompositeVideoClip(all_clips, size=(self.config.width, self.config.height))
             
-            # Set audio
-            final_video = final_video.with_audio(audio_clip)
+            # Set audio - prefer gaming footage audio if TTS audio is silent/minimal
+            if hasattr(background_video, 'audio') and background_video.audio is not None:
+                # Use gaming footage audio if available
+                final_video = final_video.with_audio(background_video.audio)
+                logger.info("🔊 Using gaming footage audio")
+            else:
+                # Fall back to provided TTS audio
+                final_video = final_video.with_audio(audio_clip)
+                logger.info("🔊 Using TTS audio")
             
             # Ensure correct duration
             final_video = final_video.with_duration(audio_clip.duration)
