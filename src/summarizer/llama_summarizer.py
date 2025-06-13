@@ -60,9 +60,11 @@ class LlamaSummarizer:
         self.model = None
         self.pipeline = None
         self.device = "cuda" if torch.cuda.is_available() and self.config.use_gpu else "cpu"
-        
-        # Load dynamic hooks configuration
+          # Load dynamic hooks configuration
         self.hooks_config = self._load_hooks_config()
+        
+        # Load voice profiles for voice selection
+        self.voice_profiles = self._load_voice_profiles()
         
         logger.info(f"Initializing {self.model_name} for TikTok summarization")
         logger.info(f"Expected VRAM usage: {self.expected_vram} on {self.device}")
@@ -93,8 +95,195 @@ class LlamaSummarizer:
                 }
             },
             "engagement_hooks": ["But here's where it gets crazy:"],
-            "tiktok_specific_ctas": ["Follow for mind-bending tech content! 🔥"]
+            "tiktok_specific_ctas": ["Follow for mind-bending tech content! 🔥"]        }
+    
+    def _load_voice_profiles(self) -> Dict:
+        """Load Kokoro voice profiles from JSON file."""
+        try:
+            voice_profiles_file = Path(__file__).parent.parent / "utils" / "kokoro_voice_profiles.json"
+            with open(voice_profiles_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data.get('kokoro_voice_profiles', {})
+        except Exception as e:
+            logger.warning(f"Failed to load voice profiles: {e}")
+            return {}
+
+    def select_voice_for_content(self, article: Article, analysis: Dict = None) -> Dict[str, str]:
+        """
+        Select the most appropriate voice for the given article content.
+        
+        Args:
+            article: The Article object containing content and category information
+            analysis: Optional pre-computed content analysis
+            
+        Returns:
+            Dict containing recommended voice information
+        """
+        if not self.voice_profiles:
+            logger.warning("Voice profiles not loaded, using default voice")
+            return {
+                'voice_id': 'af_heart',
+                'voice_name': 'Heart',
+                'reasoning': 'Default voice (voice profiles not available)'
+            }
+        
+        # Use existing analysis or create new one
+        if analysis is None:
+            analysis = self._analyze_article_content(article)
+        
+        category = article.category.lower()
+        content_type = analysis.get('content_type', 'standard')
+        
+        # Try to get content type recommendations first
+        try:
+            voice_profiles_file = Path(__file__).parent.parent / "utils" / "kokoro_voice_profiles.json"
+            with open(voice_profiles_file, 'r', encoding='utf-8') as f:
+                voice_profiles_data = json.load(f)
+            content_recommendations = voice_profiles_data.get('content_type_recommendations', {})
+            
+            if category in content_recommendations:
+                rec = content_recommendations[category]
+                primary_voice = rec['primary']
+                reasoning = rec['reasoning']
+                
+                # Validate the voice exists in our profiles
+                if primary_voice in self.voice_profiles:
+                    return {
+                        'voice_id': primary_voice,
+                        'voice_name': self.voice_profiles[primary_voice]['name'],
+                        'reasoning': reasoning,
+                        'category_match': category,
+                        'voice_profile': self.voice_profiles[primary_voice]
+                    }
+                
+                # Try secondary voices if primary is not available
+                for secondary_voice in rec.get('secondary', []):
+                    if secondary_voice in self.voice_profiles:
+                        return {
+                            'voice_id': secondary_voice,
+                            'voice_name': self.voice_profiles[secondary_voice]['name'],
+                            'reasoning': f"{reasoning} (using secondary choice)",
+                            'category_match': category,
+                            'voice_profile': self.voice_profiles[secondary_voice]
+                        }
+        except Exception as e:
+            logger.debug(f"Error loading content recommendations: {e}")
+        
+        # Fallback: select based on content analysis and quality
+        return self._select_voice_fallback(article, analysis)
+
+    def _select_voice_fallback(self, article: Article, analysis: Dict) -> Dict[str, str]:
+        """
+        Fallback voice selection based on content analysis and voice quality.
+        """
+        # Get high-quality voices
+        high_quality_voices = ['af_heart', 'af_bella', 'bf_emma', 'am_michael', 'am_fenrir', 'bm_george']
+        
+        # Content-based selection logic
+        content_lower = article.content.lower()
+        title_lower = article.title.lower()
+        
+        # Tech content
+        if any(word in content_lower + title_lower for word in ['ai', 'tech', 'software', 'algorithm', 'digital']):
+            if 'af_nicole' in self.voice_profiles:
+                return {
+                    'voice_id': 'af_nicole',
+                    'voice_name': self.voice_profiles['af_nicole']['name'],
+                    'reasoning': 'Tech-focused content detected',
+                    'fallback_selection': True
+                }
+        
+        # High-energy content
+        if analysis.get('is_breakthrough') or any(word in content_lower for word in ['breaking', 'amazing', 'incredible']):
+            if 'af_bella' in self.voice_profiles:
+                return {
+                    'voice_id': 'af_bella',
+                    'voice_name': self.voice_profiles['af_bella']['name'],
+                    'reasoning': 'High-energy content detected',
+                    'fallback_selection': True
+                }
+        
+        # Business/professional content
+        if any(word in content_lower for word in ['business', 'company', 'investment', 'funding']):
+            if 'am_michael' in self.voice_profiles:
+                return {
+                    'voice_id': 'am_michael',
+                    'voice_name': self.voice_profiles['am_michael']['name'],
+                    'reasoning': 'Professional/business content detected',
+                    'fallback_selection': True
+                }
+        
+        # Default to a high-quality versatile voice
+        for voice_id in ['af_heart', 'af_kore', 'am_michael']:
+            if voice_id in self.voice_profiles:
+                return {
+                    'voice_id': voice_id,
+                    'voice_name': self.voice_profiles[voice_id]['name'],
+                    'reasoning': 'Default versatile voice selection',
+                    'fallback_selection': True
+                }
+        
+        # Final fallback
+        return {
+            'voice_id': 'af_heart',
+            'voice_name': 'Heart',
+            'reasoning': 'Final fallback voice'
         }
+
+    def get_available_voices_for_category(self, category: str) -> List[Dict]:
+        """
+        Get a list of recommended voices for a specific content category.
+        
+        Args:
+            category: Content category (e.g., 'ai', 'tech', 'business')
+            
+        Returns:
+            List of voice information dictionaries
+        """
+        if not self.voice_profiles:
+            return []
+        
+        try:
+            # Try to load content type recommendations
+            voice_profiles_file = Path(__file__).parent.parent / "utils" / "kokoro_voice_profiles.json"
+            with open(voice_profiles_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                content_recommendations = data.get('content_type_recommendations', {})
+            
+            if category in content_recommendations:
+                rec = content_recommendations[category]
+                voices = []
+                
+                # Add primary voice
+                primary = rec['primary']
+                if primary in self.voice_profiles:
+                    voices.append({
+                        'voice_id': primary,
+                        'voice_name': self.voice_profiles[primary]['name'],
+                        'description': self.voice_profiles[primary]['description'],
+                        'personality': self.voice_profiles[primary]['personality'],
+                        'priority': 'primary',
+                        'reasoning': rec['reasoning']
+                    })
+                
+                # Add secondary voices
+                for secondary in rec.get('secondary', []):
+                    if secondary in self.voice_profiles:
+                        voices.append({
+                            'voice_id': secondary,
+                            'voice_name': self.voice_profiles[secondary]['name'],
+                            'description': self.voice_profiles[secondary]['description'],
+                            'personality': self.voice_profiles[secondary]['personality'],
+                            'priority': 'secondary',
+                            'reasoning': rec['reasoning']
+                        })
+                
+                return voices
+                
+        except Exception as e:
+            logger.debug(f"Error getting voices for category {category}: {e}")
+        
+        return []
     
     def _setup_authentication(self):
         """Setup Hugging Face authentication for accessing Llama models."""
@@ -416,7 +605,7 @@ Format as a natural speech script with clear paragraph breaks for emphasis. Make
         
         return prompt
     
-    async def summarize_for_tiktok(self, article: Article, target_duration: int = None) -> Optional[str]:
+    async def summarize_for_tiktok(self, article: Article, target_duration: int = None, include_voice_recommendation: bool = False) -> Optional[str]:
         """Generate TikTok-optimized summary using Llama 3.2-3B."""
         if not self.pipeline:
             await self.initialize()
@@ -456,6 +645,16 @@ Format as a natural speech script with clear paragraph breaks for emphasis. Make
             
             generation_time = time.time() - start_time
             logger.info(f"Generated TikTok summary in {generation_time:.2f}s")
+            
+            # Optionally include voice recommendation
+            if include_voice_recommendation:
+                analysis = self._analyze_article_content(article)
+                voice_recommendation = self.select_voice_for_content(article, analysis)
+                return {
+                    'summary': summary,
+                    'voice_recommendation': voice_recommendation,
+                    'content_analysis': analysis
+                }
             
             return summary
             
@@ -536,11 +735,20 @@ Format as a natural speech script with clear paragraph breaks for emphasis. Make
             
             logger.info(f"Processing article {i}/{len(articles)}: {article.title[:50]}...")
             
+            # Analyze content for voice selection
+            analysis = self._analyze_article_content(article)
+            
+            # Generate summary
             summary = await self.summarize_for_tiktok(article)
+            
+            # Select appropriate voice
+            voice_recommendation = self.select_voice_for_content(article, analysis)
             
             result = {
                 'article': article,
                 'tiktok_summary': summary,
+                'voice_recommendation': voice_recommendation,
+                'content_analysis': analysis,
                 'success': summary is not None,
                 'processing_order': i
             }
