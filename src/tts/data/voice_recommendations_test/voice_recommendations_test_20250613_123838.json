@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "timestamp": "20250613_123838",
+    "total_tests": 5,
+    "successful_generations": 5,
+    "source_file": "llama_test_results_20250613_122625.json"
+  },
+  "results": [
+    {
+      "title": "A frustrated Zuckerberg makes his biggest AI bet as Meta nears $14 billion stake in Scale AI, hires founder Wang",
+      "category": "big_tech",
+      "voice_id": "af_nicole",
+      "voice_name": "Nicole",
+      "reasoning": "Tech-focused content detected",
+      "audio_file": "src\\tts\\data\\voice_recommendations_test\\test_01_af_nicole_A_frustrated_Zuckerberg_makes_his_bigges.wav",
+      "duration": 137.125,
+      "file_size_mb": 6.277126312255859,
+      "success": true
+    },
+    {
+      "title": "OpenAI releases o3-pro, a souped-up version of its o3 AI reasoning model",
+      "category": "ai",
+      "voice_id": "af_bella",
+      "voice_name": "Bella",
+      "reasoning": "AI content needs energy and authority - Bella provides high energy, Michael adds credibility",
+      "audio_file": "src\\tts\\data\\voice_recommendations_test\\test_02_af_bella_OpenAI_releases_o3-pro_a_souped-up_versi.wav",
+      "duration": 79.9,
+      "file_size_mb": 3.657573699951172,
+      "success": true
+    },
+    {
+      "title": "Snap to launch smaller, lighter augmented reality Specs smartglasses in 2026",
+      "category": "ai",
+      "voice_id": "af_bella",
+      "voice_name": "Bella",
+      "reasoning": "AI content needs energy and authority - Bella provides high energy, Michael adds credibility",
+      "audio_file": "src\\tts\\data\\voice_recommendations_test\\test_03_af_bella_Snap_to_launch_smaller_lighter_augmented.wav",
+      "duration": 90.275,
+      "file_size_mb": 4.132503509521484,
+      "success": true
+    },
+    {
+      "title": "Google offers buyouts to employees across the company, including Search",
+      "category": "ai",
+      "voice_id": "af_bella",
+      "voice_name": "Bella",
+      "reasoning": "AI content needs energy and authority - Bella provides high energy, Michael adds credibility",
+      "audio_file": "src\\tts\\data\\voice_recommendations_test\\test_04_af_bella_Google_offers_buyouts_to_employees_acros.wav",
+      "duration": 92.925,
+      "file_size_mb": 4.253810882568359,
+      "success": true
+    },
+    {
+      "title": "Reflections from Sam Altman",
+      "category": "ai",
+      "voice_id": "af_bella",
+      "voice_name": "Bella",
+      "reasoning": "AI content needs energy and authority - Bella provides high energy, Michael adds credibility",
+      "audio_file": "src\\tts\\data\\voice_recommendations_test\\test_05_af_bella_Reflections_from_Sam_Altman.wav",
+      "duration": 97.475,
+      "file_size_mb": 4.462093353271484,
+      "success": true
+    }
+  ]
+}

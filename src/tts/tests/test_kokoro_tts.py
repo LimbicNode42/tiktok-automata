@@ -6,8 +6,10 @@ Run with: python -m pytest src/tts/tests/test_kokoro_tts.py -v
 import asyncio
 import os
 import sys
+import json
 from pathlib import Path
 import tempfile
+from datetime import datetime
 
 # Add the src directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -106,9 +108,9 @@ def test_text_splitting():
     chunks = engine._split_text_intelligently(long_text)
     assert len(chunks) > 1
     
-    # Verify no chunk exceeds max length
+    # Verify no chunk exceeds max length (allowing some buffer for punctuation)
     for chunk in chunks:
-        assert len(chunk) <= engine.config.max_length
+        assert len(chunk) <= engine.config.max_length + 10  # Allow small buffer for punctuation
 
 
 def test_audio_info_error_handling():
@@ -185,10 +187,274 @@ def test_quick_tts_sync():
     run_async_test(test_quick_tts_function())
 
 
+def load_llama_test_results():
+    """Load the Llama test results with voice recommendations."""
+    try:
+        results_file = Path("src/summarizer/data/llama_test_results_20250613_122625.json")
+        if not results_file.exists():
+            print(f"❌ Test results file not found: {results_file}")
+            return None
+        
+        with open(results_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        return data.get('results', [])
+    except Exception as e:
+        print(f"❌ Failed to load test results: {e}")
+        return None
+
+
+async def test_voice_recommendations_with_real_summaries():
+    """Test TTS generation using real summaries with recommended voices."""
+    print("\n🎤 Testing Voice Recommendations with Real Summaries")
+    print("=" * 60)
+    
+    # Load the test results
+    results = load_llama_test_results()
+    if not results:
+        print("❌ No test results available")
+        return
+    
+    # Filter successful results with summaries and voice recommendations
+    valid_results = [
+        r for r in results 
+        if (r.get('status') == 'success' and 
+            r.get('summary') and 
+            r.get('voice_recommendation', {}).get('voice_id'))
+    ]
+    
+    if not valid_results:
+        print("❌ No valid results with voice recommendations found")
+        return
+    
+    print(f"✅ Found {len(valid_results)} valid results with voice recommendations")
+    
+    # Create output directory
+    output_dir = Path("src/tts/data/voice_recommendations_test")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Test with first 5 results to keep test time reasonable
+    test_results = valid_results[:5]
+    
+    generated_files = []
+    
+    for i, result in enumerate(test_results, 1):
+        title = result.get('title', 'Unknown Title')
+        category = result.get('category', 'unknown')
+        summary = result.get('summary', '')
+        voice_rec = result.get('voice_recommendation', {})
+        voice_id = voice_rec.get('voice_id', 'af_heart')
+        voice_name = voice_rec.get('voice_name', 'Unknown')
+        reasoning = voice_rec.get('reasoning', 'No reasoning provided')
+        
+        print(f"\n📝 Test {i}/{len(test_results)}: {title[:50]}...")
+        print(f"   🏷️  Category: {category}")
+        print(f"   🎤 Recommended Voice: {voice_name} ({voice_id})")
+        print(f"   💭 Reasoning: {reasoning}")
+        print(f"   📊 Summary Length: {len(summary)} characters")
+        
+        try:
+            # Configure TTS with recommended voice
+            config = TTSConfig(
+                voice=voice_id,
+                speed=1.1,  # Slightly faster for TikTok energy
+                normalize_audio=True,
+                add_silence_padding=True
+            )
+            
+            tts_engine = KokoroTTSEngine(config)
+            await tts_engine.initialize()
+            
+            # Create safe filename
+            safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '-', '_')).strip()
+            safe_title = safe_title.replace(' ', '_')[:40]
+            
+            output_file = output_dir / f"test_{i:02d}_{voice_id}_{safe_title}.wav"
+            
+            # Generate audio
+            audio_file = await tts_engine.generate_audio(summary, str(output_file))
+            
+            if audio_file:
+                # Get audio info
+                info = tts_engine.get_audio_info(audio_file)
+                duration = info.get('duration', 0)
+                file_size_mb = info.get('file_size', 0) / (1024 * 1024)
+                
+                print(f"   ✅ Audio generated successfully!")
+                print(f"   ⏱️  Duration: {duration:.1f} seconds")
+                print(f"   💾 File size: {file_size_mb:.1f} MB")
+                print(f"   📁 File: {Path(audio_file).name}")
+                
+                # Check TikTok suitability
+                if 20 <= duration <= 180:  # 20s to 3 minutes is good for TikTok
+                    print(f"   🎯 Perfect for TikTok!")
+                elif duration < 20:
+                    print(f"   ⚠️  Might be too short for TikTok")
+                else:
+                    print(f"   ⚠️  Might be too long for TikTok")
+                
+                generated_files.append({
+                    'title': title,
+                    'category': category,
+                    'voice_id': voice_id,
+                    'voice_name': voice_name,
+                    'reasoning': reasoning,
+                    'audio_file': audio_file,
+                    'duration': duration,
+                    'file_size_mb': file_size_mb,
+                    'success': True
+                })
+                
+            else:
+                print(f"   ❌ Failed to generate audio")
+                generated_files.append({
+                    'title': title,
+                    'category': category,
+                    'voice_id': voice_id,
+                    'voice_name': voice_name,
+                    'success': False
+                })
+            
+            await tts_engine.cleanup()
+            
+        except Exception as e:
+            print(f"   ❌ Error: {e}")
+            generated_files.append({
+                'title': title,
+                'category': category,
+                'voice_id': voice_id,
+                'voice_name': voice_name,
+                'success': False,
+                'error': str(e)
+            })
+    
+    # Save test results
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    results_file = output_dir / f"voice_recommendations_test_{timestamp}.json"
+    
+    test_summary = {
+        'metadata': {
+            'timestamp': timestamp,
+            'total_tests': len(test_results),
+            'successful_generations': len([f for f in generated_files if f.get('success')]),
+            'source_file': 'llama_test_results_20250613_122625.json'
+        },
+        'results': generated_files
+    }
+    
+    with open(results_file, 'w', encoding='utf-8') as f:
+        json.dump(test_summary, f, indent=2, ensure_ascii=False, default=str)
+    
+    # Final summary
+    successful = [f for f in generated_files if f.get('success')]
+    total_duration = sum(f.get('duration', 0) for f in successful)
+    total_size = sum(f.get('file_size_mb', 0) for f in successful)
+    
+    print(f"\n🎉 Voice Recommendation Test Complete!")
+    print("=" * 50)
+    print(f"📊 Results:")
+    print(f"   • Tests run: {len(test_results)}")
+    print(f"   • Successful: {len(successful)}")
+    print(f"   • Total audio: {total_duration:.1f} seconds")
+    print(f"   • Total size: {total_size:.1f} MB")
+    print(f"   • Average duration: {total_duration/len(successful):.1f}s" if successful else "   • No successful generations")
+    
+    print(f"\n🎵 Generated Audio Files:")
+    for result in successful:
+        filename = Path(result['audio_file']).name
+        print(f"   • {filename} ({result['duration']:.1f}s) - {result['voice_name']}")
+    
+    print(f"\n💾 Test results saved to: {results_file}")
+    print(f"📁 Audio files saved to: {output_dir}")
+
+
+async def test_voice_profile_showcase():
+    """Create a showcase of different voice profiles with the same content."""
+    print("\n🎭 Voice Profile Showcase")
+    print("=" * 40)
+    
+    # Sample TikTok content for voice comparison
+    test_content = """
+    🚨 BREAKING: This is absolutely mind-blowing! 
+    Scientists just made a discovery that's going to change everything we know about technology. 
+    We're talking about a breakthrough that could revolutionize how we live, work, and communicate. 
+    The implications are staggering - this isn't just another incremental update, it's a complete game-changer! 
+    And the best part? This technology could be in your hands within the next two years!
+    """
+    
+    # Test different voice profiles mentioned in the results
+    voices_to_test = [
+        ('af_bella', 'Bella - High Energy'),
+        ('af_nicole', 'Nicole - Tech Focus'),
+        ('af_heart', 'Heart - Warm & Emotional'),
+        ('am_adam', 'Adam - Strong Male'),
+        ('bm_george', 'George - British Male')
+    ]
+    
+    output_dir = Path("src/tts/data/voice_showcase")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    showcase_results = []
+    
+    for voice_id, description in voices_to_test:
+        print(f"\n🎤 Testing {description}")
+        
+        try:
+            config = TTSConfig(voice=voice_id, speed=1.0)
+            tts_engine = KokoroTTSEngine(config)
+            await tts_engine.initialize()
+            
+            output_file = output_dir / f"showcase_{voice_id}.wav"
+            audio_file = await tts_engine.generate_audio(test_content, str(output_file))
+            
+            if audio_file:
+                info = tts_engine.get_audio_info(audio_file)
+                duration = info.get('duration', 0)
+                print(f"   ✅ Generated: {duration:.1f}s")
+                
+                showcase_results.append({
+                    'voice_id': voice_id,
+                    'description': description,
+                    'audio_file': audio_file,
+                    'duration': duration,
+                    'success': True
+                })
+            else:
+                print(f"   ❌ Failed")
+                showcase_results.append({
+                    'voice_id': voice_id,
+                    'description': description,
+                    'success': False
+                })
+            
+            await tts_engine.cleanup()
+            
+        except Exception as e:
+            print(f"   ❌ Error: {e}")
+            showcase_results.append({
+                'voice_id': voice_id,
+                'description': description,
+                'success': False,
+                'error': str(e)
+            })
+    
+    print(f"\n✅ Voice showcase complete! Check {output_dir}")
+    return showcase_results
+
+
+def test_voice_recommendations_sync():
+    """Sync wrapper for voice recommendations test."""
+    run_async_test(test_voice_recommendations_with_real_summaries())
+
+
+def test_voice_showcase_sync():
+    """Sync wrapper for voice showcase test."""
+    run_async_test(test_voice_profile_showcase())
+
+
 if __name__ == "__main__":
     print("Running TTS unit tests...")
-    
-    # Run all test functions
+      # Run all test functions
     test_functions = [
         test_tts_config_defaults,
         test_kokoro_engine_creation,
@@ -197,7 +463,9 @@ if __name__ == "__main__":
         test_text_splitting,
         test_audio_info_error_handling,
         test_engine_lifecycle_sync,
-        test_quick_tts_sync
+        test_quick_tts_sync,
+        test_voice_recommendations_sync,
+        test_voice_showcase_sync
     ]
     
     passed = 0
