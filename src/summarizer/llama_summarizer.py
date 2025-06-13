@@ -567,15 +567,15 @@ IMPORTANT: This article is written in first person. DO NOT copy the first-person
         else:
             content_approach = """
 - Present the information with TikTok energy and enthusiasm
-- Use engaging storytelling techniques"""
-
-        # Use modern chat template format for Llama 3.2
+- Use engaging storytelling techniques"""        # Use modern chat template format for Llama 3.2
         prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 You are a viral TikTok content creator specializing in tech news. Create engaging {duration}-second TikTok scripts that hook viewers immediately and keep them watching until the end.
 
 Your style should be: {style_description}
-Target audience: Tech-curious Gen Z and Millennials<|eot_id|><|start_header_id|>user<|end_header_id|>
+Target audience: Tech-curious Gen Z and Millennials
+
+CRITICAL: Output ONLY the TikTok script content. Do NOT include any introductory phrases like "Here's the script:", "Here is a script:", or similar. Start directly with the actual content.<|eot_id|><|start_header_id|>user<|end_header_id|>
 
 Create a {duration}-second TikTok script from this article:
 
@@ -598,8 +598,9 @@ Requirements:
 - Make it feel like a 2-minute story that flies by
 - DO NOT include timestamps or time markers
 - DO NOT use emojis in the main script
+- DO NOT include any introductory text like "Here's the script:" or "Here is a script based on..."
 
-Format as a natural speech script with clear paragraph breaks for emphasis. Make it substantial enough to fill the full {duration} seconds of speaking time.<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+Output ONLY the script content that would be spoken in the TikTok video. Start immediately with "{selected_hook}" and end with "{selected_cta}".<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
 """
         
@@ -652,9 +653,7 @@ Format as a natural speech script with clear paragraph breaks for emphasis. Make
                 voice_recommendation = self.select_voice_for_content(article, analysis)
                 return {
                     'summary': summary,
-                    'voice_recommendation': voice_recommendation,
-                    'content_analysis': analysis
-                }
+                    'voice_recommendation': voice_recommendation,                'content_analysis': analysis            }
             
             return summary
             
@@ -679,11 +678,40 @@ Format as a natural speech script with clear paragraph breaks for emphasis. Make
         
         for pattern in cleanup_patterns:
             summary = summary.replace(pattern, "")
-          # Remove timestamps - comprehensive patterns
+        
+        # Remove leading quotes that might wrap the entire response
+        summary = re.sub(r'^[\"\']', '', summary)
+        
+        # Remove introductory phrases that appear at the beginning
+        intro_patterns = [
+            r'^Here is the script:\s*',
+            r'^Here\'s the script:\s*',
+            r'^Here is a \d+-second TikTok script based on the provided article:\s*',
+            r'^Here is a script for a \d+-second TikTok video based on the provided article:\s*',
+            r'^Here is a script based on the provided article:\s*',
+            r'^Here is a script that meets the requirements:\s*',
+            r'^Here is a script:\s*',
+            r'^Here\'s a script:\s*',
+            r'^Script:\s*',
+            r'^TikTok script:\s*',
+            r'^Here\'s your TikTok script:\s*',
+            r'^Here is your TikTok script:\s*',
+        ]
+        
+        for pattern in intro_patterns:
+            summary = re.sub(pattern, '', summary, flags=re.IGNORECASE)
+        
+        # Clean up any remaining leading quotes or colons
+        summary = re.sub(r'^[\"\':]*\s*', '', summary)
+        
+        # Remove timestamps - comprehensive patterns (including at the beginning)
         timestamp_patterns = [
-            r'\*\*\[[\d\s\-:]+\]\*\*',  # **[0s-3s]**
-            r'\[[\d\s\-:]+\]',          # [10s-15s]
-            r'\([\d\s\-:]+\)',          # (20s-25s)
+            r'^\[\d+s\]\s*',            # [0s] at the beginning
+            r'^\[[\d\s\-:]+\]\s*',      # [10s-15s] at the beginning
+            r'^\([\d\s\-:]+\)\s*',      # (20s-25s) at the beginning
+            r'\*\*\[[\d\s\-:]+\]\*\*',  # **[0s-3s]** anywhere
+            r'\[[\d\s\-:]+\]',          # [10s-15s] anywhere
+            r'\([\d\s\-:]+\)',          # (20s-25s) anywhere
             r'\d+s\s*-\s*\d+s',         # 30s - 35s
             r'\d+:\d+\s*-\s*\d+:\d+',   # 1:20 - 1:25
             r'at\s+\d+\s*seconds?',     # at 45 seconds
@@ -698,9 +726,11 @@ Format as a natural speech script with clear paragraph breaks for emphasis. Make
         
         # Remove emojis
         summary = re.sub(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F700-\U0001F77F\U0001F780-\U0001F7FF\U0001F800-\U0001F8FF\U0001F900-\U0001F9FF\U0001FA00-\U0001FA6F\U0001FA70-\U0001FAFF\U00002600-\U000027BF]+', '', summary)
-          # Clean up extra whitespace
+        
+        # Clean up extra whitespace
         summary = " ".join(summary.split())
-          # Ensure it doesn't exceed reasonable length (increased for 120s videos)
+        
+        # Ensure it doesn't exceed reasonable length (increased for 120s videos)
         if len(summary) > 1800:  # Increased from 1200 to 1800 for 120s target
             sentences = summary.split(". ")
             # Keep sentences until we hit a reasonable length
