@@ -26,6 +26,10 @@ loguru>=0.7.0
 selenium>=4.15.0
 fake-useragent>=1.4.0
 
+# TTS (Text-to-Speech) with Kokoro
+kokoro>=0.9.4
+soundfile>=0.12.1
+
 # Development
 pytest>=7.4.0
 black>=23.7.0

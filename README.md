@@ -11,6 +11,8 @@ TikTok Automata is a Python automation project that extracts articles from TLDR 
 - **Adaptive Content Extraction**: AI-powered system that learns extraction patterns for new websites
 - **Llama Summarization**: GPU-accelerated summarization using meta-llama/Llama-3.2-3B-Instruct
 - **TikTok Optimization**: Generates professionally formatted scripts with timestamps and engagement elements
+- **High-Quality TTS**: Neural text-to-speech using Kokoro with multiple voice options
+- **Complete Audio Pipeline**: End-to-end generation from articles to ready-to-use audio files
 
 ## 🚀 Current Status: FULLY OPERATIONAL ✅
 
@@ -19,13 +21,17 @@ TikTok Automata is a Python automation project that extracts articles from TLDR 
 - **Model**: meta-llama/Llama-3.2-3B-Instruct
 - **PyTorch**: 2.1.0+cu121 with CUDA acceleration
 - **Performance**: 24+ tokens/second, ~5.2s per summary
+- **TTS**: Kokoro-82M neural TTS with 9 voice options
 
 ### Validated Capabilities
 - ✅ **Article Extraction**: 41/89 articles successfully extracted from real TLDR data
 - ✅ **AI Summarization**: 100% success rate on tested articles
 - ✅ **TikTok Formatting**: Professional scripts with timestamps, emojis, and hashtags
 - ✅ **GPU Acceleration**: Full CUDA support with 1.8GB VRAM usage
-- ✅ **Production Ready**: Complete pipeline from newsletter → TikTok content
+- ✅ **TTS Audio Generation**: High-quality neural speech synthesis with Kokoro
+- ✅ **Voice Options**: 9 different voices (male/female, American/British accents)
+- ✅ **Real-time TTS**: Fast audio generation (1x real-time or faster)
+- ✅ **Production Ready**: Complete pipeline from newsletter → TikTok audio content
 
 ## 📊 Performance Metrics
 
@@ -67,7 +73,13 @@ TikTok Automata is a Python automation project that extracts articles from TLDR 
 - **TikTok Formatting**: Professional script generation with timestamps
 - **Batch Processing**: Efficient handling of multiple articles
 
-#### 3. Utilities (`src/utils/`)
+#### 3. TTS Engine (`src/tts/`)
+- **Kokoro Integration**: High-quality neural TTS using Kokoro-82M model
+- **Multiple Voices**: 9 different voice options (male/female, various accents)
+- **Real-time Generation**: Fast audio generation (1x real-time or faster)
+- **TikTok Optimization**: Automatic text cleaning and duration targeting
+
+#### 4. Utilities (`src/utils/`)
 - **Configuration Management**: Environment variables and settings
 - **Logging**: Comprehensive logging with rotation
 - **Error Tracking**: Detailed failure analysis and reporting
@@ -75,7 +87,7 @@ TikTok Automata is a Python automation project that extracts articles from TLDR 
 ### Data Flow
 ```
 TLDR RSS Feed → Newsletter Pages → Article Extraction → Content Validation → 
-Llama Summarization → TikTok Script Generation → JSON Output
+Llama Summarization → TikTok Script Generation → Kokoro TTS → Audio Output
 ```
 
 ## 🎬 Adaptive Content Extraction
@@ -111,15 +123,35 @@ tiktok-automata/
 │   ├── summarizer/
 │   │   ├── llama_summarizer.py        # Llama 3.2-3B summarizer
 │   │   ├── data/                      # Summarizer output files
+│   │   │   ├── tiktok_hooks.json           # Dynamic engagement hooks
+│   │   │   ├── llama_test_results_*.json   # Batch test results
 │   │   │   ├── tiktok_summaries_*.json     # Batch TikTok summaries
 │   │   │   └── tiktok_summary_*.json       # Single TikTok summaries
 │   │   └── tests/
 │   │       ├── test_llama_summarizer.py       # Basic summarizer tests
 │   │       └── test_llama_batch.py            # Batch processing tests
+│   ├── tts/
+│   │   ├── kokoro_tts.py              # Kokoro TTS engine
+│   │   ├── data/                      # Generated audio files
+│   │   │   ├── *.wav                       # TTS-generated audio
+│   │   │   ├── voice_comparison/           # Voice comparison samples
+│   │   │   └── tiktok_pipeline_results_*.json  # Pipeline results with audio
+│   │   └── tests/
+│   │       ├── test_kokoro_tts.py          # TTS unit tests
+│   │       └── __init__.py                 # TTS integration tests
+│   │   ├── data/                      # Generated audio files
+│   │   │   ├── *.wav                       # TTS-generated audio
+│   │   │   ├── voice_comparison/           # Voice comparison samples
+│   │   │   └── tiktok_pipeline_results_*.json  # Pipeline results with audio
+│   │   └── tests/
+│   │       ├── test_kokoro_tts.py          # TTS unit tests
+│   │       └── __init__.py                 # TTS integration tests
 │   └── utils/
 │       └── config.py                  # Configuration management
 ├── tests/
 │   ├── test_cuda_setup.py            # CUDA validation utility
+│   └── test_full_pipeline.py         # End-to-end pipeline tests
+├── test_tts_pipeline.py              # Complete pipeline with TTS
 │   └── test_full_pipeline.py         # End-to-end pipeline tests
 ├── main.py                           # Main entry point
 └── requirements.txt                  # Dependencies
@@ -182,13 +214,59 @@ Generated files:
 - Optimized performance (24+ tokens/second)
 - Validated with real TLDR article processing
 
-### Phase 4: Production Validation ✅
+### Phase 4: TTS Integration ✅
+- Integrated Kokoro-82M neural TTS engine
+- Added 9 high-quality voice options (male/female, various accents)
+- Implemented real-time audio generation (1x speed or faster)
+- Created complete audio pipeline from text to WAV files
+- Added TikTok-optimized audio processing with normalization
+
+### Phase 5: Production Validation ✅
 - Processed 89 real TLDR articles
 - Generated professional TikTok summaries
 - Achieved 100% success rate on quality content
 - Demonstrated full pipeline functionality
+- Validated complete pipeline: Newsletter → Summary → TTS → Audio
 
-## 🔧 Configuration
+## 🔧 Installation & Setup
+
+### Prerequisites
+- **Python**: 3.11+ (recommended)
+- **GPU**: NVIDIA RTX 3070 (8GB VRAM) or equivalent
+- **CUDA**: 12.1+ with PyTorch CUDA support
+- **RAM**: 16GB recommended
+- **Storage**: 5GB for models and data
+
+### Quick Setup
+```bash
+# Clone repository
+git clone https://github.com/yourusername/tiktok-automata.git
+cd tiktok-automata
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set up environment
+cp .env.example .env
+# Edit .env with your HF_TOKEN
+```
+
+### Windows-Specific Setup
+If you encounter permission issues with pip installations (especially for TTS dependencies):
+```bash
+# Grant full permissions to Python installation (run as administrator)
+chmod -R 777 /c/Python311
+```
+
+### TTS Dependencies
+The Kokoro TTS engine requires additional setup:
+```bash
+# Install Kokoro TTS and dependencies
+pip install --user kokoro>=0.9.4 soundfile phonemizer==3.2.1
+
+# Install misaki for English G2P
+pip install --user 'misaki[en]'
+```
 
 ### Environment Variables
 ```bash
@@ -211,6 +289,18 @@ LOGS_DIR=./logs
 - **RAM**: 16GB recommended
 - **Storage**: 5GB for models and data
 
+### Kokoro TTS Voices
+Available voice options:
+- **af_heart**: Warm, emotional female voice
+- **af_sky**: Clear, professional female voice
+- **af_sunset**: Soft, gentle female voice
+- **am_adam**: Strong, confident male voice
+- **am_michael**: Professional, news-anchor male voice
+- **bf_emma**: British female voice
+- **bf_isabella**: Elegant British female voice
+- **bm_george**: Distinguished British male voice
+- **bm_lewis**: Casual British male voice
+
 ## 📈 Validation Results
 
 ### Real Data Processing ✅
@@ -231,6 +321,32 @@ LOGS_DIR=./logs
 - **Duration Targeting**: 26-30 second reading times
 - **Content Quality**: Accurate summaries with shock value and intrigue
 
+## 🎯 Usage
+
+### Quick Start
+```bash
+# Run the complete pipeline with TTS
+python test_tts_pipeline.py
+
+# Run individual components
+python src/scraper/newsletter_scraper.py    # Extract articles
+python src/summarizer/llama_summarizer.py   # Generate summaries
+python src/tts/kokoro_tts.py                # Generate audio
+```
+
+### TTS-Only Usage
+```python
+from src.tts.kokoro_tts import quick_tts
+
+# Generate audio from text
+audio_file = await quick_tts(
+    "Your TikTok script here",
+    "output.wav",
+    voice='af_heart',
+    speed=1.1
+)
+```
+
 ## 🎯 Production Readiness
 
 The system is fully operational and ready for:
@@ -238,8 +354,9 @@ The system is fully operational and ready for:
 1. **Daily Newsletter Processing**: Automated TLDR article extraction
 2. **Batch Content Generation**: Process 20-50 articles per session
 3. **Multi-category Support**: Handle AI, tech, dev, and science content
-4. **Scheduled Automation**: Integration with cron/task scheduler
-5. **Video Pipeline Integration**: Ready for TTS and video assembly
+4. **Complete Audio Pipeline**: Text-to-speech with 9 voice options
+5. **Scheduled Automation**: Integration with cron/task scheduler
+6. **Video Pipeline Integration**: Ready for video assembly and upload
 
 ## 🔍 Troubleshooting
 
@@ -248,6 +365,8 @@ The system is fully operational and ready for:
 - **HF Authentication**: Verify HF_TOKEN is set in environment
 - **Memory Issues**: Check GPU VRAM availability (need 2GB free)
 - **Extraction Failures**: Review `extraction_patterns.json` for learned patterns
+- **TTS Permission Errors**: On Windows, run `chmod -R 777 /c/Python311` as admin
+- **Kokoro Import Issues**: Ensure phonemizer==3.2.1 and misaki[en] are installed
 
 ### Debug Commands
 ```bash
@@ -260,13 +379,19 @@ python src/scraper/tests/test_scraper_comprehensive.py
 # Test summarizer only
 python src/summarizer/tests/test_llama_summarizer.py
 
-# Full pipeline test
-python tests/test_full_pipeline.py
+# Test TTS functionality
+python src/tts/tests/test_kokoro_tts.py
+
+# Full pipeline test with TTS
+python test_tts_pipeline.py
+
+# Test individual TTS voices
+python src/tts/kokoro_tts.py
 ```
 
 ---
 
-**Project Status**: ✅ Production Ready  
-**Last Updated**: June 12, 2025  
-**System**: RTX 3070 + CUDA 12.6 + Llama 3.2-3B  
-**Performance**: 24+ tokens/second with full GPU acceleration
+**Project Status**: ✅ Production Ready with Complete TTS Pipeline  
+**Last Updated**: June 13, 2025  
+**System**: RTX 3070 + CUDA 12.6 + Llama 3.2-3B + Kokoro TTS  
+**Performance**: 24+ tokens/second summarization + real-time TTS generation
