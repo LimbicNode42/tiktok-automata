@@ -29,12 +29,14 @@ except Exception as e:
 
 try:
     from ..scraper.newsletter_scraper import Article
+    from ..utils.config import config
 except ImportError:
     # Fallback for standalone usage
     import sys
     import os
     sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
     from src.scraper.newsletter_scraper import Article
+    from src.utils.config import config
 
 
 @dataclass
@@ -166,6 +168,55 @@ class KokoroTTSEngine:
             logger.info(f"Voice changed to: {voice} ({self.available_voices[voice]})")
         else:
             logger.warning(f"Voice '{voice}' not available. Available: {list(self.available_voices.keys())}")
+    
+    def get_voice_profile(self, voice_id: str = None):
+        """Get voice profile from configuration."""
+        voice_id = voice_id or self.config.voice
+        try:
+            return config.get_voice_profile(voice_id)
+        except:
+            return None
+    
+    def set_voice_for_content_type(self, content_type: str):
+        """Set voice based on content type recommendation."""
+        try:
+            recommended_voice = config.get_recommended_voice(content_type)
+            if recommended_voice:
+                self.config.voice = recommended_voice.id
+                logger.info(f"Voice set for {content_type} content: {recommended_voice.name} ({recommended_voice.id})")
+                return recommended_voice
+        except Exception as e:
+            logger.warning(f"Could not set voice for content type '{content_type}': {e}")
+        return None
+    
+    def get_available_voices_by_category(self):
+        """Get voices organized by personality/category."""
+        try:
+            voices_by_category = {
+                'professional': [],
+                'casual': [],
+                'warm': [],
+                'sophisticated': [],
+                'energetic': []
+            }
+            
+            for voice_profile in config.voice_profiles.values():
+                personality = voice_profile.personality.lower()
+                
+                if 'professional' in personality or 'authoritative' in personality:
+                    voices_by_category['professional'].append(voice_profile)
+                if 'casual' in personality or 'friendly' in personality:
+                    voices_by_category['casual'].append(voice_profile)
+                if 'warm' in personality or 'emotional' in personality:
+                    voices_by_category['warm'].append(voice_profile)
+                if 'sophisticated' in personality or 'elegant' in personality:
+                    voices_by_category['sophisticated'].append(voice_profile)
+                if 'confident' in personality or 'strong' in personality:
+                    voices_by_category['energetic'].append(voice_profile)
+            
+            return voices_by_category
+        except:
+            return {}
     
     def _prepare_text(self, text: str) -> str:
         """Prepare text for TTS generation."""

@@ -1,0 +1,747 @@
+{
+  "kokoro_voice_profiles": {
+    "af_heart": {
+      "id": "af_heart",
+      "name": "Heart",
+      "description": "Warm, emotional female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "warm, emotional, engaging",
+      "quality_grade": "A",
+      "training_duration": "extensive",
+      "inference_grade": "A-",
+      "best_for": [
+        "lifestyle",
+        "personal stories",
+        "emotional content",
+        "general TikTok"
+      ],
+      "use_cases": {
+        "perfect_for": "Lifestyle content, personal stories, emotional narratives",
+        "avoid_for": "Highly technical or formal content",
+        "tiktok_style": "Warm and relatable, great for storytelling and personal experiences"
+      }
+    },
+    "af_alloy": {
+      "id": "af_alloy",
+      "name": "Alloy",
+      "description": "Professional female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "professional, clear, reliable",
+      "quality_grade": "B",
+      "training_duration": "moderate",
+      "inference_grade": "C",
+      "best_for": [
+        "business",
+        "educational content",
+        "presentations",
+        "formal announcements"
+      ],
+      "use_cases": {
+        "perfect_for": "Business presentations, educational content, formal announcements",
+        "avoid_for": "Very casual or emotional content",
+        "tiktok_style": "Professional and reliable, good for business content"
+      }
+    },
+    "af_aoede": {
+      "id": "af_aoede",
+      "name": "Aoede",
+      "description": "Artistic female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "artistic, expressive, creative",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "C+",
+      "best_for": [
+        "arts",
+        "creative content",
+        "storytelling",
+        "cultural topics"
+      ],
+      "use_cases": {
+        "perfect_for": "Art discussions, creative storytelling, cultural content",
+        "avoid_for": "Technical or business content",
+        "tiktok_style": "Expressive and artistic, great for creative content"
+      }
+    },
+    "af_bella": {
+      "id": "af_bella",
+      "name": "Bella",
+      "description": "High-energy female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "energetic, dynamic, engaging",
+      "quality_grade": "A",
+      "training_duration": "extensive",
+      "inference_grade": "A-",
+      "best_for": [
+        "entertainment",
+        "high-energy content",
+        "fitness",
+        "motivational"
+      ],
+      "use_cases": {
+        "perfect_for": "High-energy TikToks, fitness content, entertainment",
+        "avoid_for": "Calm or meditative content",
+        "tiktok_style": "Dynamic and engaging, perfect for viral content"
+      }
+    },
+    "af_jessica": {
+      "id": "af_jessica",
+      "name": "Jessica",
+      "description": "Casual female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "casual, friendly, approachable",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "casual content",
+        "everyday topics",
+        "friendly conversations"
+      ],
+      "use_cases": {
+        "perfect_for": "Casual TikToks, everyday observations, friendly content",
+        "avoid_for": "Professional or formal content",
+        "tiktok_style": "Casual and approachable, good for relatable content"
+      }
+    },
+    "af_kore": {
+      "id": "af_kore",
+      "name": "Kore",
+      "description": "Balanced female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "balanced, versatile, clear",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "C+",
+      "best_for": [
+        "general content",
+        "news",
+        "educational",
+        "versatile use"
+      ],
+      "use_cases": {
+        "perfect_for": "General TikTok content, news updates, educational videos",
+        "avoid_for": "Highly specialized content requiring specific personality",
+        "tiktok_style": "Versatile and clear, good all-around choice"
+      }
+    },
+    "af_nicole": {
+      "id": "af_nicole",
+      "name": "Nicole",
+      "description": "Tech-focused female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "tech-savvy, professional, modern",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "B-",
+      "best_for": [
+        "tech content",
+        "gaming",
+        "digital trends",
+        "modern topics"
+      ],
+      "use_cases": {
+        "perfect_for": "Tech reviews, gaming content, digital trends",
+        "avoid_for": "Traditional or non-tech content",
+        "tiktok_style": "Modern and tech-savvy, perfect for digital content"
+      }
+    },
+    "af_nova": {
+      "id": "af_nova",
+      "name": "Nova",
+      "description": "Fresh female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "fresh, youthful, energetic",
+      "quality_grade": "B",
+      "training_duration": "moderate",
+      "inference_grade": "C",
+      "best_for": [
+        "youth content",
+        "trends",
+        "pop culture",
+        "fresh perspectives"
+      ],
+      "use_cases": {
+        "perfect_for": "Trend analysis, youth-focused content, pop culture",
+        "avoid_for": "Serious or formal content",
+        "tiktok_style": "Fresh and youthful, great for trend content"
+      }
+    },
+    "af_river": {
+      "id": "af_river",
+      "name": "River",
+      "description": "Flowing female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "smooth, flowing, natural",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "nature content",
+        "calm topics",
+        "meditation",
+        "wellness"
+      ],
+      "use_cases": {
+        "perfect_for": "Nature content, wellness tips, calming videos",
+        "avoid_for": "High-energy or dramatic content",
+        "tiktok_style": "Smooth and natural, good for calming content"
+      }
+    },
+    "af_sarah": {
+      "id": "af_sarah",
+      "name": "Sarah",
+      "description": "Reliable female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "reliable, trustworthy, consistent",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "C+",
+      "best_for": [
+        "news",
+        "information",
+        "reliable content",
+        "updates"
+      ],
+      "use_cases": {
+        "perfect_for": "News updates, reliable information, factual content",
+        "avoid_for": "Creative or artistic content",
+        "tiktok_style": "Trustworthy and reliable, good for news content"
+      }
+    },    "af_sky": {
+      "id": "af_sky",
+      "name": "Sky",
+      "description": "Clear, professional female voice",
+      "gender": "female",
+      "accent": "american",
+      "personality": "professional, clear, authoritative",
+      "quality_grade": "B",
+      "training_duration": "short",
+      "inference_grade": "C-",
+      "best_for": [
+        "news",
+        "business",
+        "educational content",
+        "tech reviews"
+      ],
+      "use_cases": {
+        "perfect_for": "Breaking news, business updates, tech announcements",
+        "avoid_for": "Casual, humorous, or very personal content",
+        "tiktok_style": "Professional and credible, ideal for serious topics"
+      }
+    },
+    "am_adam": {
+      "id": "am_adam",
+      "name": "Adam",
+      "description": "Strong, confident male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "confident, strong, assertive",
+      "quality_grade": "D",
+      "training_duration": "extensive",
+      "inference_grade": "F+",
+      "best_for": [
+        "sports",
+        "action content",
+        "gaming",
+        "motivational"
+      ],
+      "use_cases": {
+        "perfect_for": "Sports highlights, gaming news, motivational content",
+        "avoid_for": "Gentle or nurturing content",
+        "tiktok_style": "Bold and energetic, great for high-impact content"
+      }
+    },
+    "am_echo": {
+      "id": "am_echo",
+      "name": "Echo",
+      "description": "Resonant male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "resonant, deep, impactful",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "dramatic content",
+        "storytelling",
+        "announcements",
+        "deep topics"
+      ],
+      "use_cases": {
+        "perfect_for": "Dramatic storytelling, important announcements",
+        "avoid_for": "Light or casual content",
+        "tiktok_style": "Deep and impactful, good for serious content"
+      }
+    },
+    "am_eric": {
+      "id": "am_eric",
+      "name": "Eric",
+      "description": "Friendly male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "friendly, approachable, warm",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "casual content",
+        "friendly conversations",
+        "everyday topics",
+        "approachable content"
+      ],
+      "use_cases": {
+        "perfect_for": "Casual conversations, friendly advice, everyday topics",
+        "avoid_for": "Formal or highly professional content",
+        "tiktok_style": "Friendly and approachable, good for relatable content"
+      }
+    },
+    "am_fenrir": {
+      "id": "am_fenrir",
+      "name": "Fenrir",
+      "description": "Powerful male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "powerful, commanding, strong",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "C+",
+      "best_for": [
+        "epic content",
+        "gaming",
+        "fantasy",
+        "powerful narratives"
+      ],
+      "use_cases": {
+        "perfect_for": "Epic storytelling, gaming content, fantasy topics",
+        "avoid_for": "Gentle or subtle content",
+        "tiktok_style": "Powerful and commanding, great for epic content"
+      }
+    },
+    "am_liam": {
+      "id": "am_liam",
+      "name": "Liam",
+      "description": "Casual male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "casual, laid-back, relatable",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "casual content",
+        "commentary",
+        "everyday observations",
+        "relaxed topics"
+      ],
+      "use_cases": {
+        "perfect_for": "Casual commentary, everyday observations, relaxed content",
+        "avoid_for": "Formal or urgent content",
+        "tiktok_style": "Laid-back and relatable, good for casual videos"
+      }
+    },    "am_michael": {
+      "id": "am_michael",
+      "name": "Michael",
+      "description": "Professional, news-anchor male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "professional, authoritative, trustworthy",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "C+",
+      "best_for": [
+        "news",
+        "documentary style",
+        "serious topics",
+        "analysis"
+      ],
+      "use_cases": {
+        "perfect_for": "Breaking news, market analysis, serious announcements",
+        "avoid_for": "Casual or humorous content",
+        "tiktok_style": "Authoritative and trustworthy, ideal for credible information"
+      }
+    },
+    "am_onyx": {
+      "id": "am_onyx",
+      "name": "Onyx",
+      "description": "Sophisticated male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "sophisticated, refined, elegant",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "luxury content",
+        "sophisticated topics",
+        "refined discussions",
+        "premium brands"
+      ],
+      "use_cases": {
+        "perfect_for": "Luxury brand content, sophisticated discussions",
+        "avoid_for": "Casual or street-level content",
+        "tiktok_style": "Refined and sophisticated, good for premium content"
+      }
+    },
+    "am_puck": {
+      "id": "am_puck",
+      "name": "Puck",
+      "description": "Playful male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "playful, mischievous, entertaining",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "C+",
+      "best_for": [
+        "entertainment",
+        "humor",
+        "playful content",
+        "comedy"
+      ],
+      "use_cases": {
+        "perfect_for": "Comedy content, entertaining videos, playful topics",
+        "avoid_for": "Serious or formal content",
+        "tiktok_style": "Playful and entertaining, perfect for comedy content"
+      }
+    },
+    "am_santa": {
+      "id": "am_santa",
+      "name": "Santa",
+      "description": "Jolly male voice",
+      "gender": "male",
+      "accent": "american",
+      "personality": "jolly, warm, festive",
+      "quality_grade": "C",
+      "training_duration": "short",
+      "inference_grade": "D-",
+      "best_for": [
+        "holiday content",
+        "festive topics",
+        "warm content",
+        "seasonal"
+      ],
+      "use_cases": {
+        "perfect_for": "Holiday content, festive videos, warm seasonal topics",
+        "avoid_for": "Non-seasonal or serious content",
+        "tiktok_style": "Jolly and warm, perfect for holiday content"
+      }
+    },
+    "bf_alice": {
+      "id": "bf_alice",
+      "name": "Alice",
+      "description": "Classic British female voice",
+      "gender": "female",
+      "accent": "british",
+      "personality": "classic, proper, traditional",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "traditional content",
+        "classic topics",
+        "proper discussions",
+        "heritage"
+      ],
+      "use_cases": {
+        "perfect_for": "Traditional topics, heritage content, proper discussions",
+        "avoid_for": "Modern or trendy content",
+        "tiktok_style": "Classic and proper, good for traditional content"
+      }
+    },    "bf_emma": {
+      "id": "bf_emma",
+      "name": "Emma",
+      "description": "British female voice",
+      "gender": "female",
+      "accent": "british",
+      "personality": "sophisticated, articulate, elegant",
+      "quality_grade": "B",
+      "training_duration": "extensive",
+      "inference_grade": "B-",
+      "best_for": [
+        "luxury content",
+        "cultural topics",
+        "sophisticated humor",
+        "premium brands"
+      ],
+      "use_cases": {
+        "perfect_for": "Fashion, luxury brands, cultural commentary",
+        "avoid_for": "Very casual or American-centric content",
+        "tiktok_style": "Sophisticated and elegant, adds class to content"
+      }
+    },
+    "bf_isabella": {
+      "id": "bf_isabella",
+      "name": "Isabella",
+      "description": "Elegant British female voice",
+      "gender": "female",
+      "accent": "british",
+      "personality": "refined, elegant, cultured",
+      "quality_grade": "B",
+      "training_duration": "moderate",
+      "inference_grade": "C",
+      "best_for": [
+        "fashion",
+        "arts",
+        "literature",
+        "high-end content"
+      ],
+      "use_cases": {
+        "perfect_for": "Art discussions, literature, high-end fashion",
+        "avoid_for": "Sports, gaming, or very casual content",
+        "tiktok_style": "Refined and cultured, perfect for premium content"
+      }
+    },
+    "bf_lily": {
+      "id": "bf_lily",
+      "name": "Lily",
+      "description": "Sweet British female voice",
+      "gender": "female",
+      "accent": "british",
+      "personality": "sweet, gentle, charming",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "gentle content",
+        "sweet topics",
+        "charming discussions",
+        "soft content"
+      ],
+      "use_cases": {
+        "perfect_for": "Sweet content, gentle discussions, charming topics",
+        "avoid_for": "Harsh or aggressive content",
+        "tiktok_style": "Sweet and charming, good for gentle content"
+      }
+    },
+    "bm_daniel": {
+      "id": "bm_daniel",
+      "name": "Daniel",
+      "description": "Professional British male voice",
+      "gender": "male",
+      "accent": "british",
+      "personality": "professional, reliable, steady",
+      "quality_grade": "C",
+      "training_duration": "moderate",
+      "inference_grade": "D",
+      "best_for": [
+        "professional content",
+        "business topics",
+        "reliable information",
+        "steady delivery"
+      ],
+      "use_cases": {
+        "perfect_for": "Professional content, business topics, reliable information",
+        "avoid_for": "Creative or artistic content",
+        "tiktok_style": "Professional and steady, good for business content"
+      }
+    },
+    "bm_fable": {
+      "id": "bm_fable",
+      "name": "Fable",
+      "description": "Storytelling British male voice",
+      "gender": "male",
+      "accent": "british",
+      "personality": "storytelling, narrative, engaging",
+      "quality_grade": "B",
+      "training_duration": "moderate",
+      "inference_grade": "C",
+      "best_for": [
+        "storytelling",
+        "narratives",
+        "fairy tales",
+        "engaging content"
+      ],
+      "use_cases": {
+        "perfect_for": "Storytelling, narratives, fairy tale content",
+        "avoid_for": "Technical or business content",
+        "tiktok_style": "Engaging storyteller, perfect for narrative content"
+      }
+    },    "bm_george": {
+      "id": "bm_george",
+      "name": "George",
+      "description": "Distinguished British male voice",
+      "gender": "male",
+      "accent": "british",
+      "personality": "distinguished, authoritative, scholarly",
+      "quality_grade": "B",
+      "training_duration": "moderate",
+      "inference_grade": "C",
+      "best_for": [
+        "educational content",
+        "history",
+        "science",
+        "formal topics"
+      ],
+      "use_cases": {
+        "perfect_for": "Educational videos, historical facts, scientific explanations",
+        "avoid_for": "Casual content or pop culture",
+        "tiktok_style": "Scholarly and distinguished, adds gravitas to content"
+      }
+    },
+    "bm_lewis": {
+      "id": "bm_lewis",
+      "name": "Lewis",
+      "description": "Casual British male voice",
+      "gender": "male",
+      "accent": "british",
+      "personality": "casual, friendly, approachable",
+      "quality_grade": "C",
+      "training_duration": "extensive",
+      "inference_grade": "D+",
+      "best_for": [
+        "casual content",
+        "humor",
+        "everyday topics",
+        "commentary"
+      ],
+      "use_cases": {
+        "perfect_for": "Casual commentary, humor, everyday observations",
+        "avoid_for": "Formal or very serious content",
+        "tiktok_style": "Friendly and approachable, great for relatable content"
+      }
+    }
+  },
+  "quality_rankings": {
+    "top_tier": {
+      "american_female": ["af_heart", "af_bella"],
+      "american_male": ["am_fenrir", "am_michael", "am_puck"],
+      "british_female": ["bf_emma"],
+      "british_male": ["bm_fable", "bm_george"]
+    },
+    "high_quality": {
+      "american_female": ["af_alloy", "af_aoede", "af_kore", "af_nicole", "af_nova", "af_sarah"],
+      "american_male": ["am_echo", "am_eric", "am_liam", "am_onyx"],
+      "british_female": ["bf_isabella"],
+      "british_male": ["bm_daniel"]
+    },
+    "moderate_quality": {
+      "american_female": ["af_jessica", "af_river", "af_sky"],
+      "american_male": ["am_adam", "am_santa"],
+      "british_female": ["bf_alice", "bf_lily"],
+      "british_male": ["bm_lewis"]
+    }
+  },  "content_type_recommendations": {
+    "ai": {
+      "primary": "af_bella",
+      "secondary": ["am_michael", "bf_emma", "af_heart"],
+      "reasoning": "AI content needs energy and authority - Bella provides high energy, Michael adds credibility"
+    },
+    "tech": {
+      "primary": "af_nicole",
+      "secondary": ["am_michael", "af_bella", "bm_george"],
+      "reasoning": "Tech content benefits from tech-savvy voice like Nicole, with professional backup options"
+    },
+    "business": {
+      "primary": "af_alloy",
+      "secondary": ["am_michael", "bf_emma", "bm_daniel"],
+      "reasoning": "Business content needs professional, reliable delivery"
+    },
+    "science": {
+      "primary": "bm_george",
+      "secondary": ["af_kore", "am_michael", "bf_isabella"],
+      "reasoning": "Scientific content benefits from scholarly, distinguished delivery"
+    },
+    "gaming": {
+      "primary": "af_bella",
+      "secondary": ["am_fenrir", "af_nicole", "am_puck"],
+      "reasoning": "Gaming content needs high energy and engaging delivery"
+    },
+    "lifestyle": {
+      "primary": "af_heart",
+      "secondary": ["af_sarah", "bf_lily", "am_eric"],
+      "reasoning": "Lifestyle content should be warm and relatable"
+    },
+    "entertainment": {
+      "primary": "am_puck",
+      "secondary": ["af_bella", "bf_emma", "am_fenrir"],
+      "reasoning": "Entertainment content benefits from playful or sophisticated delivery"
+    },
+    "news": {
+      "primary": "am_michael",
+      "secondary": ["af_sarah", "af_kore", "bm_george"],
+      "reasoning": "News requires authoritative, trustworthy delivery"
+    },
+    "motivational": {
+      "primary": "af_bella",
+      "secondary": ["am_fenrir", "af_heart", "am_michael"],
+      "reasoning": "Motivational content needs high energy and confidence"
+    },
+    "wellness": {
+      "primary": "af_river",
+      "secondary": ["bf_lily", "af_heart", "bf_isabella"],
+      "reasoning": "Wellness content should be calming and nurturing"
+    },
+    "comedy": {
+      "primary": "am_puck",
+      "secondary": ["bm_lewis", "af_bella", "am_eric"],
+      "reasoning": "Comedy content needs playful, entertaining delivery"
+    },
+    "education": {
+      "primary": "bm_george",
+      "secondary": ["af_kore", "bm_fable", "am_michael"],
+      "reasoning": "Educational content benefits from scholarly, clear delivery"
+    }
+  },  "voice_selection_guide": {
+    "for_high_energy_content": ["af_bella", "af_heart", "am_fenrir", "am_puck"],
+    "for_professional_content": ["af_alloy", "am_michael", "bm_george", "bf_emma"],
+    "for_casual_content": ["bm_lewis", "am_eric", "af_heart", "bf_lily"],
+    "for_sophisticated_content": ["bf_emma", "bf_isabella", "bm_george", "am_onyx"],
+    "for_trustworthy_delivery": ["am_michael", "af_sarah", "bm_george", "af_kore"],
+    "for_warm_personal_content": ["af_heart", "af_river", "bf_lily", "am_eric"],
+    "for_tech_content": ["af_nicole", "af_bella", "am_michael", "af_kore"],
+    "for_storytelling": ["bm_fable", "af_aoede", "af_heart", "am_fenrir"],
+    "for_comedy_content": ["am_puck", "bm_lewis", "af_bella", "am_eric"]
+  },
+  "tts_settings": {
+    "recommended_speeds": {
+      "breaking_news": 1.1,
+      "casual_content": 1.0,
+      "educational": 0.9,
+      "entertainment": 1.2,
+      "motivational": 1.1,
+      "comedy": 1.15,
+      "storytelling": 0.95,
+      "wellness": 0.85
+    },
+    "optimal_durations": {
+      "tiktok_short": "15-30 seconds",
+      "tiktok_medium": "30-60 seconds",
+      "tiktok_long": "60-180 seconds"
+    },
+    "voice_specific_recommendations": {
+      "high_quality_voices": ["af_heart", "af_bella", "bf_emma", "am_michael", "am_fenrir", "bm_george"],
+      "best_for_tiktok": ["af_bella", "af_heart", "am_puck", "bf_emma", "am_fenrir"],
+      "most_versatile": ["af_heart", "af_kore", "am_michael", "bm_george"],
+      "avoid_for_production": ["am_adam", "am_santa", "af_sky"]
+    }
+  },
+  "metadata": {
+    "model": "Kokoro-82M",
+    "total_voices": 25,
+    "sample_rate": 24000,
+    "format": "wav",
+    "language_support": ["english", "multilingual"],
+    "real_time_factor": "1x or faster",
+    "quality": "high",
+    "last_updated": "2025-06-13",
+    "voice_count_by_accent": {
+      "american": 16,
+      "british": 9
+    },
+    "voice_count_by_gender": {
+      "female": 14,
+      "male": 11
+    }
+  }
+}
