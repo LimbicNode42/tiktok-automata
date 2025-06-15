@@ -73,17 +73,15 @@ class FootageManager:
             'quiet': False,
             'no_warnings': False,
             'extract_flat': False,
-            'ignoreerrors': False,
-            # Network stability improvements
-            'socket_timeout': 30,
-            'retries': 3,
-            'fragment_retries': 5,
-            'file_access_retries': 3,
-            'extractor_retries': 3,
-            # Chunked downloading for better reliability
+            'ignoreerrors': False,            # Network stability improvements - increased for unstable networks
+            'socket_timeout': 15,  # Reduced from 30 to 15 for faster retries
+            'retries': 15,  # Increased from 3 to 15 for unstable networks
+            'fragment_retries': 20,  # Increased from 5 to 20 for unstable networks
+            'file_access_retries': 15,  # Increased from 3 to 15 for unstable networks
+            'extractor_retries': 15,  # Increased from 3 to 15 for unstable networks            # Chunked downloading for better reliability
             'http_chunk_size': 1048576,  # 1MB chunks
             'external_downloader_args': {
-                'ffmpeg': ['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5']
+                'ffmpeg': ['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '2']  # Reduced delay from 5 to 2 seconds
             }
         }
           # Note: Removed external retry logic - relying on yt-dlp's internal retries (5)
@@ -368,19 +366,17 @@ class FootageManager:
                     partial_file.unlink()
                     logger.info(f"🧹 Cleaned up partial file: {partial_file.name}")
                 except Exception:
-                    pass
-            
-            # Create download options optimized for complete file download
+                    pass            # Create download options optimized for complete file download
             download_opts = self.ydl_opts.copy()
             download_opts.update({
-                'socket_timeout': 120,  # 2 minute timeout
-                'retries': 5,  # Internal retries for network issues
-                'fragment_retries': 10,  # More fragment retries
-                'file_access_retries': 5,
+                'socket_timeout': 60,  # 1 minute timeout - reduced from 2 minutes for faster retries
+                'retries': 20,  # Internal retries for network issues - increased for unstable networks
+                'fragment_retries': 20,  # More fragment retries - increased for unstable networks
+                'file_access_retries': 15,  # Increased for unstable networks
                 'http_chunk_size': 2097152,  # 2MB chunks for better stability
             })
             
-            logger.info(f"📥 Starting download with yt-dlp internal retries (5 retries)")
+            logger.info(f"📥 Starting download with yt-dlp internal retries (20 retries)")
             
             # Get list of files before download
             files_before = set(self.raw_footage_dir.glob("*"))

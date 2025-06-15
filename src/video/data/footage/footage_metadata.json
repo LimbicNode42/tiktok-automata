@@ -9,7 +9,7 @@
       "max_duration": 1800,
       "quality_preference": "720p",
       "videos_downloaded": 2,
-      "last_check": 1749965712.1875558
+      "last_check": 1749967577.8361132
     }
   },
   "videos": {
@@ -71,6 +71,24 @@
         "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_450_495.mp4",
         "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_540_585.mp4"
       ]
+    },
+    "fBVpT-stY70": {
+      "title": "Deadzone Rouge Gameplay - Free To Use Gameplay",
+      "duration": 1194,
+      "source_id": "da5ce6f4",
+      "content_type": "medium_action",
+      "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\fBVpT-stY70_Deadzone Rouge Gameplay - Free To Use Gameplay.mp4",
+      "processed": false,
+      "download_date": 1749967491.3354573
+    },
+    "yvL_W94qZMg": {
+      "title": "GTA 5 Enhanced Edition - Free To Use",
+      "duration": 1311,
+      "source_id": "da5ce6f4",
+      "content_type": "medium_action",
+      "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\yvL_W94qZMg_GTA 5 Enhanced Edition - Free To Use.mp4",
+      "processed": false,
+      "download_date": 1749967577.8361132
     }
   },
   "categories": {
@@ -78,11 +96,13 @@
     "medium_action": [
       "ne_T-GNwObk",
       "6nQtYwUqRxM",
-      "ABYoLzJlmA8"
+      "ABYoLzJlmA8",
+      "fBVpT-stY70",
+      "yvL_W94qZMg"
     ],
     "ambient": []
   },
-  "last_updated": 1749966719.0999072,
+  "last_updated": 1749967577.8361132,
   "total_duration": 0,
-  "total_videos": 3
+  "total_videos": 5
 }
