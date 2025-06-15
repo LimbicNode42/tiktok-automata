@@ -9,7 +9,7 @@
       "max_duration": 1800,
       "quality_preference": "720p",
       "videos_downloaded": 3,
-      "last_check": 1749981460.9611998
+      "last_check": 1749984194.9862463
     }
   },
   "videos": {
@@ -20,7 +20,7 @@
       "content_type": "medium_action",
       "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\ne_T-GNwObk_COD Black Ops 6 Gameplay - Free To Use.mp4",
       "processed": false,
-      "download_date": 1749981460.9601994
+      "download_date": 1749984194.9862463
     },
     "fBVpT-stY70": {
       "title": "Deadzone Rouge Gameplay - Free To Use Gameplay",
@@ -29,7 +29,7 @@
       "content_type": "medium_action",
       "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\fBVpT-stY70_Deadzone Rouge Gameplay - Free To Use Gameplay.mp4",
       "processed": false,
-      "download_date": 1749981460.9601994
+      "download_date": 1749984194.9862463
     },
     "6nQtYwUqRxM": {
       "title": "Squirrel Girl ｜ Marvel Rivals Free To Use Gameplay",
@@ -38,7 +38,7 @@
       "content_type": "medium_action",
       "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\6nQtYwUqRxM_Squirrel Girl ｜ Marvel Rivals Free To Use Gameplay.mp4",
       "processed": false,
-      "download_date": 1749981460.9611998
+      "download_date": 1749984194.9862463
     }
   },
   "categories": {
@@ -50,7 +50,7 @@
     ],
     "ambient": []
   },
-  "last_updated": 1749981460.9611998,
+  "last_updated": 1749984194.9862463,
   "total_duration": 0,
-  "total_videos": 6
+  "total_videos": 12
 }

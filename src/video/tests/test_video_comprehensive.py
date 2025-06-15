@@ -216,27 +216,35 @@ async def download_specific_gaming_video(manager: FootageManager):
         if not source_id:
             logger.error("❌ Could not find source ID")
             return False
-        
-        # Download videos from the channel
+          # Download videos from the channel
         logger.info("🔄 Downloading videos from the channel... (this may take a few minutes)")
         downloaded_files = await manager.download_footage_from_source(source_id, max_new_videos=3)
         
         if downloaded_files:
             logger.success(f"✅ Downloaded {len(downloaded_files)} gaming videos from channel")
             
-            # Process the videos for TikTok
-            processed_count = 0
-            for video_id in manager.metadata["videos"]:
-                video_info = manager.metadata["videos"][video_id]
-                if not video_info.get("processed", False):
-                    logger.info(f"🔄 Processing video for TikTok: {video_id}")
-                    segments = await manager.process_footage_for_tiktok(video_id)
-                    
-                    if segments:
-                        processed_count += 1
-                        logger.success(f"✅ Created {len(segments)} TikTok segments from video {video_id}")
-                    else:
-                        logger.warning(f"⚠️ Failed to create segments from video {video_id}")
+            # Check if we have a JSON file with custom durations
+            json_file = Path(__file__).parent.parent.parent / "tts" / "data" / "voice_recommendations_test" / "voice_recommendations_test_20250613_124154.json"
+            
+            if json_file.exists():
+                logger.info("🎵 JSON file with custom durations found - skipping default segment creation")
+                logger.info("Custom segments will be created during video creation workflow")
+                processed_count = len(downloaded_files)  # Count as processed since we'll use custom durations
+            else:
+                logger.info("🎥 No JSON file found - creating default segments")
+                # Process the videos for TikTok with default segments
+                processed_count = 0
+                for video_id in manager.metadata["videos"]:
+                    video_info = manager.metadata["videos"][video_id]
+                    if not video_info.get("processed", False):
+                        logger.info(f"🔄 Processing video for TikTok: {video_id}")
+                        segments = await manager.process_footage_for_tiktok(video_id)
+                        
+                        if segments:
+                            processed_count += 1
+                            logger.success(f"✅ Created {len(segments)} TikTok segments from video {video_id}")
+                        else:
+                            logger.warning(f"⚠️ Failed to create segments from video {video_id}")
             
             if processed_count > 0:
                 logger.success(f"✅ Successfully processed {processed_count} videos from channel")
@@ -443,11 +451,11 @@ async def main():
     """Run comprehensive video module tests - FOCUS ON REAL GAMING FOOTAGE AND CUSTOM DURATIONS."""
     logger.info("🎬 Video Module Testing - REAL GAMING FOOTAGE + CUSTOM DURATIONS")
     logger.info("="*70)
-    
-    # Test order: Custom durations first, then main functionality
+      # Test order: Download videos first, then create custom segments, then test video creation
     tests = [
+        ("🎮 Gaming Footage + Video Creation", test_video_creation_workflow),
         ("🎵 Custom Duration Segmentation", test_custom_duration_segments),
-        ("🎮 REAL Gaming Footage Video Creation", test_video_creation_workflow)
+        # ("� Video Creation with Custom Durations", test_video_creation_only)
     ]
     
     passed = 0

@@ -143,12 +143,19 @@ class VideoProcessor:
                 logger.info(f"Using custom durations from JSON file: {json_file_path}")
                 # TODO: Implement JSON-based duration handling with VideoSegmentProcessor
                 # For now, we'll use the standard flow
-            
-            # Step 2: Select and prepare gaming footage
-            background_video = await self._select_gaming_footage(
-                duration=actual_duration,
-                content_analysis=content_analysis
-            )
+              # Step 2: Select and prepare gaming footage
+            if json_file_path:
+                # Use custom durations from JSON
+                background_video = await self._select_gaming_footage_with_json(
+                    json_file_path=json_file_path,
+                    content_analysis=content_analysis
+                )
+            else:
+                # Use standard duration
+                background_video = await self._select_gaming_footage(
+                    duration=actual_duration,
+                    content_analysis=content_analysis
+                )
             if not background_video:
                 return None
             
@@ -549,3 +556,68 @@ class VideoProcessor:
             "footage_available": len(self.footage_metadata.get("sources", [])),
             "output_dir": str(self.output_dir)
         }
+    
+    async def _select_gaming_footage_with_json(
+        self, 
+        json_file_path: str, 
+        content_analysis: Dict = None
+    ) -> Optional[VideoFileClip]:
+        """
+        Select gaming footage and create custom segments based on JSON file durations.
+        """
+        try:
+            from pathlib import Path
+            from .footage_manager import FootageManager
+            
+            logger.info(f"Creating custom gaming footage segments from JSON: {json_file_path}")
+            
+            manager = FootageManager()
+            
+            # First, find a suitable video to create segments from
+            video_id = None
+            if manager.metadata.get("videos"):
+                # Find a video suitable for the content analysis
+                intensity = self._determine_footage_intensity(content_analysis)
+                
+                for vid_id, vid_info in manager.metadata["videos"].items():
+                    if vid_info.get("content_type") == intensity or intensity == "medium":
+                        video_id = vid_id
+                        break
+                
+                # If no perfect match, use the first available video
+                if not video_id:
+                    video_id = list(manager.metadata["videos"].keys())[0]
+            
+            if not video_id:
+                logger.warning("No videos available for custom segmentation")
+                return await self._select_gaming_footage(60, content_analysis)
+            
+            logger.info(f"Using video {video_id} for custom segmentation")
+            
+            # Create segments using the JSON file
+            segments = await manager.create_segments_from_json(
+                video_id=video_id,
+                json_file_path=Path(json_file_path),
+                buffer_seconds=7.5  # Use default buffer
+            )
+            
+            if not segments:
+                logger.warning("No custom segments created, falling back to standard footage")
+                return await self._select_gaming_footage(60, content_analysis)
+            
+            logger.success(f"✅ Created {len(segments)} custom gaming footage segments")
+            
+            # For now, return the first segment as the main footage
+            # In a more advanced implementation, this could composite multiple segments
+            if segments and segments[0].exists():
+                video_clip = VideoFileClip(str(segments[0]))
+                logger.info(f"Using first custom segment: {segments[0].name} ({video_clip.duration:.1f}s)")
+                return video_clip
+            else:
+                logger.warning("First custom segment not accessible, falling back to standard footage")
+                return await self._select_gaming_footage(60, content_analysis)
+                
+        except Exception as e:
+            logger.error(f"Failed to create custom gaming footage: {e}")
+            logger.info("Falling back to standard footage selection")
+            return await self._select_gaming_footage(60, content_analysis)
