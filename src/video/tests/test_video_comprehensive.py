@@ -11,8 +11,9 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from video.video_processor import VideoProcessor, VideoConfig
-from video.footage_manager import FootageManager, FootageSource
+from video.processors.video_processor import VideoProcessor, VideoConfig
+from video import FootageManager
+from video.downloaders.youtube_downloader import FootageSource
 from loguru import logger
 
 async def test_custom_duration_segments():
