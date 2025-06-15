@@ -96,22 +96,22 @@ class VideoProcessor:
         # Default metadata structure
         return {
             "sources": [],
-            "categories": {
-                "high_action": [],
+            "categories": {                "high_action": [],
                 "medium_action": [],
                 "ambient": []
             },
             "durations": {},
             "last_updated": None
         }
-    
+
     async def create_video(
         self, 
         audio_file: str, 
         script_content: str,
         content_analysis: Dict = None,
         voice_info: Dict = None,
-        output_path: Optional[str] = None
+        output_path: Optional[str] = None,
+        json_file_path: Optional[str] = None
     ) -> Optional[str]:
         """
         Create a complete TikTok video from audio and script.
@@ -122,6 +122,7 @@ class VideoProcessor:
             content_analysis: Analysis of content type for footage selection
             voice_info: Voice information for styling
             output_path: Optional custom output path
+            json_file_path: Optional path to JSON file with custom audio durations
             
         Returns:
             Path to the generated video file or None if failed
@@ -129,14 +130,19 @@ class VideoProcessor:
         try:
             start_time = time.time()
             logger.info("Starting video creation process...")
-            
-            # Step 1: Prepare audio
+              # Step 1: Prepare audio
             audio_clip = await self._prepare_audio(audio_file)
             if not audio_clip:
                 return None
             
             actual_duration = audio_clip.duration
             logger.info(f"Audio duration: {actual_duration:.2f}s")
+            
+            # Handle custom durations from JSON if provided
+            if json_file_path:
+                logger.info(f"Using custom durations from JSON file: {json_file_path}")
+                # TODO: Implement JSON-based duration handling with VideoSegmentProcessor
+                # For now, we'll use the standard flow
             
             # Step 2: Select and prepare gaming footage
             background_video = await self._select_gaming_footage(
@@ -166,7 +172,8 @@ class VideoProcessor:
                 text_overlays,
                 audio_clip
             )
-              # Step 6: Export video
+            
+            # Step 6: Export video
             output_file = await self._export_video(final_video, output_path)
             
             # Cleanup
@@ -208,8 +215,7 @@ class VideoProcessor:
             intensity = self._determine_footage_intensity(content_analysis)
             
             logger.info(f"Selecting {intensity} intensity gaming footage for {duration:.2f}s")
-            
-            # Try to get real gaming footage first
+              # Try to get real gaming footage first
             from .footage_manager import FootageManager
             manager = FootageManager()
             

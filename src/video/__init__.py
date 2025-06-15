@@ -8,7 +8,7 @@ Updated with modular architecture for better maintainability and custom duration
 """
 
 from .video_processor import VideoProcessor, VideoConfig
-from .footage_manager_new import FootageManager
+from .footage_manager import FootageManager
 from .youtube_downloader import FootageSource
 from .segment_processor import VideoSegmentProcessor
 from .base_footage_manager import BaseFootageManager

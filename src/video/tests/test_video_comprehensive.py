@@ -20,8 +20,6 @@ async def test_custom_duration_segments():
     logger.info("🎬 Testing Custom Duration Segmentation with Buffer")
     
     try:
-        from video.footage_manager_new import FootageManager
-        
         fm = FootageManager()
         
         # Test with voice recommendations JSON
@@ -77,7 +75,8 @@ async def test_video_creation_workflow():
     """Test the complete video creation workflow with REAL gaming footage."""
     logger.info("🎬 Testing Complete Video Creation Workflow with REAL Gaming Footage")
     
-    try:        # Step 1: Initialize components
+    try:
+        # Step 1: Initialize components
         config = VideoConfig(
             duration=30,  # Short test video
             output_quality="medium",
@@ -89,7 +88,8 @@ async def test_video_creation_workflow():
         manager = FootageManager()
         
         logger.info("✅ Video components initialized")
-          # Step 2: Download real gaming footage from channel
+        
+        # Step 2: Download real gaming footage from channel
         logger.info("🎮 Downloading real gaming footage from @NoCopyrightGameplays channel...")
         success = await download_specific_gaming_video(manager)
         
