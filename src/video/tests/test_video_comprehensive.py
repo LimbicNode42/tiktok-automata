@@ -31,9 +31,8 @@ async def test_video_creation_workflow():
         manager = FootageManager()
         
         logger.info("✅ Video components initialized")
-        
-        # Step 2: Download real gaming footage from specific video
-        logger.info("🎮 Downloading real gaming footage from specific video...")
+          # Step 2: Download real gaming footage from channel
+        logger.info("🎮 Downloading real gaming footage from @NoCopyrightGameplays channel...")
         success = await download_specific_gaming_video(manager)
         
         if not success:
@@ -111,28 +110,28 @@ async def create_silent_audio():
         return None
 
 async def download_specific_gaming_video(manager: FootageManager):
-    """Download specific gaming video from the provided URL."""
+    """Download videos from the No Copyright Gameplay channel."""
     try:
-        logger.info("📥 Downloading specific gaming video from No Copyright Gameplay...")
+        logger.info("📥 Downloading gaming videos from @NoCopyrightGameplays channel...")
+          # Use the channel URL instead of a specific video
+        # Note: Using /videos endpoint for better compatibility with yt-dlp
+        channel_url = "https://www.youtube.com/@NoCopyrightGameplays/videos"
         
-        # Use the specific video URL you provided
-        video_url = "https://www.youtube.com/watch?v=fBVpT-stY70"
-        
-        # Create source for this specific video
+        # Create source for the entire channel
         source = FootageSource(
-            channel_url=video_url,
-            channel_name="No Copyright Gameplay - Specific Video",
+            channel_url=channel_url,
+            channel_name="No Copyright Gameplay - Channel",
             content_type="medium_action",
-            max_videos=1,  # Just this one video
-            min_duration=60,   # Should be long enough
-            max_duration=3600, # Up to 1 hour
+            max_videos=5,  # Download up to 5 videos from the channel
+            min_duration=120,   # At least 2 minutes long
+            max_duration=1800,  # Up to 30 minutes
             quality_preference="720p"
         )
         
         # Add the source
         success = await manager.add_footage_source(source)
         if not success:
-            logger.error("❌ Failed to add video source")
+            logger.error("❌ Failed to add channel source")
             return False
         
         # Get source ID
@@ -146,34 +145,39 @@ async def download_specific_gaming_video(manager: FootageManager):
             logger.error("❌ Could not find source ID")
             return False
         
-        # Download the specific video
-        logger.info("🔄 Downloading the specific video... (this may take a few minutes)")
-        downloaded_files = await manager.download_footage_from_source(source_id, max_new_videos=1)
+        # Download videos from the channel
+        logger.info("🔄 Downloading videos from the channel... (this may take a few minutes)")
+        downloaded_files = await manager.download_footage_from_source(source_id, max_new_videos=3)
         
         if downloaded_files:
-            logger.success(f"✅ Downloaded gaming video: {len(downloaded_files)} files")
+            logger.success(f"✅ Downloaded {len(downloaded_files)} gaming videos from channel")
             
-            # Process the video for TikTok
-            if manager.metadata["videos"]:
-                video_id = list(manager.metadata["videos"].keys())[0]
-                logger.info(f"🔄 Processing video for TikTok: {video_id}")
-                segments = await manager.process_footage_for_tiktok(video_id)
-                
-                if segments:
-                    logger.success(f"✅ Created {len(segments)} TikTok segments from real gaming footage")
-                    return True
-                else:
-                    logger.warning("⚠️ Failed to create segments from downloaded video")
-                    return False
+            # Process the videos for TikTok
+            processed_count = 0
+            for video_id in manager.metadata["videos"]:
+                video_info = manager.metadata["videos"][video_id]
+                if not video_info.get("processed", False):
+                    logger.info(f"🔄 Processing video for TikTok: {video_id}")
+                    segments = await manager.process_footage_for_tiktok(video_id)
+                    
+                    if segments:
+                        processed_count += 1
+                        logger.success(f"✅ Created {len(segments)} TikTok segments from video {video_id}")
+                    else:
+                        logger.warning(f"⚠️ Failed to create segments from video {video_id}")
+            
+            if processed_count > 0:
+                logger.success(f"✅ Successfully processed {processed_count} videos from channel")
+                return True
             else:
-                logger.warning("⚠️ Video downloaded but not found in metadata")
+                logger.warning("⚠️ No videos were successfully processed")
                 return False
         else:
-            logger.warning("⚠️ No video was downloaded")
+            logger.warning("⚠️ No videos were downloaded from channel")
             return False
         
     except Exception as e:
-        logger.error(f"❌ Specific gaming video download failed: {e}")
+        logger.error(f"❌ Channel video download failed: {e}")
         import traceback
         traceback.print_exc()
         return False

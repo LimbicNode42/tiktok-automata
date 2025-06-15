@@ -64,7 +64,8 @@ class FootageManager:
         
         # Load metadata
         self.metadata = self._load_metadata()
-          # Configure yt-dlp with network-friendly settings
+        
+        # Configure yt-dlp with network-friendly settings
         self.ydl_opts = {
             'format': 'best[height<=720][ext=mp4][acodec!=none]/best[height<=720][acodec!=none]/best[ext=mp4][acodec!=none]/best[acodec!=none]/best',
             'outtmpl': str(self.raw_footage_dir / '%(id)s_%(title)s.%(ext)s'),
@@ -85,10 +86,7 @@ class FootageManager:
                 'ffmpeg': ['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '5']
             }
         }
-        
-        # Retry configuration
-        self.max_retries = 3
-        self.retry_delay = 5  # seconds
+          # Note: Removed external retry logic - relying on yt-dlp's internal retries (5)
         
         logger.info(f"FootageManager initialized with storage: {self.storage_dir}")
     
@@ -147,7 +145,7 @@ class FootageManager:
         except Exception as e:
             logger.error(f"Failed to add footage source: {e}")
             return False
-    
+
     async def download_footage_from_source(self, source_id: str, max_new_videos: int = 5) -> List[str]:
         """Download new footage from a specific source."""
         try:
@@ -159,7 +157,8 @@ class FootageManager:
             url = source_info["channel_url"]
             
             logger.info(f"Downloading footage from: {source_info['channel_name']}")
-              # Check if this is a single video URL or a channel URL
+            
+            # Check if this is a single video URL or a channel URL
             if "watch?v=" in url or "youtu.be/" in url:
                 # This is a single video URL
                 logger.info(f"Detected single video URL: {url}")
@@ -171,51 +170,6 @@ class FootageManager:
         except Exception as e:
             logger.error(f"Footage download failed: {e}")
             return []
-    
-    async def _check_network_connectivity(self) -> bool:
-        """Check if network connection is stable."""
-        try:
-            import urllib.request
-            urllib.request.urlopen('https://www.youtube.com', timeout=10)
-            return True
-        except Exception:
-            return False
-    
-    async def _download_with_retries(self, video_url: str, opts: Dict, max_attempts: int = 3) -> bool:
-        """Download with exponential backoff retry logic."""
-        for attempt in range(max_attempts):
-            try:
-                # Check network connectivity first
-                if not await self._check_network_connectivity():
-                    logger.warning(f"Network connectivity issue on attempt {attempt + 1}")
-                    if attempt < max_attempts - 1:
-                        delay = self.retry_delay * (2 ** attempt)
-                        logger.info(f"⏳ Waiting {delay}s for network recovery...")
-                        await asyncio.sleep(delay)
-                        continue
-                    return False
-                
-                # Adjust timeout for this attempt
-                current_opts = opts.copy()
-                current_opts['socket_timeout'] = 30 + (attempt * 15)
-                current_opts['http_chunk_size'] = max(524288, 1048576 // (2 ** attempt))  # Smaller chunks on retry
-                
-                logger.info(f"📥 Download attempt {attempt + 1}/{max_attempts} (timeout: {current_opts['socket_timeout']}s)")
-                
-                with yt_dlp.YoutubeDL(current_opts) as ydl:
-                    ydl.download([video_url])
-                return True
-                
-            except Exception as e:
-                logger.warning(f"❌ Download attempt {attempt + 1} failed: {e}")
-                if attempt < max_attempts - 1:
-                    delay = self.retry_delay * (2 ** attempt)
-                    logger.info(f"⏳ Waiting {delay}s before retry...")
-                    await asyncio.sleep(delay)
-                else:
-                    logger.error(f"❌ All {max_attempts} download attempts failed")
-        
-        return False
 
     async def _download_single_video_url(self, video_url: str, source_info: Dict, source_id: str) -> List[str]:
         """Download a single video from a direct URL with enhanced retry logic."""
@@ -226,47 +180,7 @@ class FootageManager:
                 # Get video info first with retry-friendly options
                 info_opts = {'quiet': True, 'socket_timeout': 20 + (attempt * 5)}
                 with yt_dlp.YoutubeDL(info_opts) as ydl:
-                    try:
-                        video_info = ydl.extract_info(video_url, download=False)
-                        if not video_info:
-                            logger.error(f"Failed to get video info for: {video_url}")
-                            continue
-                        
-                        video_id = video_info.get('id')
-                        if not video_id:
-                            logger.error("No video ID found")
-                            continue
-                          # Check if already downloaded and file actually exists
-                        if video_id in self.metadata["videos"]:
-                            existing_file = Path(self.metadata["videos"][video_id]["file_path"])
-                            if existing_file.exists():
-                                logger.info(f"Video {video_id} already downloaded and file exists")
-                                return [str(existing_file)]
-                            else:
-                                logger.warning(f"Video {video_id} in metadata but file missing: {existing_file}")
-                                logger.info("Re-downloading the video...")
-                        
-                        # Check duration constraints
-                        duration = video_info.get('duration', 0)
-                        logger.info(f"Video duration: {duration} seconds")
-                        
-                        if duration < source_info["min_duration"]:
-                            logger.warning(f"Video too short: {duration}s < {source_info['min_duration']}s")
-                            # Download anyway for testing
-                        
-                        if duration > source_info["max_duration"]:
-                            logger.warning(f"Video too long: {duration}s > {source_info['max_duration']}s")
-                            # Download anyway for testing
-                        
-                    except Exception as e:
-                        logger.error(f"Failed to extract video info on attempt {attempt + 1}: {e}")
-                        if attempt < self.max_retries - 1:
-                            delay = self.retry_delay * (2 ** attempt)
-                            logger.info(f"⏳ Waiting {delay}s before retry...")
-                            await asyncio.sleep(delay)
-                            continue
-                        else:
-                            return []
+                    video_info = ydl.extract_info(video_url, download=False)
                 
                 # Download the video
                 logger.info(f"🎬 Downloading video: {video_info.get('title', 'Unknown')}")
@@ -274,6 +188,9 @@ class FootageManager:
                 
                 if downloaded_file:
                     # Add to metadata
+                    video_id = video_info.get('id')
+                    duration = video_info.get('duration', 0)
+                    
                     self.metadata["videos"][video_id] = {
                         "title": video_info.get('title', 'Unknown'),
                         "duration": duration,
@@ -286,17 +203,10 @@ class FootageManager:
                     
                     # Update category
                     category = source_info["content_type"]
-                    if category not in self.metadata["categories"]:
-                        self.metadata["categories"][category] = []
-                    self.metadata["categories"][category].append(video_id)
-                    
-                    # Update source metadata
-                    self.metadata["sources"][source_id]["videos_downloaded"] = 1
-                    self.metadata["sources"][source_id]["last_check"] = time.time()
-                    self.metadata["total_videos"] += 1
+                    if category in self.metadata["categories"]:
+                        self.metadata["categories"][category].append(video_id)
                     
                     self._save_metadata()
-                    
                     logger.success(f"✅ Successfully downloaded video: {downloaded_file.name}")
                     return [str(downloaded_file)]
                 else:
@@ -309,7 +219,7 @@ class FootageManager:
                     logger.info(f"⏳ Waiting {delay}s before retry...")
                     await asyncio.sleep(delay)
                 else:
-                    import traceback
+                    logger.error("❌ All attempts failed - printing traceback for debugging:")
                     traceback.print_exc()
         
         logger.error("❌ All download attempts failed")
@@ -318,15 +228,77 @@ class FootageManager:
     async def _download_from_channel(self, channel_url: str, source_info: Dict, source_id: str, max_new_videos: int) -> List[str]:
         """Download videos from a channel URL."""
         try:
+            logger.info(f"🔍 Extracting video list from channel: {channel_url}")
+            
+            # Configure yt-dlp for channel extraction with better error handling
+            channel_opts = {
+                'quiet': False,  # Show warnings to help debug
+                'ignoreerrors': True,  # Skip unavailable videos instead of failing completely
+                'extract_flat': True,  # Just get video IDs and basic info first
+                'playlistend': max_new_videos * 2,  # Get more videos than needed to account for members-only ones
+            }
+            
             # Get video list from channel
-            with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            with yt_dlp.YoutubeDL(channel_opts) as ydl:
                 try:
+                    logger.info("📋 Getting channel video list...")
                     channel_info = ydl.extract_info(channel_url, download=False)
-                    if not channel_info or 'entries' not in channel_info:
-                        logger.error(f"Failed to get channel info for: {channel_url}")
+                    
+                    if not channel_info:
+                        logger.error(f"No channel info returned for: {channel_url}")
                         return []
                     
-                    videos = list(channel_info['entries'])[:max_new_videos]
+                    if 'entries' not in channel_info:
+                        logger.error(f"No video entries found in channel: {channel_url}")
+                        return []
+                    
+                    # Filter out None entries and get video info
+                    raw_entries = [entry for entry in channel_info['entries'] if entry is not None]
+                    logger.info(f"📹 Found {len(raw_entries)} videos in channel")
+                    
+                    if not raw_entries:
+                        logger.warning("No accessible videos found in channel")
+                        return []
+                    
+                    # Get detailed info for videos (this is where members-only filtering happens)
+                    videos = []
+                    for entry in raw_entries[:max_new_videos * 2]:  # Try more than we need
+                        try:
+                            if len(videos) >= max_new_videos:
+                                break
+                                
+                            video_id = entry.get('id')
+                            if not video_id:
+                                continue
+                                
+                            # Check if already downloaded
+                            if video_id in self.metadata["videos"]:
+                                logger.info(f"⏭️ Skipping already downloaded video: {video_id}")
+                                continue
+                                
+                            # Get detailed video info
+                            logger.info(f"🔍 Getting detailed info for video: {video_id}")
+                            detailed_opts = {'quiet': True, 'ignoreerrors': True}
+                            
+                            with yt_dlp.YoutubeDL(detailed_opts) as detail_ydl:
+                                video_info = detail_ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False)
+                                
+                                if video_info and video_info.get('availability') != 'subscriber_only':
+                                    # Check duration constraints
+                                    duration = video_info.get('duration', 0)
+                                    if source_info["min_duration"] <= duration <= source_info["max_duration"]:
+                                        videos.append(video_info)
+                                        logger.success(f"✅ Added video to download queue: {video_info.get('title', 'Unknown')[:50]}...")
+                                    else:
+                                        logger.info(f"⏭️ Skipping video {video_id}: duration {duration}s outside range {source_info['min_duration']}-{source_info['max_duration']}s")
+                                else:
+                                    logger.info(f"⏭️ Skipping members-only or unavailable video: {video_id}")
+                                    
+                        except Exception as e:
+                            logger.warning(f"⚠️ Failed to get info for video {entry.get('id', 'unknown')}: {e}")
+                            continue
+                    
+                    logger.info(f"📥 Selected {len(videos)} videos for download")
                     
                 except Exception as e:
                     logger.error(f"Failed to extract channel info: {e}")
@@ -334,7 +306,7 @@ class FootageManager:
             
             downloaded_files = []
             
-            for video_info in videos:
+            for i, video_info in enumerate(videos, 1):
                 if not video_info:
                     continue
                 
@@ -342,14 +314,7 @@ class FootageManager:
                 if not video_id:
                     continue
                 
-                # Check if already downloaded
-                if video_id in self.metadata["videos"]:
-                    continue
-                
-                # Check duration constraints
-                duration = video_info.get('duration', 0)
-                if duration < source_info["min_duration"] or duration > source_info["max_duration"]:
-                    continue
+                logger.info(f"📥 Downloading video {i}/{len(videos)}: {video_info.get('title', 'Unknown')}")
                 
                 # Download video
                 downloaded_file = await self._download_single_video(video_info, source_info)
@@ -357,6 +322,7 @@ class FootageManager:
                     downloaded_files.append(downloaded_file)
                     
                     # Add to metadata
+                    duration = video_info.get('duration', 0)
                     self.metadata["videos"][video_id] = {
                         "title": video_info.get('title', 'Unknown'),
                         "duration": duration,
@@ -366,7 +332,8 @@ class FootageManager:
                         "processed": False,
                         "download_date": time.time()
                     }
-                      # Update category
+                    
+                    # Update category
                     category = source_info["content_type"]
                     if category in self.metadata["categories"]:
                         self.metadata["categories"][category].append(video_id)
@@ -379,13 +346,13 @@ class FootageManager:
             self._save_metadata()
             
             logger.info(f"Downloaded {len(downloaded_files)} new videos from {source_info['channel_name']}")
-            return downloaded_files
-            
+            return downloaded_files            
         except Exception as e:
             logger.error(f"Channel download failed: {e}")
             return []
+
     async def _download_single_video(self, video_info: Dict, source_info: Dict) -> Optional[Path]:
-        """Download a single video file with robust retry logic."""
+        """Download a single video file relying on yt-dlp's internal retry logic."""
         video_url = video_info.get('webpage_url') or f"https://youtube.com/watch?v={video_info['id']}"
         video_id = video_info.get('id')
         title = video_info.get('title', 'Unknown')
@@ -393,79 +360,60 @@ class FootageManager:
         logger.info(f"🔄 Downloading complete file: {title}")
         logger.info(f"📍 URL: {video_url}")
         
-        for attempt in range(self.max_retries):
-            try:
-                # Clean up any partial downloads from previous attempts
-                partial_files = list(self.raw_footage_dir.glob("*.part*"))
-                for partial_file in partial_files:
-                    try:
-                        partial_file.unlink()
-                        logger.info(f"🧹 Cleaned up partial file: {partial_file.name}")
-                    except Exception:
-                        pass
+        try:
+            # Clean up any partial downloads from previous attempts
+            partial_files = list(self.raw_footage_dir.glob("*.part*"))
+            for partial_file in partial_files:
+                try:
+                    partial_file.unlink()
+                    logger.info(f"🧹 Cleaned up partial file: {partial_file.name}")
+                except Exception:
+                    pass
+            
+            # Create download options optimized for complete file download
+            download_opts = self.ydl_opts.copy()
+            download_opts.update({
+                'socket_timeout': 120,  # 2 minute timeout
+                'retries': 5,  # Internal retries for network issues
+                'fragment_retries': 10,  # More fragment retries
+                'file_access_retries': 5,
+                'http_chunk_size': 2097152,  # 2MB chunks for better stability
+            })
+            
+            logger.info(f"📥 Starting download with yt-dlp internal retries (5 retries)")
+            
+            # Get list of files before download
+            files_before = set(self.raw_footage_dir.glob("*"))
+            
+            # Download with yt-dlp (it will handle all retries internally)
+            with yt_dlp.YoutubeDL(download_opts) as ydl:
+                ydl.download([video_url])
+            
+            # Get list of files after download
+            files_after = set(self.raw_footage_dir.glob("*"))
+            new_files = files_after - files_before
+            
+            # Find the downloaded video file
+            video_files = [f for f in new_files if f.suffix.lower() in ['.mp4', '.mkv', '.webm']]
+            if video_files:
+                downloaded_file = video_files[0]
+                file_size_mb = downloaded_file.stat().st_size / (1024 * 1024)
+                logger.success(f"✅ Downloaded complete file: {downloaded_file.name} ({file_size_mb:.1f}MB)")
+                return downloaded_file
+            
+            # Fallback: try to find by video ID or title matching
+            for file_path in self.raw_footage_dir.glob("*.mp4"):
+                if video_id in file_path.name:
+                    file_size_mb = file_path.stat().st_size / (1024 * 1024)
+                    logger.success(f"✅ Found downloaded file: {file_path.name} ({file_size_mb:.1f}MB)")
+                    return file_path
+            
+            logger.error(f"⚠️ No video file found after download")
+            return None
                 
-                # Check network connectivity before attempting download
-                if not await self._check_network_connectivity():
-                    logger.warning(f"Network connectivity issue on attempt {attempt + 1}")
-                    if attempt < self.max_retries - 1:
-                        delay = self.retry_delay * (2 ** attempt)
-                        logger.info(f"⏳ Waiting {delay}s for network recovery...")
-                        await asyncio.sleep(delay)
-                        continue
-                    return None
-                
-                # Create download options optimized for complete file download
-                download_opts = self.ydl_opts.copy()
-                download_opts.update({
-                    'socket_timeout': 60 + (attempt * 30),  # Progressive timeout increase
-                    'retries': 5,  # Internal retries for network issues
-                    'fragment_retries': 10,  # More fragment retries
-                    'file_access_retries': 5,
-                    'http_chunk_size': 2097152,  # 2MB chunks for better stability
-                })
-                
-                logger.info(f"📥 Download attempt {attempt + 1}/{self.max_retries} (timeout: {download_opts['socket_timeout']}s)")
-                
-                # Get list of files before download
-                files_before = set(self.raw_footage_dir.glob("*"))
-                
-                # Download with yt-dlp
-                with yt_dlp.YoutubeDL(download_opts) as ydl:
-                    ydl.download([video_url])
-                
-                # Get list of files after download
-                files_after = set(self.raw_footage_dir.glob("*"))
-                new_files = files_after - files_before
-                
-                # Find the downloaded video file
-                video_files = [f for f in new_files if f.suffix.lower() in ['.mp4', '.mkv', '.webm']]
-                if video_files:
-                    downloaded_file = video_files[0]
-                    file_size_mb = downloaded_file.stat().st_size / (1024 * 1024)
-                    logger.success(f"✅ Downloaded complete file: {downloaded_file.name} ({file_size_mb:.1f}MB)")
-                    return downloaded_file
-                
-                # Fallback: try to find by video ID or title matching
-                for file_path in self.raw_footage_dir.glob("*.mp4"):
-                    if video_id in file_path.name:
-                        file_size_mb = file_path.stat().st_size / (1024 * 1024)
-                        logger.success(f"✅ Found downloaded file: {file_path.name} ({file_size_mb:.1f}MB)")
-                        return file_path
-                
-                logger.warning(f"⚠️ No video file found after download attempt {attempt + 1}")
-                
-            except Exception as e:
-                logger.warning(f"❌ Download attempt {attempt + 1} failed: {e}")
-                
-                if attempt < self.max_retries - 1:
-                    delay = self.retry_delay * (2 ** attempt)  # Exponential backoff
-                    logger.info(f"⏳ Waiting {delay}s before retry...")
-                    await asyncio.sleep(delay)
-                else:
-                    logger.error(f"❌ All download attempts failed for: {title}")
-        
-        logger.error(f"❌ Complete file download failed after all attempts for: {title}")
-        return None
+        except Exception as e:
+            logger.error(f"❌ Download failed for {title}: {e}")
+            return None
 
     async def process_footage_for_tiktok(self, video_id: str) -> Optional[List[Path]]:
         """
@@ -485,7 +433,9 @@ class FootageManager:
                 logger.error(f"Raw footage file not found: {raw_file}")
                 return None
             
-            logger.info(f"Processing footage for TikTok: {video_info['title']}")            # Import moviepy here to avoid startup delay
+            logger.info(f"Processing footage for TikTok: {video_info['title']}")
+            
+            # Import moviepy here to avoid startup delay
             try:
                 from moviepy import VideoFileClip
             except ImportError:
@@ -495,8 +445,7 @@ class FootageManager:
             # Load video
             clip = VideoFileClip(str(raw_file))
             duration = clip.duration
-            
-            # Create segments (30-60 second clips)
+              # Create segments (30-60 second clips)
             segment_duration = 45  # 45 second segments
             segments = []
             
@@ -504,47 +453,93 @@ class FootageManager:
                 end_time = min(start_time + segment_duration, duration)
                 
                 if end_time - start_time < 20:  # Skip segments shorter than 20 seconds
-                    continue                # Extract segment
-                segment = clip.subclipped(start_time, end_time)
+                    continue
                 
-                # Convert to TikTok format (9:16 aspect ratio) with error handling
-                try:
-                    tiktok_segment = self._convert_to_tiktok_format(segment)
-                except Exception as e:
-                    logger.warning(f"TikTok format conversion failed, using original: {e}")
-                    tiktok_segment = segment
+                # Create fresh clip for each segment to avoid resource conflicts
+                segment_clip = None
+                tiktok_segment = None
                 
-                # Save segment
-                segment_file = self.processed_footage_dir / f"{video_id}_segment_{start_time}_{end_time}.mp4"
                 try:
+                    # Extract segment with fresh video clip reference
+                    segment_clip = clip.subclipped(start_time, end_time)
+                    
+                    # Convert to TikTok format (9:16 aspect ratio) with error handling
+                    try:
+                        tiktok_segment = self._convert_to_tiktok_format(segment_clip)
+                    except Exception as e:
+                        logger.warning(f"TikTok format conversion failed, using original: {e}")
+                        tiktok_segment = segment_clip
+                    
+                    # Save segment
+                    segment_file = self.processed_footage_dir / f"{video_id}_segment_{start_time}_{end_time}.mp4"
+                    # Remove existing file if it exists
+                    if segment_file.exists():
+                        segment_file.unlink()
+                        logger.info(f"🗑️ Removed existing segment: {segment_file.name}")
+                    
+                    logger.info(f"🎬 Writing segment {start_time}-{end_time}s...")
+                    
+                    # Write video file with isolated clip
                     tiktok_segment.write_videofile(
                         str(segment_file),
                         codec='libx264',
                         audio_codec='aac',
                         fps=30,
                         preset='medium',
-                        logger=None
+                        logger=None,
+                        # Additional parameters to ensure stability
+                        temp_audiofile=None,  # Force temp audio file creation
+                        remove_temp=True
                     )
-                    segments.append(segment_file)
-                    logger.info(f"✅ Created segment: {segment_file.name}")
+                    
+                    # Verify file was actually created
+                    if segment_file.exists() and segment_file.stat().st_size > 0:
+                        segments.append(segment_file)
+                        file_size = segment_file.stat().st_size / (1024 * 1024)
+                        logger.success(f"✅ Created segment: {segment_file.name} ({file_size:.1f}MB)")
+                    else:
+                        logger.error(f"❌ Segment file not created or is empty: {segment_file.name}")
+                        
                 except Exception as e:
-                    logger.error(f"Failed to save segment {segment_file.name}: {e}")
+                    logger.error(f"❌ Failed to save segment {video_id}_segment_{start_time}_{end_time}.mp4: {e}")
+                    # Log the full traceback for debugging
+                    logger.error(f"   Full error: {traceback.format_exc()}")
                 
-                tiktok_segment.close()
+                finally:
+                    # Proper cleanup of clips - close in reverse order
+                    if tiktok_segment is not None:
+                        try:
+                            tiktok_segment.close()
+                        except:
+                            pass
+                    
+                    if segment_clip is not None:
+                        try:
+                            segment_clip.close()
+                        except:
+                            pass
+                    
+                    # Force garbage collection to free memory
+                    import gc
+                    gc.collect()
+                    
+                    # Small delay to prevent resource conflicts
+                    await asyncio.sleep(0.2)
             
             clip.close()
-              # Update metadata
+            
+            # Update metadata
             self.metadata["videos"][video_id]["processed"] = True
             self.metadata["videos"][video_id]["segments"] = [str(s) for s in segments]
             self._save_metadata()
             
             logger.info(f"Created {len(segments)} TikTok segments")
             return segments
-            
         except Exception as e:
             logger.error(f"TikTok processing failed: {e}")
+            traceback.print_exc()
             return None
-    
+
     def _convert_to_tiktok_format(self, clip):
         """Convert video clip to TikTok format (9:16 aspect ratio, 1080x1920)."""
         try:
@@ -567,11 +562,13 @@ class FootageManager:
                 new_width = int(current_height / target_ratio)
                 x_offset = (current_width - new_width) // 2
                 cropped = clip.cropped(x1=x_offset, x2=x_offset + new_width)
-              # Resize to exact TikTok dimensions
+            
+            # Resize to exact TikTok dimensions
             resized = cropped.resized((target_width, target_height))
             return resized
         except Exception as e:
-            logger.error(f"Format conversion failed: {e}")            # Return original clip if conversion fails
+            logger.error(f"Format conversion failed: {e}")
+            # Return original clip if conversion fails
             return clip
 
     async def get_footage_for_content(self, content_type: str, duration: float, intensity: str = "medium") -> Optional[Path]:
@@ -645,7 +642,7 @@ class FootageManager:
             for video_id in video_ids:
                 if video_id not in self.metadata["videos"]:
                     continue
-                    
+                
                 video_info = self.metadata["videos"][video_id]
                 raw_file = Path(video_info["file_path"])
                 
@@ -667,27 +664,18 @@ class FootageManager:
             logger.error(f"Footage selection failed: {e}")
             return None
 
-    async def get_available_footage_stats(self) -> Dict:
-        """Get statistics about available footage."""
+    def get_storage_info(self) -> Dict:
+        """Get storage information and statistics."""
         try:
-            stats = {
-                "total_videos": self.metadata["total_videos"],
-                "categories": {},
-                "processed_videos": 0,
-                "total_segments": 0
+            raw_size = sum(f.stat().st_size for f in self.raw_footage_dir.glob("*") if f.is_file())
+            processed_size = sum(f.stat().st_size for f in self.processed_footage_dir.glob("*") if f.is_file())
+            
+            return {
+                "raw_footage_mb": raw_size / (1024 * 1024),
+                "processed_footage_mb": processed_size / (1024 * 1024),
+                "total_videos": self.metadata.get("total_videos", 0),
+                "categories": {k: len(v) for k, v in self.metadata.get("categories", {}).items()}
             }
-            
-            for category, video_ids in self.metadata["categories"].items():
-                stats["categories"][category] = len(video_ids)
-            
-            for video_info in self.metadata["videos"].values():
-                if video_info.get("processed", False):
-                    stats["processed_videos"] += 1
-                    segments = video_info.get("segments", [])
-                    stats["total_segments"] += len(segments)
-            
-            return stats
-            
         except Exception as e:
-            logger.error(f"Stats calculation failed: {e}")
+            logger.error(f"Failed to get storage info: {e}")
             return {}

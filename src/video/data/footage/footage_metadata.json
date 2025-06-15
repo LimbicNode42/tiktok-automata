@@ -1,52 +1,88 @@
 {
   "sources": {
-    "2f51efbf": {
-      "channel_url": "https://www.youtube.com/watch?v=fBVpT-stY70",
-      "channel_name": "No Copyright Gameplay - Specific Video",
+    "da5ce6f4": {
+      "channel_url": "https://www.youtube.com/@NoCopyrightGameplays/videos",
+      "channel_name": "No Copyright Gameplay - Channel",
       "content_type": "medium_action",
-      "max_videos": 1,
-      "min_duration": 60,
-      "max_duration": 3600,
+      "max_videos": 5,
+      "min_duration": 120,
+      "max_duration": 1800,
       "quality_preference": "720p",
-      "videos_downloaded": 0,
-      "last_check": null
+      "videos_downloaded": 2,
+      "last_check": 1749965712.1875558
     }
   },
   "videos": {
-    "fBVpT-stY70": {
-      "title": "Deadzone Rouge Gameplay - Free To Use Gameplay",
-      "duration": 1194,
-      "source_id": "2f51efbf",
+    "ne_T-GNwObk": {
+      "title": "COD Black Ops 6 Gameplay - Free To Use",
+      "duration": 476,
+      "source_id": "da5ce6f4",
       "content_type": "medium_action",
-      "file_path": "d:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\fBVpT-stY70_Deadzone Rouge Gameplay - Free To Use Gameplay.mp4",
+      "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\ne_T-GNwObk_COD Black Ops 6 Gameplay - Free To Use.mp4",
       "processed": true,
-      "download_date": 1749805476.8492165,
+      "download_date": 1749964310.0099206,
       "segments": [
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_0_45.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_90_135.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_180_225.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_270_315.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_360_405.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_450_495.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_540_585.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_630_675.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_720_765.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_810_855.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_900_945.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_990_1035.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_1080_1125.mp4",
-        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\fBVpT-stY70_segment_1170_1194.2.mp4"
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ne_T-GNwObk_segment_0_45.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ne_T-GNwObk_segment_90_135.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ne_T-GNwObk_segment_180_225.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ne_T-GNwObk_segment_270_315.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ne_T-GNwObk_segment_360_405.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ne_T-GNwObk_segment_450_476.01.mp4"
+      ]
+    },
+    "6nQtYwUqRxM": {
+      "title": "Squirrel Girl | Marvel Rivals Free To Use Gameplay",
+      "duration": 1167,
+      "source_id": "da5ce6f4",
+      "content_type": "medium_action",
+      "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\6nQtYwUqRxM_Squirrel Girl ｜ Marvel Rivals Free To Use Gameplay.mp4",
+      "processed": true,
+      "download_date": 1749965656.5593288,
+      "segments": [
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_0_45.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_90_135.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_180_225.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_270_315.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_360_405.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_450_495.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_540_585.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_630_675.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_720_765.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_810_855.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_900_945.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_990_1035.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\6nQtYwUqRxM_segment_1080_1125.mp4"
+      ]
+    },
+    "ABYoLzJlmA8": {
+      "title": "Counter Strike 2 Gameplay - Free To Use Gameplay",
+      "duration": 601,
+      "source_id": "da5ce6f4",
+      "content_type": "medium_action",
+      "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\ABYoLzJlmA8_Counter Strike 2 Gameplay - Free To Use Gameplay.mp4",
+      "processed": true,
+      "download_date": 1749965712.1875558,
+      "segments": [
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_0_45.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_90_135.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_180_225.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_270_315.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_360_405.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_450_495.mp4",
+        "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\processed\\ABYoLzJlmA8_segment_540_585.mp4"
       ]
     }
   },
   "categories": {
     "high_action": [],
     "medium_action": [
-      "fBVpT-stY70"
+      "ne_T-GNwObk",
+      "6nQtYwUqRxM",
+      "ABYoLzJlmA8"
     ],
     "ambient": []
   },
-  "last_updated": 1749811286.0806592,
+  "last_updated": 1749966719.0999072,
   "total_duration": 0,
-  "total_videos": 1
+  "total_videos": 3
 }
