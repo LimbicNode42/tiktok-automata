@@ -406,16 +406,21 @@ class FootageManager:
             
             logger.error(f"⚠️ No video file found after download")
             return None
-                
         except Exception as e:
             logger.error(f"❌ Download failed for {title}: {e}")
             return None
 
-    async def process_footage_for_tiktok(self, video_id: str) -> Optional[List[Path]]:
+    async def process_footage_for_tiktok(self, video_id: str, custom_durations: Optional[List[float]] = None) -> Optional[List[Path]]:
         """
         Process raw footage into TikTok-ready segments.
         
         Creates multiple shorter clips optimized for TikTok use.
+        
+        Args:
+            video_id: ID of the video to process
+            custom_durations: Optional list of custom durations for segments (in seconds).
+                             If provided, creates segments with these exact durations.
+                             If None, uses default 45-second segments.
         """
         try:
             if video_id not in self.metadata["videos"]:
@@ -437,90 +442,179 @@ class FootageManager:
             except ImportError:
                 logger.error("MoviePy not installed. Run: pip install moviepy")
                 return None
-            
-            # Load video
+              # Load video
             clip = VideoFileClip(str(raw_file))
             duration = clip.duration
-              # Create segments (30-60 second clips)
-            segment_duration = 45  # 45 second segments
             segments = []
             
-            for start_time in range(0, int(duration), segment_duration):
-                end_time = min(start_time + segment_duration, duration)
+            if custom_durations:
+                # Create segments with custom durations
+                logger.info(f"Creating {len(custom_durations)} segments with custom durations")
+                start_time = 0
                 
-                if end_time - start_time < 20:  # Skip segments shorter than 20 seconds
-                    continue
-                
-                # Create fresh clip for each segment to avoid resource conflicts
-                segment_clip = None
-                tiktok_segment = None
-                
-                try:
-                    # Extract segment with fresh video clip reference
-                    segment_clip = clip.subclipped(start_time, end_time)
+                for i, segment_duration in enumerate(custom_durations):
+                    end_time = min(start_time + segment_duration, duration)
                     
-                    # Convert to TikTok format (9:16 aspect ratio) with error handling
+                    if end_time - start_time < 10:  # Skip segments shorter than 10 seconds
+                        logger.warning(f"Skipping segment {i+1} - too short ({end_time - start_time:.1f}s)")
+                        continue
+                    
+                    if start_time >= duration:  # No more footage available
+                        logger.warning(f"Ran out of footage at segment {i+1}")
+                        break
+                    
+                    # Create fresh clip for each segment to avoid resource conflicts
+                    segment_clip = None
+                    tiktok_segment = None
+                    
                     try:
-                        tiktok_segment = self._convert_to_tiktok_format(segment_clip)
-                    except Exception as e:
-                        logger.warning(f"TikTok format conversion failed, using original: {e}")
-                        tiktok_segment = segment_clip
-                    
-                    # Save segment
-                    segment_file = self.processed_footage_dir / f"{video_id}_segment_{start_time}_{end_time}.mp4"
-                    # Remove existing file if it exists
-                    if segment_file.exists():
-                        segment_file.unlink()
-                        logger.info(f"🗑️ Removed existing segment: {segment_file.name}")
-                    
-                    logger.info(f"🎬 Writing segment {start_time}-{end_time}s...")
-                    
-                    # Write video file with isolated clip
-                    tiktok_segment.write_videofile(
-                        str(segment_file),
-                        codec='libx264',
-                        audio_codec='aac',
-                        fps=30,
-                        preset='medium',
-                        logger=None,
-                        # Additional parameters to ensure stability
-                        temp_audiofile=None,  # Force temp audio file creation
-                        remove_temp=True
-                    )
-                    
-                    # Verify file was actually created
-                    if segment_file.exists() and segment_file.stat().st_size > 0:
-                        segments.append(segment_file)
-                        file_size = segment_file.stat().st_size / (1024 * 1024)
-                        logger.success(f"✅ Created segment: {segment_file.name} ({file_size:.1f}MB)")
-                    else:
-                        logger.error(f"❌ Segment file not created or is empty: {segment_file.name}")
+                        # Extract segment with fresh video clip reference
+                        segment_clip = clip.subclipped(start_time, end_time)
                         
-                except Exception as e:
-                    logger.error(f"❌ Failed to save segment {video_id}_segment_{start_time}_{end_time}.mp4: {e}")
-                    # Log the full traceback for debugging
-                    logger.error(f"   Full error: {traceback.format_exc()}")
+                        # Convert to TikTok format (9:16 aspect ratio) with error handling
+                        try:
+                            tiktok_segment = self._convert_to_tiktok_format(segment_clip)
+                        except Exception as e:
+                            logger.warning(f"TikTok format conversion failed, using original: {e}")
+                            tiktok_segment = segment_clip
+                        
+                        # Save segment with index for custom durations
+                        segment_file = self.processed_footage_dir / f"{video_id}_segment_{i+1}_{start_time:.1f}_{end_time:.1f}.mp4"
+                        # Remove existing file if it exists
+                        if segment_file.exists():
+                            segment_file.unlink()
+                            logger.info(f"🗑️ Removed existing segment: {segment_file.name}")
+                        
+                        logger.info(f"🎬 Writing custom segment {i+1}: {start_time:.1f}-{end_time:.1f}s (duration: {segment_duration:.1f}s)...")
+                        
+                        # Write video file with isolated clip
+                        tiktok_segment.write_videofile(
+                            str(segment_file),
+                            codec='libx264',
+                            audio_codec='aac',
+                            fps=30,
+                            preset='medium',
+                            logger=None,
+                            # Additional parameters to ensure stability
+                            temp_audiofile=None,  # Force temp audio file creation
+                            remove_temp=True
+                        )
+                        
+                        # Verify file was actually created
+                        if segment_file.exists() and segment_file.stat().st_size > 0:
+                            segments.append(segment_file)
+                            file_size = segment_file.stat().st_size / (1024 * 1024)
+                            logger.success(f"✅ Created custom segment {i+1}: {segment_file.name} ({file_size:.1f}MB)")
+                        else:
+                            logger.error(f"❌ Custom segment file not created or is empty: {segment_file.name}")
+                            
+                    except Exception as e:
+                        logger.error(f"❌ Failed to save custom segment {i+1}: {e}")
+                        # Log the full traceback for debugging
+                        logger.error(f"   Full error: {traceback.format_exc()}")
+                    
+                    finally:
+                        # Proper cleanup of clips - close in reverse order
+                        if tiktok_segment is not None:
+                            try:
+                                tiktok_segment.close()
+                            except:
+                                pass
+                        
+                        if segment_clip is not None:
+                            try:
+                                segment_clip.close()
+                            except:
+                                pass
+                        
+                        # Force garbage collection to free memory
+                        import gc
+                        gc.collect()
+                        
+                        # Small delay to prevent resource conflicts                        await asyncio.sleep(0.2)
+                      # Move to next segment position
+                    start_time = end_time
+                    
+            else:
+                # Create segments with default 45-second duration
+                segment_duration = 45  # 45 second segments
                 
-                finally:
-                    # Proper cleanup of clips - close in reverse order
-                    if tiktok_segment is not None:
+                for start_time in range(0, int(duration), segment_duration):
+                    end_time = min(start_time + segment_duration, duration)
+                    
+                    if end_time - start_time < 20:  # Skip segments shorter than 20 seconds
+                        continue
+                    
+                    # Create fresh clip for each segment to avoid resource conflicts
+                    segment_clip = None
+                    tiktok_segment = None
+                    
+                    try:
+                        # Extract segment with fresh video clip reference
+                        segment_clip = clip.subclipped(start_time, end_time)
+                        
+                        # Convert to TikTok format (9:16 aspect ratio) with error handling
                         try:
-                            tiktok_segment.close()
-                        except:
-                            pass
+                            tiktok_segment = self._convert_to_tiktok_format(segment_clip)
+                        except Exception as e:
+                            logger.warning(f"TikTok format conversion failed, using original: {e}")
+                            tiktok_segment = segment_clip
+                        
+                        # Save segment
+                        segment_file = self.processed_footage_dir / f"{video_id}_segment_{start_time}_{end_time}.mp4"
+                        # Remove existing file if it exists
+                        if segment_file.exists():
+                            segment_file.unlink()
+                            logger.info(f"🗑️ Removed existing segment: {segment_file.name}")
+                        
+                        logger.info(f"🎬 Writing segment {start_time}-{end_time}s...")
+                        
+                        # Write video file with isolated clip
+                        tiktok_segment.write_videofile(
+                            str(segment_file),
+                            codec='libx264',
+                            audio_codec='aac',
+                            fps=30,
+                            preset='medium',
+                            logger=None,
+                            # Additional parameters to ensure stability
+                            temp_audiofile=None,  # Force temp audio file creation
+                            remove_temp=True
+                        )
+                        
+                        # Verify file was actually created
+                        if segment_file.exists() and segment_file.stat().st_size > 0:
+                            segments.append(segment_file)
+                            file_size = segment_file.stat().st_size / (1024 * 1024)
+                            logger.success(f"✅ Created segment: {segment_file.name} ({file_size:.1f}MB)")
+                        else:
+                            logger.error(f"❌ Segment file not created or is empty: {segment_file.name}")
+                            
+                    except Exception as e:
+                        logger.error(f"❌ Failed to save segment {video_id}_segment_{start_time}_{end_time}.mp4: {e}")
+                        # Log the full traceback for debugging
+                        logger.error(f"   Full error: {traceback.format_exc()}")
                     
-                    if segment_clip is not None:
-                        try:
-                            segment_clip.close()
-                        except:
-                            pass
-                    
-                    # Force garbage collection to free memory
-                    import gc
-                    gc.collect()
-                    
-                    # Small delay to prevent resource conflicts
-                    await asyncio.sleep(0.2)
+                    finally:
+                        # Proper cleanup of clips - close in reverse order
+                        if tiktok_segment is not None:
+                            try:
+                                tiktok_segment.close()
+                            except:
+                                pass
+                        
+                        if segment_clip is not None:
+                            try:
+                                segment_clip.close()
+                            except:
+                                pass
+                        
+                        # Force garbage collection to free memory
+                        import gc
+                        gc.collect()
+                        
+                        # Small delay to prevent resource conflicts
+                        await asyncio.sleep(0.2)
             
             clip.close()
             
