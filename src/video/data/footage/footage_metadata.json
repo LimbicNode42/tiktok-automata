@@ -20,7 +20,13 @@
       "content_type": "medium_action",
       "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\ne_T-GNwObk_COD Black Ops 6 Gameplay - Free To Use.mp4",
       "processed": false,
-      "download_date": 1749984194.9862463
+      "download_date": 1749984194.9862463,
+      "action_analysis": {
+        "high_action_count": 237,
+        "medium_action_count": 0,
+        "low_action_count": 1,
+        "analyzed": true
+      }
     },
     "fBVpT-stY70": {
       "title": "Deadzone Rouge Gameplay - Free To Use Gameplay",
@@ -50,7 +56,7 @@
     ],
     "ambient": []
   },
-  "last_updated": 1749984194.9862463,
+  "last_updated": 1749989102.7269747,
   "total_duration": 0,
   "total_videos": 12
 }
