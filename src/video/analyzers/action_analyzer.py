@@ -120,11 +120,10 @@ class VideoActionAnalyzer:
     Features:
     - Multi-metric action detection (motion, edges, complexity)
     - Adaptive thresholding based on video statistics
-    - Statistical ranking and percentile-based categorization
-    """
+    - Statistical ranking and percentile-based categorization    """
     
     def __init__(self):
-        self.sample_interval = 2.0  # Analyze every 2 seconds
+        self.sample_interval = 30.0  # Analyze every 30 seconds
         self.frame_skip = 5  # Skip frames for faster processing
         self.max_frames_per_sample = 3  # Reduce frames per sample for speed
         
@@ -305,13 +304,118 @@ class VideoActionAnalyzer:
             # Check for overlap with existing segments
             overlap = any(
                 (start_time < existing_end and end_time > existing_start)
-                for existing_start, existing_end in segments
-            )            
+                for existing_start, existing_end in segments            )            
             if not overlap and len(segments) < max_segments:
                 segments.append((start_time, end_time))
         
         logger.info(f"🎯 Selected {len(segments)} high-action segments")
         return segments
+    
+    async def analyze_continuous_segments(self, video_path: Path, segment_durations: List[float]) -> Dict[str, List[Dict]]:
+        """
+        Analyze video for best continuous segments of specific durations.
+        
+        Args:
+            video_path: Path to the video file
+            segment_durations: List of desired segment durations in seconds
+            
+        Returns:
+            Dictionary mapping duration to best segment info
+        """
+        try:
+            from moviepy import VideoFileClip
+        except ImportError:
+            logger.error("MoviePy not installed. Run: pip install moviepy")
+            return {}
+        
+        logger.info(f"� Analyzing continuous segments for durations: {segment_durations}")
+        
+        try:
+            clip = VideoFileClip(str(video_path))
+            video_duration = clip.duration
+            
+            results = {}
+            
+            for target_duration in segment_durations:
+                logger.info(f"🔍 Finding best {target_duration:.1f}s continuous segment...")
+                
+                if target_duration >= video_duration:
+                    logger.warning(f"⚠️ Target duration {target_duration:.1f}s >= video duration {video_duration:.1f}s")
+                    continue
+                
+                best_segments = await self._find_best_continuous_segment(clip, target_duration)
+                results[str(target_duration)] = best_segments
+                
+                if best_segments:
+                    best = best_segments[0]
+                    logger.info(f"✅ Best {target_duration:.1f}s segment: {best['start_time']:.1f}s - {best['end_time']:.1f}s (score: {best['avg_score']:.1f})")
+            
+            clip.close()
+            return results
+            
+        except Exception as e:
+            logger.error(f"❌ Continuous segment analysis failed: {e}")
+            return {}
+    
+    async def _find_best_continuous_segment(self, clip, target_duration: float) -> List[Dict]:
+        """Find the best continuous segment of specified duration."""
+        video_duration = clip.duration
+        sample_interval = 2.0  # Analyze every 2 seconds
+        
+        # Calculate possible start times (with some buffer at the end)
+        max_start_time = video_duration - target_duration - 1.0
+        if max_start_time <= 0:
+            return []
+        
+        start_times = np.arange(0, max_start_time, sample_interval)
+        segment_scores = []
+        
+        logger.info(f"   Evaluating {len(start_times)} possible segment positions...")
+        
+        for i, start_time in enumerate(start_times):
+            end_time = start_time + target_duration
+            
+            # Sample the segment at regular intervals
+            sample_points = np.linspace(start_time, end_time - 1, min(int(target_duration / 2), 20))
+            segment_metrics = []
+            
+            for sample_time in sample_points:
+                try:
+                    # Create mini clip for analysis
+                    mini_clip = clip.subclipped(sample_time, min(sample_time + 1, end_time))
+                    metrics = await self._analyze_sample(mini_clip, sample_time)
+                    segment_metrics.append(metrics)
+                    mini_clip.close()
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to analyze sample at {sample_time:.1f}s: {e}")
+                    continue
+            
+            # Calculate average score for this segment
+            if segment_metrics:
+                avg_score = np.mean([m.overall_score for m in segment_metrics])
+                min_score = np.min([m.overall_score for m in segment_metrics])
+                max_score = np.max([m.overall_score for m in segment_metrics])
+                
+                segment_scores.append({
+                    'start_time': start_time,
+                    'end_time': end_time,
+                    'duration': target_duration,
+                    'avg_score': avg_score,
+                    'min_score': min_score,
+                    'max_score': max_score,
+                    'score_variance': np.var([m.overall_score for m in segment_metrics]),
+                    'sample_count': len(segment_metrics)
+                })
+            
+            # Progress update every 10 segments
+            if i % 10 == 0:
+                progress = (i / len(start_times)) * 100
+                logger.info(f"     Progress: {progress:.1f}%")
+        
+        # Sort by average score (highest first)
+        segment_scores.sort(key=lambda x: x['avg_score'], reverse=True)
+        
+        return segment_scores[:5]  # Return top 5 segments
     
     def analyze_action_distribution(self, categorized_metrics: Dict[str, List[ActionMetrics]]) -> Dict[str, float]:
         """
@@ -394,8 +498,7 @@ class VideoActionAnalyzer:
         
         Args:
             metrics_list: List of action metrics to categorize
-            
-        Returns:
+              Returns:
             Dictionary with categorized metrics using adaptive thresholds
         """
         thresholds = self.get_adaptive_thresholds(metrics_list)
@@ -416,3 +519,64 @@ class VideoActionAnalyzer:
                 categorized["low"].append(metrics)
         
         return categorized
+    
+    async def analyze_segments_from_json(self, video_path: Path, json_file_path: Path, buffer_seconds: float = 7.5) -> Dict[str, Dict]:
+        """
+        Analyze video segments based on durations from JSON file.
+        
+        Args:
+            video_path: Path to the video file
+            json_file_path: Path to JSON file with audio durations
+            buffer_seconds: Extra seconds to add to each duration
+            
+        Returns:
+            Dictionary with results for each audio segment
+        """
+        import json
+        
+        logger.info(f"🎵 Analyzing segments from JSON: {json_file_path.name}")
+        
+        try:
+            with open(json_file_path, 'r') as f:
+                data = json.load(f)
+            
+            # Extract durations from JSON
+            durations = []
+            segment_info = []
+            
+            for i, result in enumerate(data.get('results', [])):
+                if 'duration' in result:
+                    original_duration = result['duration']
+                    buffered_duration = original_duration + buffer_seconds
+                    durations.append(buffered_duration)
+                    
+                    segment_info.append({
+                        'index': i,
+                        'title': result.get('title', f'Segment {i}'),
+                        'original_duration': original_duration,
+                        'buffered_duration': buffered_duration,
+                        'voice_name': result.get('voice_name', 'Unknown'),
+                        'category': result.get('category', 'unknown')
+                    })
+            
+            logger.info(f"📊 Found {len(durations)} audio segments with durations: {[f'{d:.1f}s' for d in durations[:3]]}...")
+            
+            # Analyze continuous segments for these durations
+            results = await self.analyze_continuous_segments(video_path, durations)
+            
+            # Combine with segment info
+            combined_results = {}
+            for i, info in enumerate(segment_info):
+                duration_key = str(info['buffered_duration'])
+                if duration_key in results:
+                    combined_results[f"segment_{i}"] = {
+                        'segment_info': info,
+                        'best_video_segments': results[duration_key]
+                    }
+            
+            logger.success(f"✅ Analyzed {len(combined_results)} segments from JSON")
+            return combined_results
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to analyze segments from JSON: {e}")
+            return {}
