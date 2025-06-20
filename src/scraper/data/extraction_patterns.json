@@ -8,8 +8,8 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:44:52.211107",
-    "usage_count": 23,
+    "last_used": "2025-06-20T20:55:15.712073",
+    "usage_count": 30,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -128,8 +128,8 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:40:36.219320",
-    "usage_count": 11,
+    "last_used": "2025-06-20T20:55:20.219619",
+    "usage_count": 13,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -238,9 +238,9 @@
       ".news"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:40:49.870239",
-    "usage_count": 4,
-    "confidence_score": 0.82,
+    "last_used": "2025-06-20T20:55:16.869744",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
     "pattern_type": "ai_discovered"
   },
   "sparktoro.com": {
@@ -298,9 +298,9 @@
       ".device--size-"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:41:59.113392",
-    "usage_count": 4,
-    "confidence_score": 0.82,
+    "last_used": "2025-06-20T19:33:18.043978",
+    "usage_count": 5,
+    "confidence_score": 0.85,
     "pattern_type": "ai_discovered"
   },
   "fly.io": {
@@ -443,9 +443,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:52.972950",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-20T19:32:49.484391",
+    "usage_count": 4,
+    "confidence_score": 0.82,
     "pattern_type": "ai_discovered"
   },
   "justin.searls.co": {
@@ -485,9 +485,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:59.737651",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-20T19:33:19.162273",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
     "pattern_type": "ai_discovered"
   },
   "patricia.no": {
@@ -625,6 +625,186 @@
     "last_used": "2025-06-12T17:44:50.299171",
     "usage_count": 3,
     "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "ahrefs.com": {
+    "domain": "ahrefs.com",
+    "selectors": [
+      ".post",
+      "#post-188835",
+      ".post-holder",
+      ".clearfix",
+      ".post-188835"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:32:55.791793",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "martinfowler.com": {
+    "domain": "martinfowler.com",
+    "selectors": [
+      "main",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:32:56.702557",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "jakelazaroff.com": {
+    "domain": "jakelazaroff.com",
+    "selectors": [
+      "article",
+      ".article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:32:59.311378",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "gizmodo.com": {
+    "domain": "gizmodo.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".post-template-default",
+      ".single",
+      ".single-post",
+      ".postid-2000617042"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:33:15.808421",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "redis.io": {
+    "domain": "redis.io",
+    "selectors": [
+      ".prose",
+      ".prose",
+      ".w-full",
+      ".py-12",
+      ".max-w-none"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:33:16.295562",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "pgrs.net": {
+    "domain": "pgrs.net",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".initial-content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:33:17.147757",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "kirancodes.me": {
+    "domain": "kirancodes.me",
+    "selectors": [
+      "[id*=\"content\"]",
+      "#content",
+      ".body",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:33:43.108742",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "ingrids.space": {
+    "domain": "ingrids.space",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T19:33:44.178658",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "sourcegraph.com": {
+    "domain": "sourcegraph.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".section_blog-post",
+      ".background-color-secondary",
+      ".base-2-column",
+      "section"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T20:55:18.457406",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "matduggan.com": {
+    "domain": "matduggan.com",
+    "selectors": [
+      "article",
+      ".post-full",
+      ".post",
+      ".no-image",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T20:55:20.058592",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "threadreaderapp.com": {
+    "domain": "threadreaderapp.com",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T20:55:21.517345",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "charity.wtf": {
+    "domain": "charity.wtf",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T20:33:27.142910",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.androidpolice.com": {
+    "domain": "www.androidpolice.com",
+    "selectors": [
+      "article",
+      ".w-article",
+      ".widget",
+      ".article",
+      ".layout-regular"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-20T20:33:58.047291",
+    "usage_count": 1,
+    "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
   }
 }

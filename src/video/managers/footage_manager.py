@@ -120,16 +120,37 @@ class FootageManager(BaseFootageManager):
         
         Now uses action analysis to select the best segments!
         """
-        try:
-            # Find available videos matching the intensity
+        try:            # Find available videos matching the intensity
             suitable_videos = []
             
             for video_id, video_info in self.metadata["videos"].items():
                 if video_info.get("content_type") == intensity + "_action":
                     suitable_videos.append(video_id)
             
+            # If no exact match found, try fallback intensities
             if not suitable_videos:
-                logger.warning(f"No {intensity} intensity footage available")
+                logger.warning(f"No {intensity} intensity footage available, trying fallbacks...")
+                
+                # Fallback hierarchy: high -> medium -> low
+                fallback_intensities = []
+                if intensity == "high":
+                    fallback_intensities = ["medium", "low"]
+                elif intensity == "medium":
+                    fallback_intensities = ["high", "low"]
+                elif intensity == "low":
+                    fallback_intensities = ["medium", "high"]
+                
+                for fallback in fallback_intensities:
+                    for video_id, video_info in self.metadata["videos"].items():
+                        if video_info.get("content_type") == fallback + "_action":
+                            suitable_videos.append(video_id)
+                            logger.info(f"🔄 Using {fallback} intensity footage as fallback")
+                            break
+                    if suitable_videos:
+                        break
+            
+            if not suitable_videos:
+                logger.warning(f"No suitable footage available for any intensity level")
                 return None
             
             # Use the first suitable video (could be improved with better selection logic)

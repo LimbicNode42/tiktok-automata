@@ -221,9 +221,8 @@ class VideoProcessor:
             # Determine footage intensity based on content
             intensity = self._determine_footage_intensity(content_analysis)
             
-            logger.info(f"Selecting {intensity} intensity gaming footage for {duration:.2f}s")
-              # Try to get real gaming footage first
-            from .footage_manager import FootageManager
+            logger.info(f"Selecting {intensity} intensity gaming footage for {duration:.2f}s")            # Try to get real gaming footage first
+            from ..managers.footage_manager import FootageManager
             manager = FootageManager()
             
             # Try to get real footage
@@ -563,11 +562,10 @@ class VideoProcessor:
         content_analysis: Dict = None
     ) -> Optional[VideoFileClip]:
         """
-        Select gaming footage and create custom segments based on JSON file durations.
-        """
+        Select gaming footage and create custom segments based on JSON file durations.        """
         try:
             from pathlib import Path
-            from .footage_manager import FootageManager
+            from ..managers.footage_manager import FootageManager
             
             logger.info(f"Creating custom gaming footage segments from JSON: {json_file_path}")
             
