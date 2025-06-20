@@ -34,6 +34,9 @@ class FootageManager(BaseFootageManager):
         self.analyzer = VideoActionAnalyzer() 
         self.processor = VideoSegmentProcessor(self.processed_footage_dir)
         
+        # Add video selection rotation to ensure variety
+        self._video_selection_counter = 0
+        
         logger.info("FootageManager initialized with modular components")
     
     # === DOWNLOAD OPERATIONS ===
@@ -152,29 +155,54 @@ class FootageManager(BaseFootageManager):
             if not suitable_videos:
                 logger.warning(f"No suitable footage available for any intensity level")
                 return None
+              # Better video selection: rotate through available videos for variety
+            self._video_selection_counter = (self._video_selection_counter + 1) % len(suitable_videos)
+            video_id = suitable_videos[self._video_selection_counter]
+            logger.info(f"📹 Selected video {self._video_selection_counter + 1}/{len(suitable_videos)}: {video_id}")
             
-            # Use the first suitable video (could be improved with better selection logic)
-            video_id = suitable_videos[0]
+            # Also add content-based selection as secondary variety
+            import hashlib
+            content_hash = hashlib.md5(f"{video_id}_{duration}".encode()).hexdigest()
+            segment_seed = int(content_hash[:8], 16)
             
             # If JSON file provided, create custom segments
             if json_file_path and json_file_path.exists():
                 segments = await self.create_segments_from_json(video_id, json_file_path, buffer_seconds)
                 return segments[0] if segments else None
             
-            # Otherwise, analyze for best action segments
+            # Use action analysis to find the BEST high-action segment for this duration
             best_segments = await self.get_best_action_segments(video_id, duration)
             
             if best_segments:
-                # Create a segment from the best action timestamp
+                # Get the best action segment (start_time, end_time)
                 start_time, end_time = best_segments[0]
+                logger.info(f"🎯 Using best action segment: {start_time:.1f}s - {end_time:.1f}s")
+                
+                # Create a segment with the specific start and end times from action analysis
                 segments = await self.process_footage_for_tiktok(
                     video_id, 
-                    custom_durations=[end_time - start_time]
+                    duration_info_list=[{
+                        'start_time': start_time,
+                        'duration': duration,
+                        'end_time': min(start_time + duration, end_time)
+                    }]
                 )
                 return segments[0] if segments else None
             
-            # Fallback to regular processing
-            segments = await self.process_footage_for_tiktok(video_id)
+            # Fallback to regular processing starting from a random point
+            import random
+            video_info = self.metadata["videos"][video_id]
+            # Start from a random point in the first 60% of the video to ensure we have enough footage
+            max_start = max(0, video_info.get("duration", 300) * 0.6 - duration)
+            random_start = random.uniform(0, max_start) if max_start > 0 else 0
+            
+            segments = await self.process_footage_for_tiktok(
+                video_id,
+                duration_info_list=[{
+                    'start_time': random_start,
+                    'duration': duration
+                }]
+            )
             return segments[0] if segments else None
             
         except Exception as e:

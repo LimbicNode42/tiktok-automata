@@ -99,9 +99,10 @@ class VideoSegmentProcessor:
             logger.info(f"Source video duration: {total_duration:.1f}s")
             
             for duration_info in duration_info_list:
-                segment_duration = duration_info['buffered_duration']
-                index = duration_info['index']
-                title = duration_info['title']
+                # Support both 'duration' and 'buffered_duration' for flexibility
+                segment_duration = duration_info.get('buffered_duration', duration_info.get('duration', 60.0))
+                index = duration_info.get('index', 1)
+                title = duration_info.get('title', 'segment')
                 
                 # Skip if requested duration is longer than available footage
                 if segment_duration > total_duration:
@@ -129,29 +130,42 @@ class VideoSegmentProcessor:
             logger.error(f"Individual segment creation failed: {e}")
             traceback.print_exc()
             return None
-
+    
     async def _create_individual_segment(self, clip, video_id: str, segment_duration: float, 
                                        duration_info: dict, total_duration: float) -> Optional[Path]:
-        """Create a single individual segment from the start of the video."""
+        """Create a single individual segment using specified start time or intelligent selection."""
         segment_clip = None
         tiktok_segment = None
         
         try:
-            index = duration_info['index']
-            title_safe = "".join(c for c in duration_info['title'][:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
+            index = duration_info.get('index', 1)
+            title_safe = "".join(c for c in duration_info.get('title', 'segment')[:20] if c.isalnum() or c in (' ', '-', '_')).rstrip()
             title_safe = title_safe.replace(' ', '_')
             
-            # Find a good starting point (avoid very beginning which might be black)
-            start_offset = min(5.0, total_duration * 0.1)  # Start 5s in or 10% into video, whichever is smaller
-            actual_start = start_offset
-            actual_end = min(actual_start + segment_duration, total_duration)
+            # Use provided start_time if available (from action analysis), otherwise find good starting point
+            if 'start_time' in duration_info:
+                actual_start = duration_info['start_time']
+                logger.info(f"🎯 Using action-analyzed start time: {actual_start:.1f}s")
+            else:
+                # Find a good starting point (avoid very beginning which might be black)
+                start_offset = min(5.0, total_duration * 0.1)  # Start 5s in or 10% into video, whichever is smaller
+                actual_start = start_offset
+                logger.info(f"📍 Using default start offset: {actual_start:.1f}s")
             
-            # Adjust if we don't have enough footage after the offset
+            # Calculate end time
+            if 'end_time' in duration_info:
+                actual_end = min(duration_info['end_time'], total_duration)
+            else:
+                actual_end = min(actual_start + segment_duration, total_duration)
+            
+            # Ensure we have enough footage
             if actual_end - actual_start < segment_duration * 0.8:  # If less than 80% of desired duration
-                actual_start = max(0, total_duration - segment_duration)  # Start from end and work backwards
-                actual_end = total_duration
+                if 'start_time' not in duration_info:  # Only adjust if not using action analysis
+                    actual_start = max(0, total_duration - segment_duration)  # Start from end and work backwards
+                    actual_end = total_duration
+                    logger.warning(f"⚠️ Adjusted segment timing due to insufficient footage")
             
-            logger.info(f"Segment {index}: extracting {actual_start:.1f}s to {actual_end:.1f}s (duration: {actual_end - actual_start:.1f}s)")
+            logger.info(f"🎬 Segment {index}: extracting {actual_start:.1f}s to {actual_end:.1f}s (duration: {actual_end - actual_start:.1f}s)")
             
             # Extract segment
             segment_clip = clip.subclipped(actual_start, actual_end)
@@ -162,9 +176,9 @@ class VideoSegmentProcessor:
             except Exception as e:
                 logger.warning(f"TikTok format conversion failed, using original: {e}")
                 tiktok_segment = segment_clip
-            
-            # Create filename with more metadata
-            segment_file = self.processed_footage_dir / f"{video_id}_segment_{index:02d}_{duration_info['buffered_duration']:.1f}s_{title_safe}.mp4"
+              # Create filename with more metadata
+            duration_for_filename = duration_info.get('buffered_duration', duration_info.get('duration', segment_duration))
+            segment_file = self.processed_footage_dir / f"{video_id}_segment_{index:02d}_{duration_for_filename:.1f}s_{title_safe}.mp4"
             
             # Remove existing file if it exists
             if segment_file.exists():

@@ -8,8 +8,8 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:55:15.712073",
-    "usage_count": 30,
+    "last_used": "2025-06-21T00:02:59.235764",
+    "usage_count": 33,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -128,8 +128,8 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:55:20.219619",
-    "usage_count": 13,
+    "last_used": "2025-06-21T00:03:03.445819",
+    "usage_count": 16,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -238,9 +238,9 @@
       ".news"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:55:16.869744",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-06-21T00:03:01.549303",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "sparktoro.com": {
@@ -745,9 +745,9 @@
       "section"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:55:18.457406",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-21T00:03:01.735303",
+    "usage_count": 5,
+    "confidence_score": 0.85,
     "pattern_type": "ai_discovered"
   },
   "matduggan.com": {
@@ -760,9 +760,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:55:20.058592",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-21T00:03:03.321619",
+    "usage_count": 5,
+    "confidence_score": 0.85,
     "pattern_type": "ai_discovered"
   },
   "threadreaderapp.com": {
@@ -772,7 +772,7 @@
       ".content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:55:21.517345",
+    "last_used": "2025-06-21T00:03:07.856504",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -787,9 +787,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:33:27.142910",
-    "usage_count": 1,
-    "confidence_score": 0.8,
+    "last_used": "2025-06-20T22:09:32.269399",
+    "usage_count": 2,
+    "confidence_score": 0.76,
     "pattern_type": "ai_discovered"
   },
   "www.androidpolice.com": {

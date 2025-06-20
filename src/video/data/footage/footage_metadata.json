@@ -35,7 +35,13 @@
       "content_type": "medium_action",
       "file_path": "D:\\HobbyProjects\\tiktok-automata\\src\\video\\data\\footage\\raw\\fBVpT-stY70_Deadzone Rouge Gameplay - Free To Use Gameplay.mp4",
       "processed": false,
-      "download_date": 1749984194.9862463
+      "download_date": 1749984194.9862463,
+      "action_analysis": {
+        "high_action_count": 2,
+        "medium_action_count": 12,
+        "low_action_count": 5,
+        "analyzed": true
+      }
     },
     "6nQtYwUqRxM": {
       "title": "Squirrel Girl ｜ Marvel Rivals Free To Use Gameplay",
@@ -56,7 +62,7 @@
     ],
     "ambient": []
   },
-  "last_updated": 1750417669.176528,
+  "last_updated": 1750428892.0435357,
   "total_duration": 0,
   "total_videos": 12
 }

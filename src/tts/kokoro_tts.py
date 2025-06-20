@@ -48,7 +48,7 @@ class TTSConfig:
     sample_rate: int = 24000  # Kokoro's native sample rate
     output_format: str = 'wav'  # Output audio format
     split_pattern: str = r'\n+'  # Pattern for splitting long text
-    max_length: int = 300  # Further reduced from 500 - smaller chunks to avoid timeouts
+    max_length: int = 200  # Further reduced from 300 - very small chunks to prevent timeouts
     
     # Quality settings
     use_gpu: bool = True
@@ -422,10 +422,16 @@ class KokoroTTSEngine:
         try:
             logger.debug(f"🔧 Starting sync generation for {len(chunk)} chars")
             
-            # Create generator
+            # Pre-process chunk to remove potential problematic characters
+            clean_chunk = chunk.strip()
+            if not clean_chunk:
+                logger.warning("🔧 Empty chunk after cleaning, skipping")
+                return []
+            
+            # Create generator with optimized settings
             generator_start = time.time()
             generator = self.pipeline(
-                chunk,
+                clean_chunk,
                 voice=voice,
                 speed=speed,
                 split_pattern=self.config.split_pattern
@@ -436,9 +442,14 @@ class KokoroTTSEngine:
             chunk_audio = []
             segment_count = 0
             last_log_time = time.time()
+            max_segments = 10  # Limit segments per chunk to prevent runaway generation
             
             # Process generator with detailed progress logging
             for j, (gs, ps, audio) in enumerate(generator):
+                if segment_count >= max_segments:
+                    logger.warning(f"⚠️ Limiting chunk to {max_segments} segments")
+                    break
+                    
                 segment_start = time.time()
                 chunk_audio.append(audio)
                 segment_count += 1
@@ -446,14 +457,19 @@ class KokoroTTSEngine:
                 
                 # Log every segment for debugging timeouts
                 current_time = time.time()
-                if current_time - last_log_time > 5.0:  # Log every 5 seconds
+                if current_time - last_log_time > 3.0:  # Log every 3 seconds
                     elapsed = current_time - start_time
                     logger.debug(f"  📊 Segment {segment_count}: {len(audio)} samples, {segment_time:.2f}s, total elapsed: {elapsed:.2f}s")
                     last_log_time = current_time
                 
                 # Check for extremely long segments
-                if segment_time > 10.0:
+                if segment_time > 5.0:
                     logger.warning(f"⚠️ Slow segment {segment_count}: {segment_time:.2f}s")
+                
+                # Safety check - if total time is getting too long, break
+                if current_time - start_time > 45.0:
+                    logger.warning(f"⚠️ Chunk taking too long ({current_time - start_time:.2f}s), stopping early")
+                    break
             
             total_time = time.time() - start_time
             logger.debug(f"🔧 Sync generation complete: {segment_count} segments in {total_time:.2f}s")
@@ -464,46 +480,60 @@ class KokoroTTSEngine:
             logger.error(f"❌ Synchronous chunk generation failed after {total_time:.2f}s: {e}")
             return []
     
-    async def _generate_chunk_async(self, chunk: str, voice: str, speed: float) -> List:
-        """Generate TTS chunk asynchronously using thread executor."""
+    async def _generate_chunk_async(self, chunk: str, voice: str, speed: float, max_retries: int = 2) -> List:
+        """Generate TTS chunk asynchronously using thread executor with retry logic."""
         import concurrent.futures
         import time
         
         logger.debug(f"🚀 Starting async chunk generation for {len(chunk)} chars")
-        start_time = time.time()
         
-        # Run the synchronous TTS generation in a thread executor
-        loop = asyncio.get_event_loop()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            future = loop.run_in_executor(
-                executor, 
-                self._generate_chunk_sync, 
-                chunk, 
-                voice, 
-                speed
-            )
+        for attempt in range(max_retries + 1):
+            start_time = time.time()
             
-            # Add timeout to prevent hanging - increased to 120 seconds
             try:
-                logger.debug(f"⏰ Waiting for chunk completion (timeout: 120s)")
-                result = await asyncio.wait_for(future, timeout=120.0)  # 120 second timeout
-                
-                elapsed = time.time() - start_time
-                logger.debug(f"✅ Async chunk completed in {elapsed:.2f}s")
-                return result
-                
+                # Run the synchronous TTS generation in a thread executor
+                loop = asyncio.get_event_loop()
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = loop.run_in_executor(
+                        executor, 
+                        self._generate_chunk_sync, 
+                        chunk, 
+                        voice, 
+                        speed
+                    )
+                    
+                    # Reduced timeout for smaller chunks - 60 seconds should be plenty
+                    timeout = 60.0
+                    logger.debug(f"⏰ Waiting for chunk completion (timeout: {timeout}s, attempt {attempt + 1}/{max_retries + 1})")
+                    result = await asyncio.wait_for(future, timeout=timeout)
+                    
+                    elapsed = time.time() - start_time
+                    logger.debug(f"✅ Async chunk completed in {elapsed:.2f}s")
+                    return result
+                    
             except asyncio.TimeoutError:
                 elapsed = time.time() - start_time
-                logger.error(f"💥 TTS chunk generation timed out after {elapsed:.2f} seconds")
-                logger.error(f"💥 Chunk content preview: {chunk[:100]}...")
-                
-                # Try to cancel the future
-                future.cancel()
-                return []
+                if attempt < max_retries:
+                    logger.warning(f"⚠️ TTS chunk timed out after {elapsed:.2f}s, retrying ({attempt + 1}/{max_retries})...")
+                    # Clear any GPU cache before retry
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    continue
+                else:
+                    logger.error(f"💥 TTS chunk generation failed after {max_retries + 1} attempts")
+                    logger.error(f"💥 Chunk content preview: {chunk[:100]}...")
+                    return []
+                    
             except Exception as e:
                 elapsed = time.time() - start_time
-                logger.error(f"💥 Async chunk generation failed after {elapsed:.2f}s: {e}")
-                return []
+                if attempt < max_retries:
+                    logger.warning(f"⚠️ TTS chunk failed after {elapsed:.2f}s: {e}, retrying ({attempt + 1}/{max_retries})...")
+                    continue
+                else:
+                    logger.error(f"💥 Async chunk generation failed after {max_retries + 1} attempts: {e}")
+                    return []
+        
+        return []  # Should never reach here
     
     async def generate_from_article(
         self, 
