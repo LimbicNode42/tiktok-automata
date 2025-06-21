@@ -366,8 +366,7 @@ class LlamaSummarizer:
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.model_name,
                 **model_kwargs
-            )
-            
+            )            
             # Create text generation pipeline
             self.pipeline = pipeline(
                 "text-generation",
@@ -379,7 +378,8 @@ class LlamaSummarizer:
             
             load_time = time.time() - start_time
             logger.success(f"Model loaded successfully in {load_time:.1f}s")
-              # Test generation speed
+            
+            # Test generation speed
             await self._benchmark_speed()
             
         except Exception as e:
@@ -393,11 +393,15 @@ class LlamaSummarizer:
             start_time = time.time()
             
             with torch.no_grad():
+                # 🚀 Optimized generation parameters
                 result = self.pipeline(
                     test_prompt,
                     max_new_tokens=50,
                     temperature=0.7,
                     do_sample=True,
+                    num_beams=1,  # Disable beam search for speed
+                    torch_dtype=torch.float16,  # Use half precision
+                    use_cache=True,  # Enable KV cache
                     pad_token_id=self.tokenizer.eos_token_id
                 )
             

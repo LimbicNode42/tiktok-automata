@@ -476,27 +476,48 @@ class VideoProcessor:
     async def _export_video(
         self, 
         video_clip: CompositeVideoClip, 
-        output_path: Optional[str] = None
-    ) -> str:
+        output_path: Optional[str] = None    ) -> str:
         """Export the final video to file."""
         try:
             if not output_path:
                 timestamp = int(time.time())
                 output_path = str(self.output_dir / f"tiktok_video_{timestamp}.mp4")
-              # Export settings based on quality config
+            
+            # Export settings based on quality config
             codec_settings = self._get_export_settings()
             
             logger.info(f"Exporting video to: {output_path}")
-            video_clip.write_videofile(
-                output_path,
-                **codec_settings,
-                logger=None,  # Suppress moviepy logs
-                # Additional speed optimizations for final export
-                ffmpeg_params=[
+            
+            # Prepare export parameters
+            export_params = dict(codec_settings)
+            
+            # Build ffmpeg_params based on codec
+            if codec_settings.get("codec") == "h264_nvenc":
+                # NVENC-specific parameters
+                ffmpeg_params = [
+                    '-movflags', '+faststart',
+                    '-pix_fmt', 'yuv420p',
+                    '-maxrate', f'{int(codec_settings["bitrate"][:-1]) * 1.2}k',
+                    '-bufsize', f'{int(codec_settings["bitrate"][:-1]) * 2}k'
+                ]
+                # Add NVENC-specific parameters
+                if "nvenc_params" in codec_settings:
+                    ffmpeg_params.extend(codec_settings["nvenc_params"])
+                    export_params.pop("nvenc_params", None)  # Remove from main params
+            else:
+                # CPU encoding (x264) parameters
+                ffmpeg_params = [
                     '-movflags', '+faststart', 
                     '-tune', 'fastdecode',
                     '-x264-params', 'ref=1:bframes=0:me=dia:subme=0:cabac=0'
                 ]
+            
+            export_params['ffmpeg_params'] = ffmpeg_params
+            
+            video_clip.write_videofile(
+                output_path,
+                **export_params,
+                logger=None  # Suppress moviepy logs
             )
             
             # Verify file size
@@ -511,37 +532,92 @@ class VideoProcessor:
         except Exception as e:
             logger.error(f"Video export failed: {e}")
             raise
-        
+
     def _get_export_settings(self) -> Dict:
-        """Get export settings based on quality configuration - ultra-optimized for speed."""
-        settings = {
+        """Get export settings with NVENC hardware acceleration and 1080p quality."""
+        
+        # NVENC settings for RTX 3070 - much faster than CPU encoding
+        nvenc_settings = {
             "low": {
-                "codec": "libx264",
-                "bitrate": "600k",  # Very low bitrate for max speed
-                "fps": 24,
-                "preset": "ultrafast",  # Fastest encoding
-                "threads": 8,  # More threads
-                "audio_codec": "aac"
+                "codec": "h264_nvenc",
+                "bitrate": "3000k",     # Good quality for 1080p
+                "fps": 30,
+                "preset": "p4",         # Fast NVENC preset
+                "audio_codec": "aac",
+                "audio_bitrate": "128k",
+                "nvenc_params": ["-rc", "vbr", "-cq", "25", "-spatial_aq", "1", "-temporal_aq", "1"]
             },
             "medium": {
-                "codec": "libx264", 
-                "bitrate": "1000k",  # Reduced bitrate
+                "codec": "h264_nvenc", 
+                "bitrate": "5000k",     # High quality for 1080p
                 "fps": 30,
-                "preset": "ultrafast",  # Fastest encoding even for medium
-                "threads": 8,  # More threads
-                "audio_codec": "aac"
+                "preset": "p4",         # Fast NVENC preset
+                "audio_codec": "aac",
+                "audio_bitrate": "128k",
+                "nvenc_params": ["-rc", "vbr", "-cq", "23", "-spatial_aq", "1", "-temporal_aq", "1"]
             },
             "high": {
-                "codec": "libx264",
-                "bitrate": "1500k",  # Reasonable quality with speed
+                "codec": "h264_nvenc",
+                "bitrate": "8000k",     # Very high quality for 1080p
                 "fps": 30,
-                "preset": "veryfast",  # Fast but reasonable quality
-                "threads": 8,  # More threads
-                "audio_codec": "aac"
+                "preset": "p2",         # Higher quality NVENC preset
+                "audio_codec": "aac",
+                "audio_bitrate": "192k",
+                "nvenc_params": ["-rc", "vbr", "-cq", "20", "-spatial_aq", "1", "-temporal_aq", "1"]
             }
         }
         
-        return settings.get(self.config.output_quality, settings["medium"])
+        # CPU fallback settings (if NVENC fails)
+        cpu_settings = {
+            "low": {
+                "codec": "libx264",
+                "bitrate": "3000k",
+                "fps": 30,
+                "preset": "fast",
+                "threads": 8,
+                "audio_codec": "aac",
+                "audio_bitrate": "128k"
+            },
+            "medium": {
+                "codec": "libx264", 
+                "bitrate": "5000k",
+                "fps": 30,
+                "preset": "medium",
+                "threads": 8,
+                "audio_codec": "aac",
+                "audio_bitrate": "128k"
+            },
+            "high": {
+                "codec": "libx264",
+                "bitrate": "8000k",
+                "fps": 30,
+                "preset": "slow",
+                "threads": 8,
+                "audio_codec": "aac",
+                "audio_bitrate": "192k"
+            }
+        }
+        
+        # Try NVENC first (hardware acceleration)
+        try:
+            # Quick test to see if NVENC works
+            import subprocess
+            result = subprocess.run([
+                'ffmpeg', '-f', 'lavfi', '-i', 'testsrc=duration=0.1:size=320x240:rate=1', 
+                '-c:v', 'h264_nvenc', '-preset', 'p4', '-f', 'null', '-'
+            ], capture_output=True, timeout=3, text=True)
+            
+            if result.returncode == 0:
+                logger.success("🚀 Using NVENC hardware acceleration")
+                return nvenc_settings.get(self.config.output_quality, nvenc_settings["medium"])
+            else:
+                logger.warning(f"NVENC test failed: {result.stderr}")
+        except Exception as e:
+            logger.warning(f"NVENC test error: {e}")
+        
+        # Fallback to optimized CPU encoding
+        logger.info("💻 Using CPU encoding (NVENC not available)")
+        return cpu_settings.get(self.config.output_quality, cpu_settings["medium"])
     
     async def _cleanup_temp_files(self):
         """Clean up temporary files."""

@@ -193,24 +193,25 @@ class VideoSegmentProcessor:
                 # Process at 720p first, then upscale
                 temp_segment = tiktok_segment.resized(height=720)
             else:
-                temp_segment = tiktok_segment            # Write video file with ultra-fast encoding settings
+                temp_segment = tiktok_segment            # Write video file with balanced quality/speed settings
             temp_segment.write_videofile(
                 str(segment_file),
                 codec='libx264',
                 audio_codec='aac',
                 fps=30,
-                preset='ultrafast',  # ⚡ ULTRA-FAST encoding for maximum speed
-                threads=8,  # Use more threads for faster encoding
-                bitrate='1200k',  # Even lower bitrate for max speed
+                preset='fast',  # Better quality than ultrafast
+                threads=8,
+                bitrate='4000k',  # 1080p quality bitrate
+                audio_bitrate='128k',
                 logger=None,
                 temp_audiofile=None,
                 remove_temp=True,
-                # Additional speed optimizations
+                # Optimized ffmpeg parameters for quality/speed balance
                 ffmpeg_params=[
-                    '-crf', '30',  # Higher CRF for faster encoding 
-                    '-tune', 'fastdecode', 
+                    '-crf', '23',  # Better quality (lower CRF)
                     '-movflags', '+faststart',
-                    '-x264-params', 'ref=1:bframes=0:me=dia:no-8x8dct=1:aq-strength=0:subme=0:cabac=0'
+                    '-profile:v', 'high',
+                    '-level:v', '4.0'
                 ]
             )
             
