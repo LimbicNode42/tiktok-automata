@@ -185,18 +185,33 @@ class VideoSegmentProcessor:
                 segment_file.unlink()
                 logger.info(f"🗑️ Removed existing segment: {segment_file.name}")
             
-            logger.info(f"🎬 Writing individual segment {index}: {segment_file.name}")
+            logger.info(f"🎬 Writing individual segment {index}: {segment_file.name} (ULTRA-FAST mode)")
             
-            # Write video file
-            tiktok_segment.write_videofile(
+            # 🚀 OPTIMIZATION: Process at lower resolution first, then upscale if needed
+            # This significantly speeds up encoding for long segments
+            if tiktok_segment.duration > 30:  # Only for longer segments
+                # Process at 720p first, then upscale
+                temp_segment = tiktok_segment.resized(height=720)
+            else:
+                temp_segment = tiktok_segment            # Write video file with ultra-fast encoding settings
+            temp_segment.write_videofile(
                 str(segment_file),
                 codec='libx264',
                 audio_codec='aac',
                 fps=30,
-                preset='medium',
+                preset='ultrafast',  # ⚡ ULTRA-FAST encoding for maximum speed
+                threads=8,  # Use more threads for faster encoding
+                bitrate='1200k',  # Even lower bitrate for max speed
                 logger=None,
                 temp_audiofile=None,
-                remove_temp=True
+                remove_temp=True,
+                # Additional speed optimizations
+                ffmpeg_params=[
+                    '-crf', '30',  # Higher CRF for faster encoding 
+                    '-tune', 'fastdecode', 
+                    '-movflags', '+faststart',
+                    '-x264-params', 'ref=1:bframes=0:me=dia:no-8x8dct=1:aq-strength=0:subme=0:cabac=0'
+                ]
             )
             
             # Verify file was created
@@ -218,6 +233,13 @@ class VideoSegmentProcessor:
             if tiktok_segment is not None:
                 try:
                     tiktok_segment.close()
+                except:
+                    pass
+            
+            # Cleanup temporary segment if used
+            if 'temp_segment' in locals() and temp_segment is not tiktok_segment:
+                try:
+                    temp_segment.close()
                 except:
                     pass
             
@@ -380,14 +402,15 @@ class VideoSegmentProcessor:
             if segment_file.exists():
                 segment_file.unlink()
                 logger.info(f"🗑️ Removed existing segment: {segment_file.name}")
-            
-            # Write video file with isolated clip
+              # Write video file with isolated clip - optimized for speed
             tiktok_segment.write_videofile(
                 str(segment_file),
                 codec='libx264',
                 audio_codec='aac',
                 fps=30,
-                preset='medium',
+                preset='veryfast',  # Much faster encoding
+                threads=4,  # Use multiple threads
+                bitrate='2000k',  # Explicit bitrate for TikTok
                 logger=None,
                 temp_audiofile=None,
                 remove_temp=True

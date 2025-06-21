@@ -487,11 +487,16 @@ class VideoProcessor:
             codec_settings = self._get_export_settings()
             
             logger.info(f"Exporting video to: {output_path}")
-            
             video_clip.write_videofile(
                 output_path,
                 **codec_settings,
-                logger=None  # Suppress moviepy logs
+                logger=None,  # Suppress moviepy logs
+                # Additional speed optimizations for final export
+                ffmpeg_params=[
+                    '-movflags', '+faststart', 
+                    '-tune', 'fastdecode',
+                    '-x264-params', 'ref=1:bframes=0:me=dia:subme=0:cabac=0'
+                ]
             )
             
             # Verify file size
@@ -506,24 +511,33 @@ class VideoProcessor:
         except Exception as e:
             logger.error(f"Video export failed: {e}")
             raise
-    
+        
     def _get_export_settings(self) -> Dict:
-        """Get export settings based on quality configuration."""
+        """Get export settings based on quality configuration - ultra-optimized for speed."""
         settings = {
             "low": {
                 "codec": "libx264",
-                "bitrate": "1000k",
-                "fps": 24
+                "bitrate": "600k",  # Very low bitrate for max speed
+                "fps": 24,
+                "preset": "ultrafast",  # Fastest encoding
+                "threads": 8,  # More threads
+                "audio_codec": "aac"
             },
             "medium": {
                 "codec": "libx264", 
-                "bitrate": "2000k",
-                "fps": 30
+                "bitrate": "1000k",  # Reduced bitrate
+                "fps": 30,
+                "preset": "ultrafast",  # Fastest encoding even for medium
+                "threads": 8,  # More threads
+                "audio_codec": "aac"
             },
             "high": {
                 "codec": "libx264",
-                "bitrate": "4000k", 
-                "fps": 30
+                "bitrate": "1500k",  # Reasonable quality with speed
+                "fps": 30,
+                "preset": "veryfast",  # Fast but reasonable quality
+                "threads": 8,  # More threads
+                "audio_codec": "aac"
             }
         }
         

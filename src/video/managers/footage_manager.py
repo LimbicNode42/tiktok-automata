@@ -52,7 +52,7 @@ class FootageManager(BaseFootageManager):
     # === ANALYSIS OPERATIONS ===
     
     async def analyze_video_action(self, video_id: str) -> Dict:
-        """Analyze action intensity in a downloaded video."""
+        """Analyze action intensity in a downloaded video with caching."""
         if video_id not in self.metadata["videos"]:
             logger.error(f"Video {video_id} not found")
             return {}
@@ -63,6 +63,19 @@ class FootageManager(BaseFootageManager):
         if not video_path.exists():
             logger.error(f"Video file not found: {video_path}")
             return {}
+          # 🚀 OPTIMIZATION: Check if already analyzed
+        if "action_analysis" in video_info and video_info["action_analysis"].get("analyzed"):
+            # Check if we have cached detailed results
+            cache_file = self.storage_dir / f"{video_id}_action_cache.json"
+            if cache_file.exists():
+                try:
+                    import json
+                    with open(cache_file, 'r') as f:
+                        cached_data = json.load(f)
+                    logger.info(f"⚡ Using cached action analysis for {video_id}")
+                    return cached_data
+                except Exception as e:
+                    logger.warning(f"Cache read failed, re-analyzing: {e}")
         
         logger.info(f"🔍 Analyzing action in video: {video_id}")
         action_data = await self.analyzer.analyze_video_action(video_path)
@@ -75,13 +88,61 @@ class FootageManager(BaseFootageManager):
             "analyzed": True
         }
         self._save_metadata()
+          # 🚀 OPTIMIZATION: Cache detailed results for future use
+        cache_file = self.storage_dir / f"{video_id}_action_cache.json"
+        try:
+            import json            # Convert ActionMetrics objects to dict for JSON serialization
+            cacheable_data = {}
+            for level, metrics_list in action_data.items():
+                cacheable_data[level] = []
+                for metrics in metrics_list:
+                    cacheable_data[level].append({
+                        'timestamp': float(metrics.timestamp),
+                        'motion_intensity': float(metrics.motion_intensity),
+                        'color_variance': float(metrics.color_variance),
+                        'edge_density': float(metrics.edge_density),
+                        'scene_complexity': float(metrics.scene_complexity),
+                        'action_type': getattr(metrics, 'action_type', 'unknown')
+                    })
+            
+            with open(cache_file, 'w') as f:
+                json.dump(cacheable_data, f, indent=2)
+            logger.info(f"💾 Cached action analysis for {video_id}")
+        except Exception as e:
+            logger.warning(f"Failed to cache analysis: {e}")
         
         return action_data
     
     async def get_best_action_segments(self, video_id: str, segment_duration: float = 45.0) -> List:
-        """Get the best action segments from a video."""
+        """Get the best action segments from a video with caching."""        # 🚀 OPTIMIZATION: Check for cached segment results
+        cache_key = f"{video_id}_segments_{segment_duration:.1f}s"
+        cache_file = self.storage_dir / f"{cache_key}.json"
+        
+        if cache_file.exists():
+            try:
+                import json
+                with open(cache_file, 'r') as f:
+                    cached_segments = json.load(f)
+                logger.info(f"⚡ Using cached action segments for {video_id}")
+                return [(seg['start'], seg['end']) for seg in cached_segments]
+            except Exception as e:
+                logger.warning(f"Segment cache read failed, recomputing: {e}")
+        
+        # Get action data (this is now cached too)
         action_data = await self.analyze_video_action(video_id)
-        return self.analyzer.get_best_action_segments(action_data, segment_duration)
+        segments = self.analyzer.get_best_action_segments(action_data, segment_duration)
+        
+        # 🚀 OPTIMIZATION: Cache segment results
+        try:
+            import json
+            cacheable_segments = [{'start': seg[0], 'end': seg[1]} for seg in segments]
+            with open(cache_file, 'w') as f:
+                json.dump(cacheable_segments, f, indent=2)
+            logger.info(f"💾 Cached action segments for {video_id}")
+        except Exception as e:
+            logger.warning(f"Failed to cache segments: {e}")
+        
+        return segments
     
     # === PROCESSING OPERATIONS ===
     
