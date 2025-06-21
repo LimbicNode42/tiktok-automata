@@ -3,6 +3,7 @@ Video Segment Processor - Handles processing video segments with custom duration
 """
 
 import asyncio
+import gc
 import json
 import traceback
 from pathlib import Path
@@ -186,14 +187,24 @@ class VideoSegmentProcessor:
                 logger.info(f"🗑️ Removed existing segment: {segment_file.name}")
             
             logger.info(f"🎬 Writing individual segment {index}: {segment_file.name} (ULTRA-FAST mode)")
-            
-            # 🚀 OPTIMIZATION: Process at lower resolution first, then upscale if needed
+              # 🚀 OPTIMIZATION: Process at lower resolution first, then upscale if needed
             # This significantly speeds up encoding for long segments
             if tiktok_segment.duration > 30:  # Only for longer segments
-                # Process at 720p first, then upscale
-                temp_segment = tiktok_segment.resized(height=720)
+                # Process at 720p first, but ensure dimensions are even
+                target_height = 720
+                current_width, current_height = tiktok_segment.size
+                target_width = int(current_width * (target_height / current_height))
+                
+                # Ensure even dimensions for x264 compatibility
+                if target_width % 2 != 0:
+                    target_width = target_width - 1
+                if target_height % 2 != 0:
+                    target_height = target_height - 1
+                    
+                logger.info(f"📐 Optimizing to {target_width}x{target_height} for faster encoding")
+                temp_segment = tiktok_segment.resized((target_width, target_height))
             else:
-                temp_segment = tiktok_segment            # Write video file with balanced quality/speed settings
+                temp_segment = tiktok_segment# Write video file with balanced quality/speed settings
             temp_segment.write_videofile(
                 str(segment_file),
                 codec='libx264',
@@ -206,11 +217,12 @@ class VideoSegmentProcessor:
                 logger=None,
                 temp_audiofile=None,
                 remove_temp=True,
-                # Optimized ffmpeg parameters for quality/speed balance
+                # Add pixel format to fix color space issue
                 ffmpeg_params=[
                     '-crf', '23',  # Better quality (lower CRF)
                     '-movflags', '+faststart',
-                    '-profile:v', 'high',
+                    '-pix_fmt', 'yuv420p',  # Fix color space issue
+                    '-profile:v', 'main',   # Use main profile instead of high
                     '-level:v', '4.0'
                 ]
             )
@@ -225,7 +237,8 @@ class VideoSegmentProcessor:
                 return None
                 
         except Exception as e:
-            logger.error(f"❌ Failed to create individual segment {duration_info['index']}: {e}")
+            index = duration_info.get('index', 'unknown')
+            logger.error(f"❌ Failed to create individual segment {index}: {e}")
             logger.error(f"   Full error: {traceback.format_exc()}")
             return None
         
@@ -448,13 +461,11 @@ class VideoSegmentProcessor:
                 except:
                     pass
             
-            # Force garbage collection to free memory
-            import gc
-            gc.collect()
-            
+            # Force garbage collection to free memory            import gc
+            gc.collect()            
             # Small delay to prevent resource conflicts
             await asyncio.sleep(0.2)
-
+    
     def _convert_to_tiktok_format(self, clip):
         """Convert video clip to TikTok format (9:16 aspect ratio, 1080x1920)."""
         try:
@@ -467,21 +478,72 @@ class VideoSegmentProcessor:
             current_width, current_height = clip.size
             current_ratio = current_height / current_width
             
-            if current_ratio > target_ratio:
-                # Video is taller than target - crop height
-                new_height = int(current_width * target_ratio)
-                y_offset = (current_height - new_height) // 2
-                cropped = clip.cropped(y1=y_offset, y2=y_offset + new_height)
-            else:
-                # Video is wider than target - crop width
-                new_width = int(current_height / target_ratio)
-                x_offset = (current_width - new_width) // 2
-                cropped = clip.cropped(x1=x_offset, x2=x_offset + new_width)
+            logger.info(f"🎯 Converting {current_width}x{current_height} to TikTok format")
             
-            # Resize to exact TikTok dimensions
+            if current_ratio > target_ratio:
+                # Video is taller than target - crop height, keep full width
+                new_width = current_width
+                new_height = int(current_width * target_ratio)
+                
+                # Ensure even dimensions for x264 compatibility
+                if new_width % 2 != 0:
+                    new_width = new_width - 1
+                if new_height % 2 != 0:
+                    new_height = new_height - 1
+                
+                # Calculate centered crop coordinates
+                x_offset = (current_width - new_width) // 2
+                y_offset = (current_height - new_height) // 2
+                
+                # Crop using correct coordinates (x1, y1, x2, y2)
+                cropped = clip.cropped(
+                    x1=x_offset, 
+                    y1=y_offset, 
+                    x2=x_offset + new_width, 
+                    y2=y_offset + new_height
+                )
+            else:
+                # Video is wider than target - crop width, keep full height
+                new_width = int(current_height / target_ratio)
+                new_height = current_height
+                
+                # Ensure even dimensions for x264 compatibility
+                if new_width % 2 != 0:
+                    new_width = new_width - 1
+                if new_height % 2 != 0:
+                    new_height = new_height - 1
+                
+                # Calculate centered crop coordinates
+                x_offset = (current_width - new_width) // 2
+                y_offset = (current_height - new_height) // 2
+                
+                # Crop using correct coordinates (x1, y1, x2, y2)
+                cropped = clip.cropped(
+                    x1=x_offset, 
+                    y1=y_offset, 
+                    x2=x_offset + new_width, 
+                    y2=y_offset + new_height
+                )
+            
+            # Verify final dimensions are even
+            final_width, final_height = cropped.size
+            logger.info(f"📐 After cropping: {final_width}x{final_height}")
+            
+            if final_width % 2 != 0 or final_height % 2 != 0:
+                logger.warning(f"⚠️ Uneven dimensions detected, adjusting...")
+                # Force even dimensions
+                final_width = final_width - (final_width % 2)
+                final_height = final_height - (final_height % 2)
+                cropped = cropped.cropped(x2=final_width, y2=final_height)
+                logger.info(f"📐 Corrected to: {final_width}x{final_height}")
+            
+            # Resize to exact TikTok dimensions (both are already even)
             resized = cropped.resized((target_width, target_height))
+            logger.info(f"✅ Final TikTok format: {target_width}x{target_height}")
+            
             return resized
         except Exception as e:
             logger.error(f"Format conversion failed: {e}")
+            logger.error(f"Full error: {traceback.format_exc()}")
             # Return original clip if conversion fails
             return clip

@@ -371,8 +371,7 @@ class VideoProcessor:
                 'start_time': start_time,
                 'duration': min(segment_duration, duration - start_time),
                 'style': style
-            })
-        
+            })        
         return segments
     
     def _create_text_clip(
@@ -383,19 +382,18 @@ class VideoProcessor:
         style: str = "normal"
     ) -> Optional[TextClip]:
         """Create a single text clip with styling."""
-        try:            # Style configurations
+        try:
+            # Style configurations (simplified to avoid conflicts)
             styles = {
                 "normal": {
-                    "fontsize": 60,  # Use fontsize instead of font_size
+                    "font_size": 60,
                     "color": "white",
-                    "font": "Arial-Bold",
                     "stroke_color": "black",
                     "stroke_width": 2
                 },
                 "emphasis": {
-                    "fontsize": 70,  # Use fontsize instead of font_size
+                    "font_size": 70,
                     "color": "yellow",
-                    "font": "Arial-Bold",
                     "stroke_color": "red",
                     "stroke_width": 3
                 }
@@ -403,18 +401,19 @@ class VideoProcessor:
             
             style_config = styles.get(style, styles["normal"])
             
-            # Create text clip
+            # Create text clip (simplified to avoid parameter conflicts)
             txt_clip = TextClip(
                 text,
-                fontsize=style_config["fontsize"],  # Use fontsize instead of font_size
+                font_size=style_config["font_size"],
                 color=style_config["color"],
-                font=style_config["font"],
                 stroke_color=style_config["stroke_color"],
                 stroke_width=style_config["stroke_width"]
             ).with_duration(duration).with_start(start_time)
-              # Position text (centered with some offset for mobile viewing)
+            
+            # Position text (centered with some offset for mobile viewing)
             txt_clip = txt_clip.with_position(('center', 0.7))  # 70% down the screen
-              # Add fade effects
+            
+            # Add fade effects
             txt_clip = txt_clip.with_effects([FadeIn(0.5), FadeOut(0.5)])
             
             return txt_clip

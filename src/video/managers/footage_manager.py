@@ -62,16 +62,30 @@ class FootageManager(BaseFootageManager):
         
         if not video_path.exists():
             logger.error(f"Video file not found: {video_path}")
-            return {}
-          # 🚀 OPTIMIZATION: Check if already analyzed
+            return {}        # 🚀 OPTIMIZATION: Check if already analyzed
         if "action_analysis" in video_info and video_info["action_analysis"].get("analyzed"):
             # Check if we have cached detailed results
             cache_file = self.storage_dir / f"{video_id}_action_cache.json"
+            
             if cache_file.exists():
                 try:
                     import json
+                    from ..analyzers.action_analyzer import ActionMetrics
                     with open(cache_file, 'r') as f:
                         cached_data = json.load(f)
+                    
+                    # Convert dict data back to ActionMetrics objects
+                    for level in cached_data:
+                        cached_data[level] = [
+                            ActionMetrics(
+                                motion_intensity=item['motion_intensity'],
+                                edge_density=item['edge_density'], 
+                                scene_complexity=item['scene_complexity'],
+                                overall_score=item['overall_score'],
+                                timestamp=item['timestamp']
+                            ) for item in cached_data[level]
+                        ]
+                    
                     logger.info(f"⚡ Using cached action analysis for {video_id}")
                     return cached_data
                 except Exception as e:
