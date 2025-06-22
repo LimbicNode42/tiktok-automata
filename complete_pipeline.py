@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 try:
     # Import all pipeline components
     from src.scraper.newsletter_scraper import NewsletterScraper, Article
-    from src.summarizer.llama_summarizer import create_tiktok_summarizer, TikTokSummaryConfig
+    from src.summarizer.llama_summarizer import create_tiktok_summarizer, TikTokSummaryConfig, LlamaSummarizer
     from src.tts.kokoro_tts import KokoroTTSEngine
     from src.video.processors.video_processor import VideoProcessor, VideoConfig
     from src.video import FootageManager
@@ -63,16 +63,19 @@ class CompleteTikTokPipeline:
         try:
             # 1. Newsletter scraper
             logger.info("📰 Initializing newsletter scraper...")
-            self.scraper = NewsletterScraper()
-              # 2. AI summarizer (Llama 3.2-3B) - Create but don't load yet
-            logger.info("🤖 Creating Llama 3.2-3B summarizer config...")
+            self.scraper = NewsletterScraper()            # 2. AI summarizer (Llama 3.2-3B) - Create with config
+            logger.info("🤖 Creating Llama 3.2-3B summarizer...")
             config = TikTokSummaryConfig(
                 target_duration=60,
                 temperature=0.8,
                 use_gpu=True
             )
-            self.summarizer = create_tiktok_summarizer()
-            self.summarizer.config = config
+            logger.info(f"Config created: {config}")
+            self.summarizer = LlamaSummarizer(config)
+            logger.info(f"Summarizer created: {self.summarizer}")
+            logger.info(f"Summarizer type: {type(self.summarizer)}")
+            if self.summarizer is None:
+                raise ValueError("Failed to create summarizer")
             # Don't initialize yet - will load on-demand
               # 3. TTS (Kokoro) - Create but don't load yet
             logger.info("🎤 Creating Kokoro TTS config...")
@@ -137,6 +140,9 @@ class CompleteTikTokPipeline:
         try:
             # Load Llama model on-demand
             logger.info("🔥 Loading Llama model on GPU...")
+            logger.info(f"Summarizer object: {self.summarizer}")
+            logger.info(f"Summarizer type: {type(self.summarizer)}")
+            logger.info(f"Has initialize method: {hasattr(self.summarizer, 'initialize')}")
             await self.summarizer.initialize()
             
             summary_result = await self.summarizer.summarize_for_tiktok(
