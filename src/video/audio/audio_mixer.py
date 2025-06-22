@@ -123,10 +123,9 @@ class AudioMixer:
             processed_background = await self._process_background_audio(background_audio, target_duration)
             
             # Mix the audio streams
-            mixed_audio = await self._mix_audio_tracks(processed_tts, processed_background)
-              # Apply final processing and save
+            mixed_audio = await self._mix_audio_tracks(processed_tts, processed_background)            # Apply final processing and save
             final_audio = await self._finalize_audio(mixed_audio)
-            final_audio.write_audiofile(str(output_path), logger=None)
+            final_audio.write_audiofile(str(output_path), logger="bar")
             
             # Cleanup
             tts_audio.close()
