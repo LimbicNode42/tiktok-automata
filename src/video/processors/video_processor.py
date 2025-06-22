@@ -21,7 +21,8 @@ import time
 try:
     from moviepy import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, ColorClip, concatenate_videoclips
     # Import video effects from the video.fx module
-    from moviepy.video.fx import Resize, MultiplySpeed, FadeIn, FadeOut
+    from moviepy.video.fx import Resize, MultiplySpeed, FadeIn, FadeOut, LumContrast
+    # Note: GaussianBlur may not be available in current MoviePy, will implement custom blur
 except ImportError as e:
     logger.error(f"MoviePy not installed or import failed: {e}")
     logger.error("Run: pip install --upgrade moviepy")
@@ -41,14 +42,16 @@ class VideoConfig:
     use_gaming_footage: bool = True
     footage_intensity: str = "medium"  # low, medium, high
     text_overlay_style: str = "modern"  # modern, classic, minimal
-    
-    # Effects
+      # Effects
     enable_zoom_effects: bool = True
     enable_transitions: bool = True
-    enable_beat_sync: bool = True
-      # Letterboxing settings
-    letterbox_mode: str = "traditional"  # "traditional" or "percentage"
+    enable_beat_sync: bool = True    # Letterboxing settings
+    letterbox_mode: str = "blurred_background"  # "traditional", "percentage", or "blurred_background"
     letterbox_crop_percentage: float = 0.60  # Only used when mode is "percentage"
+    blur_strength: float = 30.0  # Blur strength for blurred_background mode
+    background_opacity: float = 0.7  # Opacity for blurred background (0.0-1.0) - 70% for optimal paleness
+    background_desaturation: float = 0.3  # Desaturation for blurred background (0.0-1.0) - 30% for good color retention
+    background_opacity: float = 0.7  # Opacity of blurred background (0.0-1.0, lower = more pale)
     
     # Output
     output_quality: str = "high"  # low, medium, high
@@ -239,9 +242,8 @@ class VideoProcessor:
                 logger.success(f"✅ Using real gaming footage: {footage_path.name}")
                 
                 # Load the real gaming footage
-                gaming_video = VideoFileClip(str(footage_path))
-                  # Apply letterboxing for TikTok format (preserves aspect ratio)
-                gaming_video = self._apply_letterboxing(gaming_video)
+                gaming_video = VideoFileClip(str(footage_path))                # Apply letterboxing for TikTok format (preserves aspect ratio)
+                gaming_video = self._apply_letterboxing_with_config(gaming_video)
                 
                 # If the video is shorter than needed, loop it first
                 if gaming_video.duration < duration:
@@ -910,8 +912,7 @@ class VideoProcessor:
             
             # Trim to exact duration
             raw_video = raw_video.subclipped(0, duration)
-            
-            # Remove audio to avoid conflicts
+              # Remove audio to avoid conflicts
             raw_video = raw_video.without_audio()
             
             logger.success(f"✅ Raw footage prepared: {raw_video.w}x{raw_video.h}, {raw_video.duration:.1f}s")
@@ -935,6 +936,165 @@ class VideoProcessor:
         if self.config.letterbox_mode == "percentage":
             logger.info(f"🔍 Using percentage letterboxing ({self.config.letterbox_crop_percentage:.1%})")
             return self._apply_percentage_letterboxing(video_clip, self.config.letterbox_crop_percentage)
+        elif self.config.letterbox_mode == "blurred_background":
+            logger.info(f"🌫️ Using blurred background letterboxing (blur: {self.config.blur_strength})")
+            return self._apply_blurred_background_letterboxing(video_clip)
         else:
             logger.info("📦 Using traditional letterboxing (100% source)")
+            return self._apply_letterboxing(video_clip)
+    def _apply_blurred_background_letterboxing(self, video_clip: VideoFileClip) -> VideoFileClip:
+        """
+        Apply letterboxing with a blurred, scaled background instead of black bars.
+        
+        This creates a modern, visually appealing effect where the same video content
+        is used as a blurred, faded background to fill the entire frame, with the original
+        video properly letterboxed on top using percentage cropping for better content visibility.
+        
+        Args:
+            video_clip: Source video clip to letterbox
+            
+        Returns:
+            Letterboxed video clip with blurred background and TikTok dimensions
+        """
+        try:
+            target_width = self.config.width   # 1080
+            target_height = self.config.height # 1920
+            
+            current_width = video_clip.w
+            current_height = video_clip.h
+            
+            logger.info(f"🎬 BLURRED BACKGROUND LETTERBOXING: Source {current_width}x{current_height} -> Target {target_width}x{target_height}")
+            logger.info(f"🔍 Using {self.config.letterbox_crop_percentage:.1%} crop for foreground, {self.config.background_opacity:.1%} opacity for background")
+            
+            # Create the blurred background
+            # Scale the video to fill the entire target frame (may crop content)
+            background_scale_factor = max(target_width / current_width, target_height / current_height)
+            background_width = int(current_width * background_scale_factor)
+            background_height = int(current_height * background_scale_factor)
+            
+            logger.info(f"🌫️ Creating blurred background: {background_width}x{background_height} (scale: {background_scale_factor:.3f})")
+            
+            # Create scaled background and apply blur effect
+            blurred_background = video_clip.resized(new_size=(background_width, background_height))
+            
+            # Create blur effect by scaling down then back up (simple but effective)
+            blur_factor = max(1, int(self.config.blur_strength / 3))  # Convert blur strength to scale factor
+            temp_width = max(background_width // blur_factor, 32)  # Minimum 32px to avoid too much distortion
+            temp_height = max(background_height // blur_factor, 18)  # Maintain aspect ratio
+            
+            # Scale down then back up for blur effect
+            blurred_background = (blurred_background
+                                .resized(new_size=(temp_width, temp_height))
+                                .resized(new_size=(background_width, background_height)))
+              # Apply opacity/paleness effect to make background more faded
+            blurred_background = blurred_background.with_opacity(self.config.background_opacity)
+            
+            # Apply desaturation effect (custom implementation)
+            if self.config.background_desaturation > 0:
+                desaturation_factor = self.config.background_desaturation
+                
+                def desaturate_frame(gf, t):
+                    frame = gf(t)
+                    # Convert to grayscale using luminance formula (RGB to grayscale)
+                    gray = 0.299 * frame[:,:,0] + 0.587 * frame[:,:,1] + 0.114 * frame[:,:,2]
+                    # Expand grayscale to 3 channels
+                    gray_frame = frame.copy()
+                    gray_frame[:,:,0] = gray
+                    gray_frame[:,:,1] = gray
+                    gray_frame[:,:,2] = gray
+                    # Blend original with grayscale based on desaturation factor
+                    return (1 - desaturation_factor) * frame + desaturation_factor * gray_frame
+                
+                blurred_background = blurred_background.transform(desaturate_frame)
+                logger.info(f"🎨 Applied {self.config.background_desaturation:.1%} desaturation")
+            
+            logger.info(f"🌫️ Applied blur effect: {background_width}x{background_height} -> {temp_width}x{temp_height} -> {background_width}x{background_height}")
+            logger.info(f"💨 Applied {self.config.background_opacity:.1%} opacity for paleness effect")
+            
+            # Center the blurred background
+            bg_x_offset = (target_width - background_width) // 2
+            bg_y_offset = (target_height - background_height) // 2
+            
+            if bg_x_offset < 0 or bg_y_offset < 0:
+                # If background is larger than target, crop it to fit
+                crop_x_start = max(0, abs(bg_x_offset))
+                crop_y_start = max(0, abs(bg_y_offset))
+                crop_x_end = min(background_width, crop_x_start + target_width)
+                crop_y_end = min(background_height, crop_y_start + target_height)
+                
+                blurred_background = blurred_background.cropped(
+                    x1=crop_x_start, y1=crop_y_start, 
+                    x2=crop_x_end, y2=crop_y_end
+                )
+                bg_x_offset = 0
+                bg_y_offset = 0
+                logger.info(f"✂️ Cropped blurred background to fit")
+            
+            # Create the foreground using PERCENTAGE letterboxing for better content visibility
+            # This crops some of the source to show more content with smaller letterbox bars
+            crop_percentage = self.config.letterbox_crop_percentage
+            
+            # Calculate effective source dimensions (the portion we'll use)
+            effective_source_width = current_width * crop_percentage
+            
+            # Calculate scaling to fit effective source width to target width
+            fg_scale_factor = target_width / effective_source_width
+            fg_scaled_width = int(current_width * fg_scale_factor)
+            fg_scaled_height = int(current_height * fg_scale_factor)
+            
+            logger.info(f"📺 Creating foreground with {crop_percentage:.1%} crop: {fg_scaled_width}x{fg_scaled_height} (scale: {fg_scale_factor:.3f})")
+            
+            # Scale the video
+            foreground_video = video_clip.resized(new_size=(fg_scaled_width, fg_scaled_height))
+            
+            # Calculate cropping/positioning for horizontal centering
+            fg_x_overflow = (fg_scaled_width - target_width) // 2
+            
+            if fg_x_overflow > 0:
+                # Crop horizontally to fit width
+                fg_x_crop_start = fg_x_overflow
+                fg_x_crop_end = fg_x_overflow + target_width
+                foreground_video = foreground_video.cropped(x1=fg_x_crop_start, x2=fg_x_crop_end)
+                fg_final_width = target_width
+                logger.info(f"✂️ Cropped foreground: {fg_x_overflow}px from left and right edges")
+            else:
+                fg_final_width = fg_scaled_width
+            
+            # Calculate vertical positioning
+            fg_y_offset = (target_height - fg_scaled_height) // 2
+            
+            if fg_y_offset < 0:
+                # If foreground is too tall, crop it
+                crop_amount = abs(fg_y_offset)
+                foreground_video = foreground_video.cropped(y1=crop_amount, y2=fg_scaled_height-crop_amount)
+                fg_y_offset = 0
+                fg_final_height = target_height
+                logger.info(f"✂️ Cropped foreground height by {crop_amount*2}px")
+            else:
+                fg_final_height = fg_scaled_height
+            
+            logger.info(f"📍 Positioning: Background at ({bg_x_offset}, {bg_y_offset}), Foreground at (center, {fg_y_offset})")
+            
+            # Create black background first (for areas not covered by blurred background)
+            black_background = ColorClip(
+                size=(target_width, target_height),
+                color=(0, 0, 0),  # Black
+                duration=video_clip.duration
+            )
+            
+            # Composite the final video with black base, blurred background, and sharp foreground
+            final_video = CompositeVideoClip([
+                black_background,
+                blurred_background.with_position((bg_x_offset, bg_y_offset)),
+                foreground_video.with_position(('center', fg_y_offset))
+            ], size=(target_width, target_height))
+            
+            logger.success(f"✅ Blurred background letterboxing completed")
+            logger.success(f"📊 Result: Sharp {fg_final_width}x{fg_final_height} foreground ({crop_percentage:.1%} crop) over pale blurred background")
+            
+            return final_video
+            
+        except Exception as e:
+            logger.error(f"❌ Blurred background letterboxing failed: {e}")
+            logger.warning("Falling back to traditional letterboxing")
             return self._apply_letterboxing(video_clip)
