@@ -46,10 +46,9 @@ class VideoConfig:
     enable_zoom_effects: bool = True
     enable_transitions: bool = True
     enable_beat_sync: bool = True
-    
-    # Letterboxing settings
+      # Letterboxing settings
     letterbox_mode: str = "traditional"  # "traditional" or "percentage"
-    letterbox_crop_percentage: float = 0.75  # Only used when mode is "percentage"
+    letterbox_crop_percentage: float = 0.60  # Only used when mode is "percentage"
     
     # Output
     output_quality: str = "high"  # low, medium, high
