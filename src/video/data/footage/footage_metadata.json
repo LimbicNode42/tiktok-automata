@@ -22,9 +22,9 @@
       "processed": false,
       "download_date": 1749984194.9862463,
       "action_analysis": {
-        "high_action_count": 1,
-        "medium_action_count": 3,
-        "low_action_count": 3,
+        "high_action_count": 6,
+        "medium_action_count": 1,
+        "low_action_count": 0,
         "analyzed": true
       }
     },
@@ -62,7 +62,7 @@
     ],
     "ambient": []
   },
-  "last_updated": 1750579128.2716396,
+  "last_updated": 1750588105.2336886,
   "total_duration": 0,
   "total_videos": 12
 }

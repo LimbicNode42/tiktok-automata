@@ -1,64 +1,63 @@
 {
   "high": [
     {
-      "timestamp": 86.00166666666667,
-      "motion_intensity": 44.08328628540039,
-      "color_variance": 2738.5020450617285,
-      "edge_density": 22.427397847816017,
-      "scene_complexity": 2710.6934081886475,
+      "timestamp": 86.01333333333334,
+      "motion_intensity": 0.0,
+      "color_variance": 2877.8991350517945,
+      "edge_density": 0.0,
+      "scene_complexity": 2851.1694186135533,
+      "action_type": "unknown"
+    },
+    {
+      "timestamp": 162.02666666666667,
+      "motion_intensity": 0.0,
+      "color_variance": 982.3281471522594,
+      "edge_density": 0.0,
+      "scene_complexity": 722.2057688116016,
+      "action_type": "unknown"
+    },
+    {
+      "timestamp": 238.04000000000002,
+      "motion_intensity": 0.0,
+      "color_variance": 1468.6071244320128,
+      "edge_density": 0.0,
+      "scene_complexity": 1460.0522638603445,
+      "action_type": "unknown"
+    },
+    {
+      "timestamp": 314.05333333333334,
+      "motion_intensity": 0.0,
+      "color_variance": 901.5893370365013,
+      "edge_density": 0.0,
+      "scene_complexity": 875.724601586422,
+      "action_type": "unknown"
+    },
+    {
+      "timestamp": 390.06666666666666,
+      "motion_intensity": 0.0,
+      "color_variance": 1146.8434326194135,
+      "edge_density": 0.0,
+      "scene_complexity": 986.5691144880375,
+      "action_type": "unknown"
+    },
+    {
+      "timestamp": 466.08,
+      "motion_intensity": 0.0,
+      "color_variance": 1513.3238193415373,
+      "edge_density": 0.0,
+      "scene_complexity": 1385.420983533031,
       "action_type": "unknown"
     }
   ],
   "medium": [
     {
-      "timestamp": 238.005,
-      "motion_intensity": 33.33442306518555,
-      "color_variance": 1230.4087906973377,
-      "edge_density": 16.084095238001765,
-      "scene_complexity": 1224.5770399932564,
-      "action_type": "unknown"
-    },
-    {
-      "timestamp": 390.0083333333333,
-      "motion_intensity": 34.92219924926758,
-      "color_variance": 1119.9129868634259,
-      "edge_density": 14.339650531829971,
-      "scene_complexity": 985.5967116866037,
-      "action_type": "unknown"
-    },
-    {
-      "timestamp": 466.01,
-      "motion_intensity": 34.498748779296875,
-      "color_variance": 1381.384000666581,
-      "edge_density": 15.355480276227045,
-      "scene_complexity": 1170.294698967946,
+      "timestamp": 10.0,
+      "motion_intensity": 0.0,
+      "color_variance": 466.24544718125384,
+      "edge_density": 0.0,
+      "scene_complexity": 453.414054144542,
       "action_type": "unknown"
     }
   ],
-  "low": [
-    {
-      "timestamp": 10.0,
-      "motion_intensity": 44.08328628540039,
-      "color_variance": 386.5140250685871,
-      "edge_density": 12.489916823048759,
-      "scene_complexity": 374.28407793531284,
-      "action_type": "unknown"
-    },
-    {
-      "timestamp": 162.00333333333333,
-      "motion_intensity": 52.16370391845703,
-      "color_variance": 626.6280435185184,
-      "edge_density": 9.27822729449823,
-      "scene_complexity": 328.0717961001878,
-      "action_type": "unknown"
-    },
-    {
-      "timestamp": 314.00666666666666,
-      "motion_intensity": 32.90458297729492,
-      "color_variance": 835.987198417674,
-      "edge_density": 14.982017597238254,
-      "scene_complexity": 805.5333406426998,
-      "action_type": "unknown"
-    }
-  ]
+  "low": []
 }

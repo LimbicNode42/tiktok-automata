@@ -237,24 +237,8 @@ class VideoProcessor:
                 
                 # Load the real gaming footage
                 gaming_video = VideoFileClip(str(footage_path))
-                
-                # Crop/resize to TikTok format (9:16 aspect ratio)
-                target_aspect = self.config.height / self.config.width  # 1920/1080 = 1.78
-                current_aspect = gaming_video.h / gaming_video.w
-                
-                if current_aspect > target_aspect:
-                    # Video is taller than target, crop height
-                    new_height = int(gaming_video.w * target_aspect)
-                    y_center = gaming_video.h // 2
-                    y_start = max(0, y_center - new_height // 2)
-                    gaming_video = gaming_video.cropped(y1=y_start, y2=y_start + new_height)
-                else:
-                    # Video is wider than target, crop width
-                    new_width = int(gaming_video.h / target_aspect)
-                    x_center = gaming_video.w // 2
-                    x_start = max(0, x_center - new_width // 2)
-                    gaming_video = gaming_video.cropped(x1=x_start, x2=x_start + new_width)                # Resize to exact TikTok dimensions
-                gaming_video = gaming_video.resized((self.config.width, self.config.height))
+                  # Apply letterboxing for TikTok format (preserves aspect ratio)
+                gaming_video = self._apply_letterboxing(gaming_video)
                 
                 # If the video is shorter than needed, loop it first
                 if gaming_video.duration < duration:
@@ -708,8 +692,132 @@ class VideoProcessor:
             else:
                 logger.warning("First custom segment not accessible, falling back to standard footage")
                 return await self._select_gaming_footage(60, content_analysis)
-                
         except Exception as e:
             logger.error(f"Failed to create custom gaming footage: {e}")
             logger.info("Falling back to standard footage selection")
             return await self._select_gaming_footage(60, content_analysis)
+
+    def _apply_letterboxing(self, video_clip: VideoFileClip) -> VideoFileClip:
+        """
+        Apply letterboxing to maintain aspect ratio while fitting TikTok format.
+        
+        ALWAYS fits by WIDTH to ensure proper letterboxing:
+        1. Scales the video to fit the target width (1080px)
+        2. Maintains original aspect ratio
+        3. Adds black bars (top/bottom) if needed
+        
+        Args:
+            video_clip: Source video clip to letterbox
+            
+        Returns:
+            Letterboxed video clip with TikTok dimensions
+        """
+        try:
+            target_width = self.config.width   # 1080
+            target_height = self.config.height # 1920
+            
+            current_width = video_clip.w
+            current_height = video_clip.h
+            
+            logger.info(f"🎬 LETTERBOXING: Source {current_width}x{current_height} -> Target {target_width}x{target_height}")
+            
+            # ALWAYS scale to fit WIDTH, maintaining aspect ratio
+            new_width = target_width
+            new_height = int(target_width * (current_height / current_width))
+            
+            logger.info(f"📏 Fitting by width: scaling to {new_width}x{new_height}")
+            
+            # Scale video to fit width while maintaining aspect ratio
+            scaled_video = video_clip.resized(new_size=(new_width, new_height))
+            
+            # Calculate vertical centering (black bars top/bottom)
+            y_offset = (target_height - new_height) // 2
+            
+            if y_offset > 0:
+                logger.info(f"📦 Adding {y_offset}px black bars on top and bottom")
+            elif y_offset < 0:
+                logger.warning(f"⚠️ Video height ({new_height}px) exceeds target ({target_height}px) - will be cropped")
+                # If video is too tall, crop it to fit
+                crop_amount = abs(y_offset)
+                scaled_video = scaled_video.cropped(y1=crop_amount, y2=new_height-crop_amount)
+                y_offset = 0
+                logger.info(f"✂️ Cropped {crop_amount*2}px from top/bottom")
+            else:
+                logger.info("✅ Perfect fit, no black bars needed")
+            
+            # Create black background
+            background = ColorClip(
+                size=(target_width, target_height),
+                color=(0, 0, 0),  # Black
+                duration=video_clip.duration
+            )
+            
+            # Composite scaled video on background
+            letterboxed = CompositeVideoClip([
+                background,
+                scaled_video.with_position(('center', y_offset))
+            ])
+            
+            logger.success(f"✅ Letterboxed: {current_width}x{current_height} -> {new_width}x{new_height} with {y_offset}px offset")
+            return letterboxed
+            
+        except Exception as e:
+            logger.error(f"❌ Letterboxing failed: {e}")
+            logger.warning("Falling back to simple resize (may cause distortion)")
+            return video_clip.resized(new_size=(self.config.width, self.config.height))
+    
+    async def _select_raw_gaming_footage(
+        self, 
+        duration: float, 
+        content_analysis: Dict = None
+    ) -> Optional[VideoFileClip]:
+        """
+        Select raw gaming footage WITHOUT TikTok format conversion for letterboxing.
+        This bypasses the segment processor's automatic conversion.
+        """
+        try:
+            # Determine footage intensity based on content
+            intensity = self._determine_footage_intensity(content_analysis)
+            
+            logger.info(f"Selecting RAW {intensity} intensity gaming footage for letterboxing...")
+            
+            # Get footage manager
+            from ..managers.footage_manager import FootageManager
+            manager = FootageManager()
+            
+            # Get the raw footage path directly
+            footage_files = list(manager.base_manager.footage_dir.glob("raw/*.mp4"))
+            
+            if not footage_files:
+                logger.warning("No raw footage files found")
+                return None
+            
+            # Select a random footage file (or based on intensity later)
+            import random
+            selected_file = random.choice(footage_files)
+            
+            logger.info(f"📹 Selected raw footage: {selected_file.name}")
+            
+            # Load the raw video without any processing
+            raw_video = VideoFileClip(str(selected_file))
+            
+            logger.info(f"📊 Raw footage specs: {raw_video.w}x{raw_video.h}, duration: {raw_video.duration:.1f}s")
+            
+            # If the video is shorter than needed, loop it
+            if raw_video.duration < duration:
+                loops_needed = int(duration / raw_video.duration) + 1
+                raw_video = concatenate_videoclips([raw_video] * loops_needed)
+            
+            # Trim to exact duration
+            raw_video = raw_video.subclipped(0, duration)
+            
+            # Remove audio to avoid conflicts
+            raw_video = raw_video.without_audio()
+            
+            logger.success(f"✅ Raw footage prepared: {raw_video.w}x{raw_video.h}, {raw_video.duration:.1f}s")
+            
+            return raw_video
+            
+        except Exception as e:
+            logger.error(f"Raw footage selection failed: {e}")
+            return None
