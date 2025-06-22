@@ -253,19 +253,19 @@ class VideoProcessor:
                     new_width = int(gaming_video.h / target_aspect)
                     x_center = gaming_video.w // 2
                     x_start = max(0, x_center - new_width // 2)
-                    gaming_video = gaming_video.cropped(x1=x_start, x2=x_start + new_width)
-                  # Resize to exact TikTok dimensions
+                    gaming_video = gaming_video.cropped(x1=x_start, x2=x_start + new_width)                # Resize to exact TikTok dimensions
                 gaming_video = gaming_video.resized((self.config.width, self.config.height))
-                # Set duration to match audio
-                gaming_video = gaming_video.with_duration(duration)
-                  # If the video is shorter than needed, loop it
+                
+                # If the video is shorter than needed, loop it first
                 if gaming_video.duration < duration:
                     loops_needed = int(duration / gaming_video.duration) + 1
                     gaming_video = concatenate_videoclips([gaming_video] * loops_needed)
-                    gaming_video = gaming_video.subclipped(0, duration)
+                  # Now set exact duration to match audio - this is critical for sync
+                gaming_video = gaming_video.subclipped(0, duration)
                 
-                # Keep gaming footage audio for now (comment out removal for testing)
-                # gaming_video = gaming_video.without_audio()  # TODO: Uncomment when using TTS
+                # TEMPORARILY DISABLE gaming audio to avoid duration issues
+                gaming_video = gaming_video.without_audio()
+                logger.info("🔇 Disabled gaming footage audio for testing")
                 
                 logger.success(f"✅ Processed real gaming footage to {self.config.width}x{self.config.height}")
                 return gaming_video
@@ -298,8 +298,7 @@ class VideoProcessor:
             content_analysis.get('controversy_score', 0) > 0 or
             content_analysis.get('has_funding')):
             return "high"
-        
-        # Low intensity for partnerships, first-person content
+          # Low intensity for partnerships, first-person content
         if (content_analysis.get('is_partnership') or 
             content_analysis.get('is_first_person')):
             return "low"
@@ -323,6 +322,10 @@ class VideoProcessor:
     ) -> List[TextClip]:
         """Create dynamic text overlays for the video."""
         try:
+            # TEMPORARILY DISABLED: Skip text overlays to focus on video core functionality
+            logger.info("⚠️ Text overlays temporarily disabled for testing")
+            return []
+            
             overlays = []
             
             # Split script into segments for overlays
@@ -366,8 +369,7 @@ class VideoProcessor:
             style = "emphasis" if any(word in sentence.lower() for word in 
                                    ['breaking', 'insane', 'crazy', 'amazing']) else "normal"
             
-            segments.append({
-                'text': sentence,
+            segments.append({                'text': sentence,
                 'start_time': start_time,
                 'duration': min(segment_duration, duration - start_time),
                 'style': style
@@ -402,6 +404,7 @@ class VideoProcessor:
             style_config = styles.get(style, styles["normal"])
             
             # Create text clip (simplified to avoid parameter conflicts)
+            # Remove font parameter to use default system font
             txt_clip = TextClip(
                 text,
                 font_size=style_config["font_size"],
@@ -419,7 +422,7 @@ class VideoProcessor:
             return txt_clip
             
         except Exception as e:
-            logger.error(f"Text clip creation failed: {e}")
+            logger.error(f"Text clip creation failed: Invalid font {text}, {e}")
             return None
     
     async def _apply_effects_and_transitions(
@@ -433,8 +436,7 @@ class VideoProcessor:
             enhanced_video = video_clip            # Apply speed variations based on content analysis
             if content_analysis and content_analysis.get('urgency_level') == 'high':
                 # Slight speed increase for urgent content
-                enhanced_video = enhanced_video.with_effects([MultiplySpeed(1.05)])
-              # Ensure video matches audio duration exactly
+                enhanced_video = enhanced_video.with_effects([MultiplySpeed(1.05)])            # Ensure video matches audio duration exactly
             enhanced_video = enhanced_video.with_duration(audio_clip.duration)
             
             return enhanced_video
@@ -449,22 +451,25 @@ class VideoProcessor:
         text_overlays: List[TextClip],
         audio_clip: AudioFileClip    ) -> CompositeVideoClip:
         """Composite all elements into the final video."""
-        try:            # Combine background with text overlays
+        try:
+            # Use the shorter of background video or audio duration, with safety buffer
+            safety_buffer = 0.1  # 100ms safety buffer to avoid duration issues
+            final_duration = min(background_video.duration, audio_clip.duration) - safety_buffer
+            logger.info(f"🎬 Final video duration: {final_duration:.3f}s (background: {background_video.duration:.3f}s, audio: {audio_clip.duration:.3f}s)")
+            
+            # Ensure background video doesn't exceed final duration
+            if background_video.duration > final_duration:
+                background_video = background_video.subclipped(0, final_duration)
+              # Combine background with text overlays
             all_clips = [background_video] + text_overlays
             final_video = CompositeVideoClip(all_clips, size=(self.config.width, self.config.height))
             
-            # Set audio - prefer gaming footage audio if TTS audio is silent/minimal
-            if hasattr(background_video, 'audio') and background_video.audio is not None:
-                # Use gaming footage audio if available
-                final_video = final_video.with_audio(background_video.audio)
-                logger.info("🔊 Using gaming footage audio")
-            else:
-                # Fall back to provided TTS audio
-                final_video = final_video.with_audio(audio_clip)
-                logger.info("🔊 Using TTS audio")
+            # Always use the provided audio clip (TTS)
+            final_video = final_video.with_audio(audio_clip.subclipped(0, final_duration))
+            logger.info("🔊 Using TTS audio")
             
-            # Ensure correct duration
-            final_video = final_video.with_duration(audio_clip.duration)
+            # Set exact final duration
+            final_video = final_video.with_duration(final_duration)
             
             return final_video
             
