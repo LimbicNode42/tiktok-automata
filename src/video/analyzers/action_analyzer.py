@@ -26,6 +26,13 @@ class ActionMetrics:
     category: str = "low"  # low, medium, high, extreme
     content_type: str = "unknown"  # gaming, action, dialogue, transition
     confidence: float = 0.0
+    
+    # NEW: TikTok crop region specific metrics
+    tiktok_region_score: float = 0.0  # Action score focused on visible TikTok region
+    ui_edge_density: float = 0.0  # UI elements that would be cropped out
+    corner_ui_activity: float = 0.0  # UI in corners (minimap, health, etc.)
+    has_problematic_ui: bool = False  # True if UI would be awkwardly cropped
+    crop_suitability: float = 1.0  # 0-1 score for how well this segment crops to TikTok
 
 
 class ContentTypeDetector:
@@ -33,26 +40,38 @@ class ContentTypeDetector:
     
     @staticmethod
     def detect_content_type(metrics: ActionMetrics) -> str:
-        """Detect gaming content type based on optimized metrics."""
-        # Combat scenes: High complexity + high brightness changes (explosions, effects)
-        if metrics.scene_complexity > 1000 and metrics.overall_score > 800:
+        """Detect gaming content type based on optimized metrics with TikTok crop awareness."""
+        
+        # PRIORITY: Filter out problematic UI segments first
+        if metrics.has_problematic_ui:
+            return "menu_cropped"  # Avoid segments with UI that would be awkwardly cropped
+        
+        # Use TikTok region score for better classification
+        tiktok_score = metrics.tiktok_region_score
+        
+        # Combat scenes: High complexity + high action in TikTok region
+        if metrics.scene_complexity > 1000 and tiktok_score > 800:
             return "combat"
         
-        # Special abilities/magic: High color variance + moderate complexity
-        elif metrics.color_variance > 2000 and metrics.scene_complexity > 600:
+        # Special abilities/magic: High color variance + moderate complexity in visible area
+        elif metrics.color_variance > 2000 and tiktok_score > 600:
             return "abilities"
         
-        # Active exploration: Moderate complexity + some motion
-        elif metrics.scene_complexity > 400 and metrics.motion_intensity > 3:
+        # Active exploration: Moderate complexity + some motion in TikTok region
+        elif metrics.scene_complexity > 400 and tiktok_score > 300:
             return "exploration"
         
-        # Dialogue/cutscenes: Low complexity + low motion
-        elif metrics.scene_complexity < 300 and metrics.motion_intensity < 3:
+        # Dialogue/cutscenes: Low complexity + low motion (but good for TikTok if no UI issues)
+        elif metrics.scene_complexity < 300 and tiktok_score < 300 and not metrics.has_problematic_ui:
             return "dialogue"
         
-        # Menu/inventory: Low motion + high edge density (UI elements)
-        elif metrics.motion_intensity < 2 and metrics.edge_density > 10:
-            return "menu"
+        # Menu/inventory with manageable UI (center-focused UI that crops well)
+        elif metrics.corner_ui_activity < 500 and tiktok_score > 200:
+            return "menu_clean"
+        
+        # Menu with problematic UI (already filtered above, but safety check)
+        elif metrics.corner_ui_activity > 1000 or metrics.ui_edge_density > 50:
+            return "menu_problematic"
         
         return "unknown"
 
@@ -660,6 +679,101 @@ class VideoActionAnalyzer:
             logger.error(f"❌ Failed to analyze segments from JSON: {e}")
             return {}
     
+    def crop_to_tiktok_region(self, frame: np.ndarray) -> np.ndarray:
+        """
+        Crop frame to the region that will be visible in TikTok format.
+        
+        For 1920x1080 source footage converted to 1080x1920 TikTok:
+        - Target aspect: 1920/1080 = 1.78
+        - Current aspect: 1080/1920 = 0.56
+        - Since current < target, crops width to: 1080/1.78 = 606 pixels
+        - Crop region: center 606x1080 pixels
+          This ensures action analysis focuses only on what viewers will actually see.
+        """
+        try:
+            height, width = frame.shape[:2]
+            
+            # Calculate TikTok crop dimensions for this frame size
+            target_aspect = 1920 / 1080  # TikTok aspect ratio (height/width)
+            current_aspect = height / width
+            
+            if current_aspect > target_aspect:
+                # Frame is taller than target, crop height (unlikely for gaming footage)
+                new_height = int(width * target_aspect)
+                y_center = height // 2
+                y_start = max(0, y_center - new_height // 2)
+                cropped_frame = frame[y_start:y_start + new_height, :]
+            else:
+                # Frame is wider than target, crop width (typical for 1920x1080 gaming)
+                new_width = int(height / target_aspect)
+                x_center = width // 2
+                x_start = max(0, x_center - new_width // 2)
+                cropped_frame = frame[:, x_start:x_start + new_width]
+            
+            return cropped_frame
+            
+        except Exception as e:
+            logger.warning(f"TikTok crop failed: {e}")
+            return frame  # Return original if crop fails
+    
+    def detect_ui_elements(self, frame: np.ndarray) -> Dict[str, float]:
+        """
+        Detect UI elements that would be problematic when cropped.
+        
+        Returns metrics about UI presence:
+        - edge_ui_density: High values indicate UI elements near edges that would be cut off
+        - corner_activity: UI elements in corners (minimap, health bars, etc.)
+        - text_density: Amount of text that might be partially cropped
+        """
+        try:
+            height, width = frame.shape[:2]
+            
+            # Convert to grayscale for edge detection
+            gray = np.mean(frame, axis=2) if len(frame.shape) == 3 else frame
+            
+            # Calculate edge regions that would be cropped out
+            crop_width = int(height / 1.78)  # TikTok crop width
+            left_margin = (width - crop_width) // 2
+            right_margin = width - left_margin - crop_width
+            
+            # Analyze edge regions for UI elements
+            left_edge = gray[:, :left_margin] if left_margin > 0 else np.array([])
+            right_edge = gray[:, width-right_margin:] if right_margin > 0 else np.array([])
+            
+            edge_ui_density = 0.0
+            if left_edge.size > 0 or right_edge.size > 0:
+                # Look for sharp edges and high contrast (typical of UI)
+                left_edges = np.sum(np.abs(np.diff(left_edge, axis=1))) if left_edge.size > 0 else 0
+                right_edges = np.sum(np.abs(np.diff(right_edge, axis=1))) if right_edge.size > 0 else 0
+                total_edge_pixels = left_edge.size + right_edge.size
+                edge_ui_density = (left_edges + right_edges) / max(total_edge_pixels, 1)
+            
+            # Analyze corners for UI elements (minimap, health bars, etc.)
+            corner_size = min(height // 10, width // 10)
+            corners = [
+                gray[:corner_size, :corner_size],  # Top-left
+                gray[:corner_size, -corner_size:],  # Top-right  
+                gray[-corner_size:, :corner_size],  # Bottom-left
+                gray[-corner_size:, -corner_size:]  # Bottom-right
+            ]
+            
+            corner_activity = 0.0
+            for corner in corners:
+                if corner.size > 0:
+                    # High variance indicates UI elements
+                    corner_activity += np.var(corner)
+            corner_activity /= len(corners)
+            
+            return {
+                'edge_ui_density': edge_ui_density,
+                'corner_activity': corner_activity,
+                'has_problematic_ui': edge_ui_density > 50 or corner_activity > 1000
+            }
+            
+        except Exception as e:
+            logger.warning(f"UI detection failed: {e}")
+            return {'edge_ui_density': 0.0, 'corner_activity': 0.0, 'has_problematic_ui': False}
+    
     async def _batch_extract_frames(self, clip, timestamps) -> List[np.ndarray]:
         """
         ULTRA-FAST batch frame extraction.
@@ -681,131 +795,121 @@ class VideoActionAnalyzer:
                 
         except Exception as e:
             logger.warning(f"Frame extraction failed: {e}")
-            
+        
         logger.info(f"Extracted {len(frames)} downscaled frames for analysis")
         return frames
+    
     async def _batch_analyze_frames(self, frames: List[np.ndarray], timestamps: List[float]) -> List[ActionMetrics]:
         """
-        ULTRA-FAST batch analysis optimized for GAMING footage.
-        Focus on metrics that distinguish gaming action vs. exploration/dialogue.
+        ULTRA-FAST batch analysis optimized for GAMING footage with TikTok crop focus.
+        Analyzes both full frame and TikTok crop region for optimal segment selection.
         """
         metrics_list = []
         
         if len(frames) < 2:
             # Not enough frames for analysis
             return [ActionMetrics(timestamp=timestamps[0] if timestamps else 0.0)]
+
+        # ENHANCED GAMING-OPTIMIZED METRICS WITH TIKTOK FOCUS
         
-        # GAMING-OPTIMIZED METRICS
+        # 1. Process both full frame and TikTok crop region
+        full_frame_metrics = []
+        tiktok_region_metrics = []
+        ui_metrics_list = []
         
-        # 1. Scene Complexity (PRIMARY for gaming) - Distinguishes busy combat from exploration
-        scene_complexities = []
         for frame in frames:
-            # Fast scene complexity using color channel variance
-            complexity = np.var(frame, axis=(0,1)).mean()  # Variance across spatial dimensions
-            scene_complexities.append(complexity)
-        
-        # 2. Color Variance (IMPORTANT for gaming) - Special effects, abilities, UI changes
-        color_variances = []
-        brightness_changes = []
-        saturation_changes = []
-        
-        for i, frame in enumerate(frames):
-            # Color variance (more important for gaming)
-            color_var = np.var(frame.flatten())
-            color_variances.append(color_var)
+            # Crop to TikTok visible region (center 606x1080 for 1920x1080 source)
+            tiktok_frame = self.crop_to_tiktok_region(frame)
             
-            # Brightness variance (flashes, explosions, effects)
-            brightness = np.mean(frame)
-            if i > 0:
-                brightness_change = abs(brightness - prev_brightness)
-                brightness_changes.append(brightness_change)
-            prev_brightness = brightness
+            # Analyze full frame for context
+            full_complexity = np.var(frame, axis=(0,1)).mean()
+            full_color_var = np.var(frame.flatten())
             
-            # Saturation variance (special abilities, color effects)
-            hsv_approx = np.max(frame, axis=2) - np.min(frame, axis=2)  # Simplified saturation
-            saturation = np.mean(hsv_approx)
-            if i > 0:
-                saturation_change = abs(saturation - prev_saturation) 
-                saturation_changes.append(saturation_change)
-            prev_saturation = saturation
-        
-        # Pad change arrays to match frame count
-        if brightness_changes:
-            brightness_changes = [brightness_changes[0]] + brightness_changes
-        else:
-            brightness_changes = [0.0] * len(frames)
+            # Analyze TikTok region specifically (THIS IS THE KEY!)
+            tiktok_complexity = np.var(tiktok_frame, axis=(0,1)).mean()
+            tiktok_color_var = np.var(tiktok_frame.flatten())
             
-        if saturation_changes:
-            saturation_changes = [saturation_changes[0]] + saturation_changes  
-        else:
-            saturation_changes = [0.0] * len(frames)
-        
-        # 3. Motion Variance (better than raw motion for gaming)
+            # Detect UI elements that would be problematic when cropped
+            ui_metrics = self.detect_ui_elements(frame)
+            
+            full_frame_metrics.append({
+                'complexity': full_complexity,
+                'color_var': full_color_var
+            })
+            
+            tiktok_region_metrics.append({
+                'complexity': tiktok_complexity,
+                'color_var': tiktok_color_var,
+                'action_score': (tiktok_complexity * 0.6 + tiktok_color_var * 0.4)  # Weighted TikTok score
+            })
+            
+            ui_metrics_list.append(ui_metrics)
+
+        # 2. Motion analysis (compare consecutive frames in TikTok region)
         motion_scores = []
         for i in range(1, len(frames)):
-            diff = np.mean(np.abs(frames[i].astype(np.float32) - frames[i-1].astype(np.float32)))
-            motion_scores.append(diff)
-        
-        # Calculate motion variance (spiky motion = action, smooth motion = exploration)
-        motion_variance = np.var(motion_scores) if len(motion_scores) > 1 else 0.0
-        motion_scores = [motion_scores[0] if motion_scores else 0.0] + motion_scores
-        
-        # 4. Optional: Fast edge density (keep but lower weight)
-        edge_densities = []
-        if self.enable_edge_detection:
-            for frame in frames:
-                gray = np.mean(frame, axis=2)
-                edges_x = np.mean(np.abs(np.diff(gray, axis=1)))
-                edges_y = np.mean(np.abs(np.diff(gray, axis=0)))
-                edge_density = edges_x + edges_y
-                edge_densities.append(edge_density)
-        else:
-            edge_densities = [0.0] * len(frames)
-        
-        # Create metrics objects with GAMING-OPTIMIZED scoring
+            # Crop both frames to TikTok region before comparing
+            tiktok_frame1 = self.crop_to_tiktok_region(frames[i-1])
+            tiktok_frame2 = self.crop_to_tiktok_region(frames[i])
+            
+            # Convert to grayscale for motion analysis
+            gray1 = np.mean(tiktok_frame1, axis=2) if len(tiktok_frame1.shape) == 3 else tiktok_frame1
+            gray2 = np.mean(tiktok_frame2, axis=2) if len(tiktok_frame2.shape) == 3 else tiktok_frame2
+            
+            # Frame difference in TikTok region        # 3. Create ActionMetrics objects with enhanced TikTok region analysis
         for i, timestamp in enumerate(timestamps):
             metrics = ActionMetrics()
             metrics.timestamp = timestamp
             
-            # Store individual metrics
-            metrics.motion_intensity = motion_scores[i] if i < len(motion_scores) else 0.0
-            metrics.color_variance = color_variances[i] if i < len(color_variances) else 0.0
-            metrics.edge_density = edge_densities[i] if i < len(edge_densities) else 0.0
-            metrics.scene_complexity = scene_complexities[i] if i < len(scene_complexities) else 0.0
+            # Full frame metrics (for context)
+            full_metrics = full_frame_metrics[i] if i < len(full_frame_metrics) else {'complexity': 0, 'color_var': 0}
+            metrics.scene_complexity = full_metrics['complexity']
+            metrics.color_variance = full_metrics['color_var']
             
-            # Gaming-specific metrics (stored in audio_energy for now)
-            brightness_change = brightness_changes[i] if i < len(brightness_changes) else 0.0
-            saturation_change = saturation_changes[i] if i < len(saturation_changes) else 0.0
+            # TikTok region specific metrics (PRIMARY focus)
+            tiktok_metrics = tiktok_region_metrics[i] if i < len(tiktok_region_metrics) else {'complexity': 0, 'color_var': 0, 'action_score': 0}
+            metrics.tiktok_region_score = tiktok_metrics['action_score']
             
-            # GAMING-OPTIMIZED overall score calculation
+            # UI detection results
+            ui_data = ui_metrics_list[i] if i < len(ui_metrics_list) else {'edge_ui_density': 0, 'corner_activity': 0, 'has_problematic_ui': False}
+            metrics.ui_edge_density = ui_data['edge_ui_density']
+            metrics.corner_ui_activity = ui_data['corner_activity']
+            metrics.has_problematic_ui = ui_data['has_problematic_ui']
+            
+            # Motion analysis in TikTok region
+            motion_score = motion_scores[i-1] if i > 0 and i-1 < len(motion_scores) else 0.0
+            metrics.motion_intensity = motion_score
+            
+            # Calculate crop suitability score (0-1)
+            if metrics.has_problematic_ui:
+                metrics.crop_suitability = 0.1  # Very low for problematic UI
+            elif metrics.ui_edge_density > 30:
+                metrics.crop_suitability = 0.3  # Low for some UI issues
+            elif metrics.corner_ui_activity > 800:
+                metrics.crop_suitability = 0.5  # Medium for corner UI
+            else:
+                metrics.crop_suitability = 1.0  # High for clean regions
+            
+            # ENHANCED overall score: Prioritize TikTok region quality and crop suitability
             metrics.overall_score = (
-                metrics.scene_complexity * 0.4 +     # PRIMARY: Scene complexity (busy vs calm)
-                metrics.color_variance * 0.0003 +    # Color effects and UI changes  
-                brightness_change * 0.3 +            # Flashes, explosions, spell effects
-                saturation_change * 0.2 +            # Special abilities, color effects
-                motion_variance * 0.08 +             # Irregular motion spikes
-                metrics.edge_density * 0.02          # UI density (minimal weight)
-            )
+                metrics.tiktok_region_score * 0.6 +      # PRIMARY: Action in visible TikTok region
+                metrics.scene_complexity * 0.2 +         # Context from full frame
+                motion_score * 0.15 +                    # Motion in TikTok region
+                (1.0 - metrics.ui_edge_density/100) * 0.05  # Penalty for edge UI
+            ) * metrics.crop_suitability  # Multiply by crop suitability (0-1)
             
-            # Gaming-specific categorization (adjusted thresholds)
-            if metrics.overall_score > 800:  # Higher thresholds for gaming
+            # Enhanced categorization considering crop quality
+            if metrics.overall_score > 600 and metrics.crop_suitability > 0.7:
                 metrics.category = "high"
-            elif metrics.overall_score > 400:
-                metrics.category = "medium"  
+            elif metrics.overall_score > 300 and metrics.crop_suitability > 0.5:
+                metrics.category = "medium"
             else:
                 metrics.category = "low"
             
-            # Gaming-specific content type detection
-            if (metrics.scene_complexity > 1000 and brightness_change > 5):
-                metrics.content_type = "combat"
-            elif (metrics.scene_complexity > 600 and saturation_change > 3):
-                metrics.content_type = "abilities"
-            elif metrics.scene_complexity > 400:
-                metrics.content_type = "exploration"
-            else:
-                metrics.content_type = "dialogue"
+            # Enhanced content type detection with UI awareness
+            metrics.content_type = ContentTypeDetector.detect_content_type(metrics)
+            metrics.confidence = 0.9 * metrics.crop_suitability  # Higher confidence for better crop regions
             
-            metrics.confidence = 0.9  # Higher confidence for gaming-specific metrics
             metrics_list.append(metrics)
         
         return metrics_list
