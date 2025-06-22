@@ -47,6 +47,10 @@ class VideoConfig:
     enable_transitions: bool = True
     enable_beat_sync: bool = True
     
+    # Letterboxing settings
+    letterbox_mode: str = "traditional"  # "traditional" or "percentage"
+    letterbox_crop_percentage: float = 0.75  # Only used when mode is "percentage"
+    
     # Output
     output_quality: str = "high"  # low, medium, high
     output_format: str = "mp4"
@@ -765,6 +769,103 @@ class VideoProcessor:
             logger.error(f"❌ Letterboxing failed: {e}")
             logger.warning("Falling back to simple resize (may cause distortion)")
             return video_clip.resized(new_size=(self.config.width, self.config.height))
+
+    def _apply_percentage_letterboxing(self, video_clip: VideoFileClip, crop_percentage: float = 0.75) -> VideoFileClip:
+        """
+        Apply percentage-based letterboxing that crops some of the source to reduce black bars.
+        
+        Instead of fitting 100% of source width, this method fits a percentage (e.g. 75%) 
+        of the source width to the target width, effectively zooming in and cropping
+        the edges to show more content with smaller black bars.
+        
+        Args:
+            video_clip: Source video clip to letterbox
+            crop_percentage: Percentage of source width to fit to target (0.5-1.0)
+                           0.75 = fit 75% of source width, crop 25%
+                           
+        Returns:
+            Letterboxed video clip with TikTok dimensions
+        """
+        try:
+            target_width = self.config.width   # 1080
+            target_height = self.config.height # 1920
+            
+            current_width = video_clip.w
+            current_height = video_clip.h
+            
+            # Clamp crop percentage to reasonable bounds
+            crop_percentage = max(0.5, min(1.0, crop_percentage))
+            
+            logger.info(f"🎬 PERCENTAGE LETTERBOXING: Source {current_width}x{current_height} -> Target {target_width}x{target_height}")
+            logger.info(f"🔍 Crop percentage: {crop_percentage:.1%} (showing {crop_percentage:.1%} of source width)")
+            
+            # Calculate effective source dimensions (the portion we'll use)
+            effective_source_width = current_width * crop_percentage
+            effective_source_height = current_height  # Keep full height for now
+            
+            # Calculate scaling to fit effective source width to target width
+            scale_factor = target_width / effective_source_width
+            new_width = int(current_width * scale_factor)
+            new_height = int(current_height * scale_factor)
+            
+            logger.info(f"📏 Scaling to {new_width}x{new_height} (scale factor: {scale_factor:.3f})")
+            
+            # Scale the video
+            scaled_video = video_clip.resized(new_size=(new_width, new_height))
+            
+            # Calculate cropping/positioning for horizontal centering
+            x_overflow = (new_width - target_width) // 2
+            x_crop_start = max(0, x_overflow)
+            x_crop_end = min(new_width, x_overflow + target_width)
+            
+            # Calculate vertical positioning
+            y_offset = (target_height - new_height) // 2
+            
+            if x_overflow > 0:
+                logger.info(f"✂️ Cropping {x_overflow}px from left and right edges")
+                # Crop horizontally to fit width
+                scaled_video = scaled_video.cropped(x1=x_crop_start, x2=x_crop_end)
+                new_width = target_width
+            
+            if y_offset > 0:
+                logger.info(f"📦 Adding {y_offset}px black bars on top and bottom")
+            elif y_offset < 0:
+                logger.warning(f"⚠️ Video height ({new_height}px) exceeds target ({target_height}px)")
+                # Crop vertically to fit height
+                crop_amount = abs(y_offset)
+                scaled_video = scaled_video.cropped(y1=crop_amount, y2=new_height-crop_amount)
+                y_offset = 0
+                new_height = target_height
+                logger.info(f"✂️ Cropped {crop_amount*2}px from top/bottom")
+            else:
+                logger.info("✅ Perfect vertical fit, no black bars needed")
+            
+            # Create final composition
+            if y_offset > 0:
+                # Create black background and composite
+                background = ColorClip(
+                    size=(target_width, target_height),
+                    color=(0, 0, 0),  # Black
+                    duration=video_clip.duration
+                )
+                
+                letterboxed = CompositeVideoClip([
+                    background,
+                    scaled_video.with_position(('center', y_offset))
+                ])
+            else:
+                # Video fills the entire frame
+                letterboxed = scaled_video
+            
+            logger.success(f"✅ Percentage letterboxed: {current_width}x{current_height} -> {new_width}x{new_height}")
+            logger.success(f"📊 Result: {crop_percentage:.1%} source shown, {100-crop_percentage*100:.1f}% cropped, {y_offset}px black bars")
+            
+            return letterboxed
+            
+        except Exception as e:
+            logger.error(f"❌ Percentage letterboxing failed: {e}")
+            logger.warning("Falling back to simple resize (may cause distortion)")
+            return video_clip.resized(new_size=(self.config.width, self.config.height))
     
     async def _select_raw_gaming_footage(
         self, 
@@ -821,3 +922,20 @@ class VideoProcessor:
         except Exception as e:
             logger.error(f"Raw footage selection failed: {e}")
             return None
+
+    def _apply_letterboxing_with_config(self, video_clip: VideoFileClip) -> VideoFileClip:
+        """
+        Apply letterboxing based on the configuration settings.
+        
+        Args:
+            video_clip: Source video clip to letterbox
+            
+        Returns:
+            Letterboxed video clip using the configured method
+        """
+        if self.config.letterbox_mode == "percentage":
+            logger.info(f"🔍 Using percentage letterboxing ({self.config.letterbox_crop_percentage:.1%})")
+            return self._apply_percentage_letterboxing(video_clip, self.config.letterbox_crop_percentage)
+        else:
+            logger.info("📦 Using traditional letterboxing (100% source)")
+            return self._apply_letterboxing(video_clip)
