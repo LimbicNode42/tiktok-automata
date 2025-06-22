@@ -8,8 +8,8 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T20:42:21.739770",
-    "usage_count": 41,
+    "last_used": "2025-06-21T22:35:17.405088",
+    "usage_count": 42,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -128,8 +128,8 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T20:42:28.376977",
-    "usage_count": 24,
+    "last_used": "2025-06-21T22:35:22.844598",
+    "usage_count": 25,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -238,8 +238,8 @@
       ".news"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T20:42:25.407207",
-    "usage_count": 17,
+    "last_used": "2025-06-21T22:35:19.578904",
+    "usage_count": 18,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -745,8 +745,8 @@
       "section"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T20:42:25.570572",
-    "usage_count": 13,
+    "last_used": "2025-06-21T22:35:19.745498",
+    "usage_count": 14,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -760,8 +760,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T20:42:27.158828",
-    "usage_count": 13,
+    "last_used": "2025-06-21T22:35:21.352997",
+    "usage_count": 14,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -772,7 +772,7 @@
       ".content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T20:42:31.154595",
+    "last_used": "2025-06-21T22:35:25.675262",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
