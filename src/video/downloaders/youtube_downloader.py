@@ -27,7 +27,7 @@ class FootageSource:
     max_videos: int = 50
     min_duration: int = 300  # 5 minutes minimum
     max_duration: int = 3600  # 1 hour maximum
-    quality_preference: str = "720p"  # Balance quality vs file size
+    quality_preference: str = "1080p"  # High quality for best TikTok output
 
 
 class YouTubeDownloader:
@@ -39,11 +39,10 @@ class YouTubeDownloader:
         """Initialize the YouTube downloader."""
         self.raw_footage_dir = raw_footage_dir
         self.max_retries = 3
-        self.retry_delay = 5
-        
-        # Configure yt-dlp with network-friendly settings
+        self.retry_delay = 5          # Configure yt-dlp with network-friendly settings - UPDATED for 1080p quality
+        # Force high resolution by explicitly preferring height over other factors
         self.ydl_opts = {
-            'format': 'best[height<=720][ext=mp4][acodec!=none]/best[height<=720][acodec!=none]/best[ext=mp4][acodec!=none]/best[acodec!=none]/best',
+            'format': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]',
             'outtmpl': str(self.raw_footage_dir / '%(id)s_%(title)s.%(ext)s'),
             'writeinfojson': True,
             'quiet': False,
