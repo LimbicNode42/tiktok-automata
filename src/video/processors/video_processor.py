@@ -51,7 +51,6 @@ class VideoConfig:
     blur_strength: float = 30.0  # Blur strength for blurred_background mode
     background_opacity: float = 0.7  # Opacity for blurred background (0.0-1.0) - 70% for optimal paleness
     background_desaturation: float = 0.3  # Desaturation for blurred background (0.0-1.0) - 30% for good color retention
-    background_opacity: float = 0.7  # Opacity of blurred background (0.0-1.0, lower = more pale)
     
     # Output
     output_quality: str = "high"  # low, medium, high
@@ -227,22 +226,14 @@ class VideoProcessor:
             # Determine footage intensity based on content
             intensity = self._determine_footage_intensity(content_analysis)
             
-            logger.info(f"Selecting {intensity} intensity gaming footage for {duration:.2f}s")            # Try to get real gaming footage first
-            from ..managers.footage_manager import FootageManager
-            manager = FootageManager()
+            logger.info(f"Selecting {intensity} intensity gaming footage for {duration:.2f}s")            # BYPASS segment processor and get RAW footage for proper letterboxing
+            logger.info("🎯 Getting RAW gaming footage to apply letterboxing effects...")
+            gaming_video = await self._select_raw_gaming_footage(duration, content_analysis)
             
-            # Try to get real footage
-            footage_path = await manager.get_footage_for_content(
-                content_type=content_analysis.get('category', 'tech') if content_analysis else 'tech',
-                duration=duration,
-                intensity=intensity
-            )
-            
-            if footage_path and footage_path.exists():
-                logger.success(f"✅ Using real gaming footage: {footage_path.name}")
+            if gaming_video:
+                logger.success(f"✅ Using raw gaming footage: {gaming_video.w}x{gaming_video.h}")
                 
-                # Load the real gaming footage
-                gaming_video = VideoFileClip(str(footage_path))                # Apply letterboxing for TikTok format (preserves aspect ratio)
+                # Apply letterboxing for TikTok format (this is where the magic happens!)
                 gaming_video = self._apply_letterboxing_with_config(gaming_video)
                 
                 # If the video is shorter than needed, loop it first
@@ -256,20 +247,21 @@ class VideoProcessor:
                 gaming_video = gaming_video.without_audio()
                 logger.info("🔇 Disabled gaming footage audio for testing")
                 
-                logger.success(f"✅ Processed real gaming footage to {self.config.width}x{self.config.height}")
+                logger.success(f"✅ Processed raw gaming footage to {self.config.width}x{self.config.height}")
                 return gaming_video
             
             else:
-                logger.warning("⚠️ No real gaming footage available, using placeholder")
-                  # Fallback to placeholder colored background (but warn user)
+                logger.warning("⚠️ No raw gaming footage available, using placeholder")
+                
+                # Fallback to placeholder colored background
                 placeholder_color = self._get_color_for_intensity(intensity)
-                background = ColorClip(
+                
+                gaming_video = ColorClip(
                     size=(self.config.width, self.config.height),
                     color=placeholder_color,
                     duration=duration
                 )
-                
-                return background
+                return gaming_video
             
         except Exception as e:
             logger.error(f"Gaming footage selection failed: {e}")
@@ -528,66 +520,64 @@ class VideoProcessor:
 
     def _get_export_settings(self) -> Dict:
         """Get export settings with NVENC hardware acceleration and 1080p quality."""
-        
-        # NVENC settings for RTX 3070 - much faster than CPU encoding
+          # NVENC settings for RTX 3070 - OPTIMIZED FOR SPEED
         nvenc_settings = {
             "low": {
                 "codec": "h264_nvenc",
-                "bitrate": "3000k",     # Good quality for 1080p
+                "bitrate": "2000k",     # Lower bitrate for speed
                 "fps": 30,
-                "preset": "p4",         # Fast NVENC preset
+                "preset": "p7",         # FASTEST NVENC preset
                 "audio_codec": "aac",
                 "audio_bitrate": "128k",
-                "nvenc_params": ["-rc", "vbr", "-cq", "25", "-spatial_aq", "1", "-temporal_aq", "1"]
+                "nvenc_params": ["-rc", "cbr", "-2pass", "0"]  # Single-pass CBR for speed
             },
             "medium": {
                 "codec": "h264_nvenc", 
-                "bitrate": "5000k",     # High quality for 1080p
+                "bitrate": "3000k",     # Good quality, fast encoding
                 "fps": 30,
-                "preset": "p4",         # Fast NVENC preset
+                "preset": "p6",         # Fast NVENC preset
                 "audio_codec": "aac",
                 "audio_bitrate": "128k",
-                "nvenc_params": ["-rc", "vbr", "-cq", "23", "-spatial_aq", "1", "-temporal_aq", "1"]
+                "nvenc_params": ["-rc", "cbr", "-2pass", "0"]  # Single-pass CBR for speed
             },
             "high": {
                 "codec": "h264_nvenc",
-                "bitrate": "8000k",     # Very high quality for 1080p
+                "bitrate": "4000k",     # Reduced from 8000k for speed
                 "fps": 30,
-                "preset": "p2",         # Higher quality NVENC preset
+                "preset": "p4",         # Balanced speed/quality (was p2)
                 "audio_codec": "aac",
-                "audio_bitrate": "192k",
-                "nvenc_params": ["-rc", "vbr", "-cq", "20", "-spatial_aq", "1", "-temporal_aq", "1"]
+                "audio_bitrate": "128k",
+                "nvenc_params": ["-rc", "cbr", "-2pass", "0"]  # Single-pass CBR for speed
             }
         }
-        
-        # CPU fallback settings (if NVENC fails)
+          # CPU fallback settings - OPTIMIZED FOR SPEED
         cpu_settings = {
             "low": {
                 "codec": "libx264",
-                "bitrate": "3000k",
+                "bitrate": "2000k",
                 "fps": 30,
-                "preset": "fast",
+                "preset": "veryfast",   # Much faster than "fast"
                 "threads": 8,
                 "audio_codec": "aac",
                 "audio_bitrate": "128k"
             },
             "medium": {
                 "codec": "libx264", 
-                "bitrate": "5000k",
+                "bitrate": "3000k",
                 "fps": 30,
-                "preset": "medium",
+                "preset": "fast",      # Faster than "medium"
                 "threads": 8,
                 "audio_codec": "aac",
                 "audio_bitrate": "128k"
             },
             "high": {
                 "codec": "libx264",
-                "bitrate": "8000k",
+                "bitrate": "4000k",    # Reduced from 8000k
                 "fps": 30,
-                "preset": "slow",
+                "preset": "medium",    # Faster than "slow"
                 "threads": 8,
                 "audio_codec": "aac",
-                "audio_bitrate": "192k"
+                "audio_bitrate": "128k"
             }
         }
         
@@ -882,13 +872,9 @@ class VideoProcessor:
             intensity = self._determine_footage_intensity(content_analysis)
             
             logger.info(f"Selecting RAW {intensity} intensity gaming footage for letterboxing...")
-            
-            # Get footage manager
-            from ..managers.footage_manager import FootageManager
-            manager = FootageManager()
-            
-            # Get the raw footage path directly
-            footage_files = list(manager.base_manager.footage_dir.glob("raw/*.mp4"))
+              # Get the raw footage path directly from the video data directory
+            footage_dir = Path(__file__).parent.parent / "data" / "footage" / "raw"
+            footage_files = list(footage_dir.glob("*.mp4"))
             
             if not footage_files:
                 logger.warning("No raw footage files found")
@@ -975,9 +961,7 @@ class VideoProcessor:
             logger.info(f"🌫️ Creating blurred background: {background_width}x{background_height} (scale: {background_scale_factor:.3f})")
             
             # Create scaled background and apply blur effect
-            blurred_background = video_clip.resized(new_size=(background_width, background_height))
-            
-            # Create blur effect by scaling down then back up (simple but effective)
+            blurred_background = video_clip.resized(new_size=(background_width, background_height))            # Create blur effect by scaling down then back up (simple but effective)
             blur_factor = max(1, int(self.config.blur_strength / 3))  # Convert blur strength to scale factor
             temp_width = max(background_width // blur_factor, 32)  # Minimum 32px to avoid too much distortion
             temp_height = max(background_height // blur_factor, 18)  # Maintain aspect ratio
