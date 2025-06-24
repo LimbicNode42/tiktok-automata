@@ -43,7 +43,7 @@ except ImportError:
 class TTSConfig:
     """Configuration for TTS generation."""
     voice: str = 'af_heart'  # Default voice
-    speed: float = 1.0  # Speech speed (0.5-2.0)
+    speed: float = 1.55  # Speech speed optimized for TikTok/short-form (0.5-2.0) - Natural 1.55x
     language: str = 'a'  # 'a' for American English
     sample_rate: int = 24000  # Kokoro's native sample rate
     output_format: str = 'wav'  # Output audio format
@@ -662,7 +662,7 @@ async def quick_tts(
     text: str, 
     output_path: str = None, 
     voice: str = 'af_heart',
-    speed: float = 1.0
+    speed: float = 1.3  # TikTok-optimized default speed
 ) -> Optional[str]:
     """Quick TTS generation for simple use cases."""
     config = TTSConfig(voice=voice, speed=speed)
@@ -682,8 +682,8 @@ async def quick_tts(
 if __name__ == "__main__":
     # Example usage
     async def main():
-        # Test basic functionality
-        config = TTSConfig(voice='af_heart', speed=1.1)
+        # Test basic functionality with TikTok-optimized speed
+        config = TTSConfig(voice='af_heart', speed=1.3)
         tts = KokoroTTSEngine(config)
         
         await tts.initialize()

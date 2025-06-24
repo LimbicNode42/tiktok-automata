@@ -34,7 +34,7 @@ class VoiceProfile:
 class TTSConfig:
     """TTS configuration settings."""
     default_voice: str = 'af_heart'
-    default_speed: float = 1.0
+    default_speed: float = 1.55  # Optimized for TikTok/short-form content - Natural 1.55x speed
     sample_rate: int = 24000
     output_format: str = 'wav'
     normalize_audio: bool = True
@@ -53,12 +53,10 @@ class Config:
             request_timeout=int(os.getenv("REQUEST_TIMEOUT", 30)),
             retry_attempts=int(os.getenv("RETRY_ATTEMPTS", 3)),
             user_agent=os.getenv("USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-        )
-        
-        # TTS Configuration
+        )        # TTS Configuration
         self.tts = TTSConfig(
             default_voice=os.getenv("TTS_DEFAULT_VOICE", "af_heart"),
-            default_speed=float(os.getenv("TTS_DEFAULT_SPEED", 1.0)),
+            default_speed=float(os.getenv("TTS_DEFAULT_SPEED", 1.55)),  # Natural 1.55x for TikTok
             sample_rate=int(os.getenv("TTS_SAMPLE_RATE", 24000)),
             output_format=os.getenv("TTS_OUTPUT_FORMAT", "wav"),
             normalize_audio=os.getenv("TTS_NORMALIZE_AUDIO", "true").lower() == "true",
