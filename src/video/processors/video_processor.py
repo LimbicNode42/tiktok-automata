@@ -19,7 +19,7 @@ from loguru import logger
 import time
 
 try:
-    from moviepy import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, ColorClip, concatenate_videoclips
+    from moviepy import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, ColorClip, concatenate_videoclips, CompositeAudioClip
     # Import video effects from the video.fx module
     from moviepy.video.fx import Resize, MultiplySpeed, FadeIn, FadeOut, LumContrast
     # Note: GaussianBlur may not be available in current MoviePy, will implement custom blur
@@ -239,13 +239,20 @@ class VideoProcessor:
                 # If the video is shorter than needed, loop it first
                 if gaming_video.duration < duration:
                     loops_needed = int(duration / gaming_video.duration) + 1
-                    gaming_video = concatenate_videoclips([gaming_video] * loops_needed)
-                  # Now set exact duration to match audio - this is critical for sync
-                gaming_video = gaming_video.subclipped(0, duration)
-                
-                # TEMPORARILY DISABLE gaming audio to avoid duration issues
-                gaming_video = gaming_video.without_audio()
-                logger.info("🔇 Disabled gaming footage audio for testing")
+                    gaming_video = concatenate_videoclips([gaming_video] * loops_needed)                # Now set exact duration to match audio - this is critical for sync
+                gaming_video = gaming_video.subclipped(0, duration)                # Keep gaming audio but reduce volume for ambient background noise
+                if gaming_video.audio:
+                    # Reduce gaming audio volume to 30% for ambient effect
+                    gaming_audio = gaming_video.audio
+                    gaming_audio = gaming_audio.with_fps(22050)  # Normalize fps
+                    
+                    # Custom volume reduction function
+                    def reduce_volume(gf, t):
+                        return gf(t) * 0.30  # 30% volume
+                    
+                    gaming_audio = gaming_audio.transform(reduce_volume)
+                    gaming_video = gaming_video.with_audio(gaming_audio)
+                    logger.info("🎵 Gaming audio reduced to 30% volume for ambient background")
                 
                 logger.success(f"✅ Processed raw gaming footage to {self.config.width}x{self.config.height}")
                 return gaming_video
@@ -440,14 +447,23 @@ class VideoProcessor:
             
             # Ensure background video doesn't exceed final duration
             if background_video.duration > final_duration:
-                background_video = background_video.subclipped(0, final_duration)
-              # Combine background with text overlays
+                background_video = background_video.subclipped(0, final_duration)            # Combine background with text overlays
             all_clips = [background_video] + text_overlays
             final_video = CompositeVideoClip(all_clips, size=(self.config.width, self.config.height))
-            
-            # Always use the provided audio clip (TTS)
-            final_video = final_video.with_audio(audio_clip.subclipped(0, final_duration))
-            logger.info("🔊 Using TTS audio")
+              # Mix TTS audio with ambient gaming audio
+            if background_video.audio:
+                # Create mixed audio: TTS at full volume + gaming audio at reduced volume
+                tts_audio = audio_clip.subclipped(0, final_duration)
+                gaming_audio = background_video.audio.subclipped(0, final_duration)
+                
+                # Mix both audio tracks
+                mixed_audio = CompositeAudioClip([tts_audio, gaming_audio])
+                final_video = final_video.with_audio(mixed_audio)
+                logger.info("🎵 Mixed TTS audio with ambient gaming audio")
+            else:
+                # Fallback to TTS-only audio
+                final_video = final_video.with_audio(audio_clip.subclipped(0, final_duration))
+                logger.info("🔊 Using TTS audio only (no gaming audio available)")
             
             # Set exact final duration
             final_video = final_video.with_duration(final_duration)
@@ -895,11 +911,20 @@ class VideoProcessor:
             if raw_video.duration < duration:
                 loops_needed = int(duration / raw_video.duration) + 1
                 raw_video = concatenate_videoclips([raw_video] * loops_needed)
-            
-            # Trim to exact duration
-            raw_video = raw_video.subclipped(0, duration)
-              # Remove audio to avoid conflicts
-            raw_video = raw_video.without_audio()
+              # Trim to exact duration
+            raw_video = raw_video.subclipped(0, duration)            # Keep gaming audio but reduce volume for ambient background noise
+            if raw_video.audio:
+                # Reduce gaming audio volume to 30% for ambient effect
+                gaming_audio = raw_video.audio
+                gaming_audio = gaming_audio.with_fps(22050)  # Normalize fps
+                
+                # Custom volume reduction function
+                def reduce_volume(gf, t):
+                    return gf(t) * 0.30  # 30% volume
+                
+                gaming_audio = gaming_audio.transform(reduce_volume)
+                raw_video = raw_video.with_audio(gaming_audio)
+                logger.info("🎵 Gaming audio reduced to 30% volume for ambient background")
             
             logger.success(f"✅ Raw footage prepared: {raw_video.w}x{raw_video.h}, {raw_video.duration:.1f}s")
             
