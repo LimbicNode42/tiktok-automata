@@ -1,0 +1,29 @@
+{
+  "segments": [
+    {
+      "text": "Watch this INSANE 360 no-scope headshot",
+      "start_time": 0,
+      "end_time": 2.555172413793103,
+      "duration": 2.555172413793103,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "This took me 1000 attempts to pull off perfectly",
+      "start_time": 2.655172413793103,
+      "end_time": 5.799999999999999,
+      "duration": 3.1448275862068957,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    }
+  ],
+  "total_segments": 2,
+  "total_duration": 5.799999999999999,
+  "export_timestamp": 1750751590.360762
+}

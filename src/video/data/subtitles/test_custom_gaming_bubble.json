@@ -1,0 +1,29 @@
+{
+  "segments": [
+    {
+      "text": "EPIC GAMING MOMENT",
+      "start_time": 0,
+      "end_time": 1.5,
+      "duration": 1.5,
+      "style": "custom_gaming_bubble",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "This is absolutely insane",
+      "start_time": 1.6,
+      "end_time": 3.6833333333333336,
+      "duration": 2.0833333333333335,
+      "style": "custom_gaming_bubble",
+      "position": [
+        "center",
+        0.75
+      ]
+    }
+  ],
+  "total_segments": 2,
+  "total_duration": 3.6833333333333336,
+  "export_timestamp": 1750735961.2667294
+}

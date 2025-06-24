@@ -1,0 +1,29 @@
+{
+  "segments": [
+    {
+      "text": "Five second rule that will make you RICH",
+      "start_time": 0,
+      "end_time": 2.2619047619047623,
+      "duration": 2.2619047619047623,
+      "style": "bubble_classic",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "Financial experts hate this one simple trick",
+      "start_time": 2.3619047619047624,
+      "end_time": 4.8500000000000005,
+      "duration": 2.488095238095238,
+      "style": "bubble_classic",
+      "position": [
+        "center",
+        0.75
+      ]
+    }
+  ],
+  "total_segments": 2,
+  "total_duration": 4.8500000000000005,
+  "export_timestamp": 1750751465.8856819
+}

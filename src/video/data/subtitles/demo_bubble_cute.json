@@ -1,0 +1,40 @@
+{
+  "segments": [
+    {
+      "text": "This life hack changed EVERYTHING",
+      "start_time": 0,
+      "end_time": 1.8809999999999996,
+      "duration": 1.8809999999999996,
+      "style": "bubble_cute",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "Try this simple trick today and watch your",
+      "start_time": 1.9809999999999997,
+      "end_time": 4.374999999999999,
+      "duration": 2.3939999999999992,
+      "style": "bubble_cute",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "life transform completely",
+      "start_time": 4.474999999999999,
+      "end_time": 5.899999999999999,
+      "duration": 1.4249999999999998,
+      "style": "bubble_cute",
+      "position": [
+        "center",
+        0.75
+      ]
+    }
+  ],
+  "total_segments": 3,
+  "total_duration": 5.899999999999999,
+  "export_timestamp": 1750751465.815173
+}

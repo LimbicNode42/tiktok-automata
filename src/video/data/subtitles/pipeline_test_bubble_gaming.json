@@ -1,0 +1,51 @@
+{
+  "segments": [
+    {
+      "text": "Welcome to the most insane gaming session ever",
+      "start_time": 0,
+      "end_time": 2.913333333333333,
+      "duration": 2.913333333333333,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "Today we're diving into the most challenging level",
+      "start_time": 3.013333333333333,
+      "end_time": 6.18,
+      "duration": 3.1666666666666665,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "Watch as I pull off this incredible combo move",
+      "start_time": 6.279999999999999,
+      "end_time": 9.193333333333332,
+      "duration": 2.913333333333332,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "Don't forget to smash that like button",
+      "start_time": 9.293333333333331,
+      "end_time": 11.699999999999998,
+      "duration": 2.4066666666666663,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    }
+  ],
+  "total_segments": 4,
+  "total_duration": 11.699999999999998,
+  "export_timestamp": 1750739611.7798085
+}

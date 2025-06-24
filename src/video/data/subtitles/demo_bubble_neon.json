@@ -1,0 +1,84 @@
+{
+  "segments": [
+    {
+      "text": "Wait for it",
+      "start_time": 0,
+      "end_time": 0.7298780487804877,
+      "duration": 0.7298780487804877,
+      "style": "bubble_neon",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "3",
+      "start_time": 0.8298780487804877,
+      "end_time": 1.5597560975609754,
+      "duration": 0.7298780487804878,
+      "style": "bubble_neon",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "2",
+      "start_time": 1.6597560975609755,
+      "end_time": 2.3896341463414634,
+      "duration": 0.7298780487804879,
+      "style": "bubble_neon",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "1",
+      "start_time": 2.4896341463414635,
+      "end_time": 3.2195121951219514,
+      "duration": 0.7298780487804879,
+      "style": "bubble_neon",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "BOOM",
+      "start_time": 3.3195121951219515,
+      "end_time": 4.049390243902439,
+      "duration": 0.7298780487804879,
+      "style": "bubble_neon",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "Did you see that incredible moment",
+      "start_time": 4.149390243902439,
+      "end_time": 5.528048780487804,
+      "duration": 1.3786585365853652,
+      "style": "bubble_neon",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "Like and subscribe for more epic content",
+      "start_time": 5.628048780487804,
+      "end_time": 7.0,
+      "duration": 1.3719512195121961,
+      "style": "bubble_neon",
+      "position": [
+        "center",
+        0.75
+      ]
+    }
+  ],
+  "total_segments": 7,
+  "total_duration": 7.0,
+  "export_timestamp": 1750751465.7306516
+}

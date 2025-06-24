@@ -23,6 +23,8 @@ try:
     from moviepy.video.fx import Resize, MultiplySpeed, FadeIn, FadeOut, LumContrast
     # Import subtitle system
     from ..subtitles import SubtitleGenerator, generate_subtitles, create_subtitle_video_clips
+    # Import smart style selector
+    from ..smart_style_selector import SmartStyleSelector, analyze_and_recommend_style
     # Note: GaussianBlur may not be available in current MoviePy, will implement custom blur
 except ImportError as e:
     logger.error(f"MoviePy not installed or import failed: {e}")
@@ -51,10 +53,9 @@ class VideoConfig:
     letterbox_crop_percentage: float = 0.60  # Only used when mode is "percentage"
     blur_strength: float = 30.0  # Blur strength for blurred_background mode
     background_opacity: float = 0.7  # Opacity for blurred background (0.0-1.0) - 70% for optimal paleness
-    background_desaturation: float = 0.3  # Desaturation for blurred background (0.0-1.0) - 30% for good color retention
-      # Subtitle settings
+    background_desaturation: float = 0.3  # Desaturation for blurred background (0.0-1.0) - 30% for good color retention    # Subtitle settings
     enable_subtitles: bool = True  # Enable synchronized subtitles
-    subtitle_style: str = "modern"  # Subtitle style preset
+    subtitle_style: str = "auto"  # Subtitle style preset or "auto" for smart selection
     subtitle_position: float = 0.75  # Vertical position (0.0-1.0) - improved higher position
     export_srt: bool = True  # Export SRT file alongside video
     
@@ -179,12 +180,12 @@ class VideoProcessor:
                 )
             if not background_video:
                 return None
-            
-            # Step 3: Create text overlays
+              # Step 3: Create text overlays with smart style selection
             text_overlays = await self._create_text_overlays(
                 script_content, 
                 actual_duration,
-                voice_info
+                voice_info,
+                background_video  # Pass background video for smart style analysis
             )
             
             # Step 4: Apply effects and transitions
@@ -310,8 +311,7 @@ class VideoProcessor:
     
     def _get_color_for_intensity(self, intensity: str) -> Tuple[int, int, int]:
         """Get background color based on intensity (placeholder)."""
-        colors = {
-            "high": (220, 20, 60),    # Crimson - high energy
+        colors = {            "high": (220, 20, 60),    # Crimson - high energy
             "medium": (70, 130, 180),  # Steel blue - balanced
             "low": (47, 79, 79)        # Dark slate gray - calm
         }
@@ -321,9 +321,10 @@ class VideoProcessor:
         self, 
         script_content: str, 
         duration: float,
-        voice_info: Dict = None
+        voice_info: Dict = None,
+        background_video: VideoFileClip = None
     ) -> List[TextClip]:
-        """Create synchronized subtitles for the video."""
+        """Create synchronized subtitles for the video with smart style selection."""
         try:
             if not self.config.enable_subtitles or not self.subtitle_generator:
                 logger.info("📝 Subtitles disabled or generator not available")
@@ -331,14 +332,35 @@ class VideoProcessor:
             
             logger.info("✍️ Generating synchronized subtitles...")
             
-            # Generate subtitle clips using the new subtitle system
+            # Determine subtitle style - use smart selection if set to "auto"
+            subtitle_style = self.config.subtitle_style
+            
+            if subtitle_style == "auto" and background_video is not None:
+                logger.info("🧠 Using smart style selection based on video content...")
+                try:
+                    recommended_style = await analyze_and_recommend_style(
+                        background_video, 
+                        self.config.subtitle_position
+                    )
+                    subtitle_style = recommended_style
+                    logger.success(f"🎯 Smart selector chose: {subtitle_style}")
+                except Exception as e:
+                    logger.warning(f"Smart style selection failed: {e}, using default 'bubble'")
+                    subtitle_style = "bubble"
+            elif subtitle_style == "auto":
+                logger.info("⚠️ Auto style requested but no background video available, using 'bubble'")
+                subtitle_style = "bubble"
+            
+            # Generate subtitle clips using the chosen style
             subtitle_clips = await create_subtitle_video_clips(
                 script_text=script_content,
                 audio_duration=duration,
                 video_width=self.config.width,
                 video_height=self.config.height,
-                style=self.config.subtitle_style
+                style=subtitle_style
             )
+            
+            logger.info(f"✍️ Using subtitle style: {subtitle_style}")
             
             # Adjust position if configured
             if self.config.subtitle_position != 0.85:  # Default position

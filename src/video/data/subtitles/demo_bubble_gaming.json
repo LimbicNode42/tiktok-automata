@@ -1,0 +1,62 @@
+{
+  "segments": [
+    {
+      "text": "POV",
+      "start_time": 0,
+      "end_time": 0.9119999999999999,
+      "duration": 0.9119999999999999,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "You just discovered the most INSANE gaming",
+      "start_time": 1.012,
+      "end_time": 3.14,
+      "duration": 2.128,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "trick that will blow your mind",
+      "start_time": 3.24,
+      "end_time": 4.76,
+      "duration": 1.5199999999999996,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "This secret technique has been used by pro",
+      "start_time": 4.859999999999999,
+      "end_time": 6.9879999999999995,
+      "duration": 2.128,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    },
+    {
+      "text": "players for years",
+      "start_time": 7.087999999999999,
+      "end_time": 7.999999999999999,
+      "duration": 0.9119999999999999,
+      "style": "bubble_gaming",
+      "position": [
+        "center",
+        0.75
+      ]
+    }
+  ],
+  "total_segments": 5,
+  "total_duration": 7.999999999999999,
+  "export_timestamp": 1750751465.5606139
+}

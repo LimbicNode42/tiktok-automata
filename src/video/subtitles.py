@@ -69,6 +69,15 @@ class SubtitleStyle:
     shadow_offset: Tuple[int, int] = (3, 3)  # Slightly larger shadow
     shadow_color: str = "black"
     
+    # Bubble/TikTok effects
+    use_bubble_effect: bool = False  # Enable bubble-like styling
+    bubble_color: str = "white"  # Main bubble color
+    bubble_outline: str = "black"  # Bubble border color
+    bubble_outline_width: int = 6  # Thick outline for bubble effect
+    double_stroke: bool = False  # Double stroke for extra bubble effect
+    inner_stroke_color: str = "white"  # Inner stroke color for double effect
+    inner_stroke_width: int = 2  # Inner stroke width
+    
     # Animation effects
     fade_in_duration: float = 0.2
     fade_out_duration: float = 0.2
@@ -136,12 +145,91 @@ class SubtitleGenerator:
                 font_color="white",
                 stroke_width=4,
                 font_family="Roboto"
-            ),
-            "montserrat": SubtitleStyle(
+            ),            "montserrat": SubtitleStyle(
                 font_size=64,
                 font_color="white",
                 stroke_width=4,
                 font_family="Montserrat"
+            ),            # TikTok-style bubble effects
+            "bubble": SubtitleStyle(
+                font_size=68,
+                font_color="white",
+                stroke_width=6,
+                stroke_color="black",
+                font_family="Arial Black",  # More commonly available bold font
+                use_bubble_effect=True,
+                bubble_color="white",
+                bubble_outline="black",
+                bubble_outline_width=8,
+                double_stroke=True,
+                inner_stroke_color="yellow",
+                inner_stroke_width=3
+            ),
+            "bubble_blue": SubtitleStyle(
+                font_size=66,
+                font_color="white",
+                stroke_width=5,
+                stroke_color="navy",
+                font_family="Arial Black",  # Fallback to Arial Black
+                use_bubble_effect=True,
+                bubble_color="lightblue",
+                bubble_outline="navy",
+                bubble_outline_width=7,
+                background_color="rgba(173,216,230,0.8)"  # Light blue background
+            ),
+            "bubble_gaming": SubtitleStyle(
+                font_size=70,
+                font_color="lime",
+                stroke_width=6,
+                stroke_color="darkgreen",
+                font_family="Arial Black",  # Use Arial Black instead of Impact
+                use_bubble_effect=True,
+                bubble_color="lime",
+                bubble_outline="darkgreen",
+                bubble_outline_width=8,
+                double_stroke=True,
+                inner_stroke_color="white",
+                inner_stroke_width=2
+            ),
+            "bubble_cute": SubtitleStyle(
+                font_size=64,
+                font_color="hotpink",
+                stroke_width=5,
+                stroke_color="purple",
+                font_family="Arial",  # Fallback to standard Arial
+                use_bubble_effect=True,
+                bubble_color="pink",
+                bubble_outline="purple",
+                bubble_outline_width=6,
+                background_color="rgba(255,192,203,0.7)"  # Pink background
+            ),
+            # Additional bubble styles with different approaches
+            "bubble_classic": SubtitleStyle(
+                font_size=66,
+                font_color="yellow",
+                stroke_width=8,
+                stroke_color="black",
+                font_family="Arial Black",
+                use_bubble_effect=True,
+                bubble_color="yellow",
+                bubble_outline="black",
+                bubble_outline_width=10,
+                shadow_offset=(4, 4)
+            ),
+            "bubble_neon": SubtitleStyle(
+                font_size=68,
+                font_color="cyan",
+                stroke_width=6,
+                stroke_color="darkblue",
+                font_family="Arial Black",
+                use_bubble_effect=True,
+                bubble_color="cyan",
+                bubble_outline="darkblue",
+                bubble_outline_width=8,
+                double_stroke=True,
+                inner_stroke_color="white",
+                inner_stroke_width=2,
+                background_color="rgba(0,50,100,0.8)"
             )
         }
         
@@ -373,18 +461,24 @@ class SubtitleGenerator:
                 effective_max_chars = max(20, segment.max_chars_per_line - 4)  # Ensure minimum 20 chars, subtract 4 for padding
                 formatted_text = self._format_text_for_mobile(segment.text, style, effective_max_chars)
                 
-                # Create text clip with proper centering and padding
-                txt_clip = TextClip(
-                    text=formatted_text,
-                    font_size=style.font_size,
-                    color=style.font_color,
-                    stroke_color=style.stroke_color,
-                    stroke_width=style.stroke_width,
-                    method='caption',  # Use caption method for proper multi-line centering
-                    size=(video_width - 80, None),  # Add 40px padding on each side (80px total)
-                    text_align='center',  # Center align the text
-                    vertical_align='center'  # Center vertically within the text box
-                ).with_duration(segment.duration).with_start(segment.start_time)
+                # Create base text clip with bubble styling if enabled
+                if style.use_bubble_effect:
+                    txt_clip = self._create_bubble_text_clip(
+                        formatted_text, style, video_width, video_height, segment
+                    )
+                else:
+                    # Standard text clip creation
+                    txt_clip = TextClip(
+                        text=formatted_text,
+                        font_size=style.font_size,
+                        color=style.font_color,
+                        stroke_color=style.stroke_color,
+                        stroke_width=style.stroke_width,
+                        method='caption',  # Use caption method for proper multi-line centering
+                        size=(video_width - 80, None),  # Add 40px padding on each side (80px total)
+                        text_align='center',  # Center align the text
+                        vertical_align='center'  # Center vertically within the text box
+                    ).with_duration(segment.duration).with_start(segment.start_time)
                 
                 # Position the text
                 y_position = segment.position[1]
@@ -410,6 +504,108 @@ class SubtitleGenerator:
         logger.success(f"Created {len(clips)} subtitle clips")
         return clips
     
+    def _create_bubble_text_clip(
+        self, 
+        text: str, 
+        style: SubtitleStyle, 
+        video_width: int, 
+        video_height: int, 
+        segment: SubtitleSegment
+    ) -> TextClip:
+        """
+        Create a text clip with TikTok-style bubble effects.
+        
+        This method creates enhanced text styling with:
+        - Double stroke effects
+        - Bubble-like borders
+        - Enhanced visual appeal for TikTok content
+        """        # Define font fallback chain for better compatibility
+        font_fallbacks = [
+            style.font_family,
+            "Arial Black",
+            "Arial",
+            "Helvetica",
+            None  # System default
+        ]
+        
+        txt_clip = None
+        working_font = None
+        
+        for font in font_fallbacks:
+            try:
+                # Base text clip with primary styling
+                txt_clip = TextClip(
+                    text=text,
+                    font_size=style.font_size,
+                    color=style.font_color,
+                    stroke_color=style.bubble_outline,
+                    stroke_width=style.bubble_outline_width,
+                    font=font,
+                    method='caption',
+                    size=(video_width - 80, None),  # 40px padding on each side
+                    text_align='center',
+                    vertical_align='center'
+                ).with_duration(segment.duration).with_start(segment.start_time)
+                
+                # If we get here, the font worked
+                working_font = font
+                logger.debug(f"Using font: {font or 'system default'}")
+                break
+                
+            except Exception as e:
+                logger.debug(f"Font '{font}' failed: {e}")
+                continue
+        
+        if txt_clip is None:
+            logger.error("All fonts failed, using fallback text creation")
+            # Last resort fallback
+            txt_clip = TextClip(
+                text=text,
+                font_size=style.font_size,
+                color=style.font_color,
+                stroke_color=style.bubble_outline,
+                stroke_width=style.bubble_outline_width,
+                method='caption',
+                size=(video_width - 80, None),
+                text_align='center',
+                vertical_align='center'
+            ).with_duration(segment.duration).with_start(segment.start_time)
+          # Create double stroke effect if enabled
+        if style.double_stroke and txt_clip is not None:
+            try:
+                # Create inner stroke layer with the same font that worked
+                inner_clip = TextClip(
+                    text=text,
+                    font_size=style.font_size,
+                    color=style.font_color,
+                    stroke_color=style.inner_stroke_color,
+                    stroke_width=style.inner_stroke_width,
+                    font=working_font,  # Use the same font that worked above
+                    method='caption',
+                    size=(video_width - 80, None),
+                    text_align='center',
+                    vertical_align='center'
+                ).with_duration(segment.duration).with_start(segment.start_time)
+                
+                # Position both clips at the same location
+                y_position = segment.position[1]
+                if isinstance(y_position, float) and y_position <= 1.0:
+                    y_pixels = int(video_height * y_position)
+                else:
+                    y_pixels = y_position
+                
+                txt_clip = txt_clip.with_position((segment.position[0], y_pixels))
+                inner_clip = inner_clip.with_position((segment.position[0], y_pixels))
+                
+                # Return the inner clip (layered effect)
+                return inner_clip
+                
+            except Exception as e:
+                logger.warning(f"Double stroke effect failed: {e}")
+                # Fall back to single stroke
+        
+        return txt_clip
+
     def _format_text_for_mobile(self, text: str, style: SubtitleStyle, max_chars_per_line: int = 35) -> str:
         """Format text for optimal mobile display."""
         # Split long lines for better mobile readability
