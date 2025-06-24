@@ -30,8 +30,8 @@ class SubtitleSegment:
     start_time: float  # seconds
     end_time: float    # seconds
     style: str = "default"  # Style preset name
-    position: Tuple[str, float] = ("center", 0.85)  # (x, y) position
-    max_chars_per_line: int = 25  # Max characters per line for mobile
+    position: Tuple[str, float] = ("center", 0.75)  # (x, y) position - moved higher up
+    max_chars_per_line: int = 35  # Increased from 25 to use more screen width
     
     @property
     def duration(self) -> float:
@@ -56,26 +56,26 @@ class SubtitleSegment:
 @dataclass
 class SubtitleStyle:
     """Styling configuration for subtitles."""
-    font_size: int = 48
+    font_size: int = 64  # Increased from 48 for better readability
     font_color: str = "white"
     stroke_color: str = "black"
-    stroke_width: int = 3
+    stroke_width: int = 4  # Increased for better contrast
     background_color: Optional[str] = None  # Semi-transparent background
     background_opacity: float = 0.7
     font_family: str = "Arial"
     alignment: str = "center"
     
     # TikTok-specific styling
-    shadow_offset: Tuple[int, int] = (2, 2)
+    shadow_offset: Tuple[int, int] = (3, 3)  # Slightly larger shadow
     shadow_color: str = "black"
     
     # Animation effects
     fade_in_duration: float = 0.2
     fade_out_duration: float = 0.2
     
-    # Mobile optimization
+    # Mobile optimization  
     line_spacing: float = 1.2
-    margin_horizontal: int = 40  # Pixels from screen edge
+    margin_horizontal: int = 20  # Reduced from 40 to use more screen width
 
 
 class SubtitleGenerator:
@@ -93,33 +93,55 @@ class SubtitleGenerator:
     
     def __init__(self, config: Optional[Dict] = None):
         """Initialize the subtitle generator."""
-        self.config = config or {}        # Default subtitle styles
+        self.config = config or {}        # Enhanced subtitle styles with larger fonts and better positioning
         self.styles = {
-            "default": SubtitleStyle(),
+            "default": SubtitleStyle(
+                font_size=64,
+                font_family="Arial"
+            ),
             "bold": SubtitleStyle(
-                font_size=52,
-                stroke_width=4,
+                font_size=68,
+                stroke_width=5,
                 font_family="Arial"
             ),
             "minimal": SubtitleStyle(
-                font_size=44,
-                stroke_width=2,
-                background_color="rgba(0,0,0,0.5)",
+                font_size=60,
+                stroke_width=3,
+                background_color="rgba(0,0,0,0.6)",
                 font_family="Arial"
             ),
             "highlight": SubtitleStyle(
-                font_size=50,
+                font_size=70,
                 font_color="yellow",
                 stroke_color="red",
-                stroke_width=4,
+                stroke_width=5,
                 font_family="Arial"
             ),
             "modern": SubtitleStyle(
-                font_size=46,
+                font_size=66,
                 font_color="white",
-                background_color="rgba(0,0,0,0.6)",
-                stroke_width=2,
+                background_color="rgba(0,0,0,0.7)",
+                stroke_width=4,
                 font_family="Arial"
+            ),
+            # New font test styles
+            "impact": SubtitleStyle(
+                font_size=68,
+                font_color="white",
+                stroke_width=5,
+                font_family="Impact"
+            ),
+            "roboto": SubtitleStyle(
+                font_size=64,
+                font_color="white",
+                stroke_width=4,
+                font_family="Roboto"
+            ),
+            "montserrat": SubtitleStyle(
+                font_size=64,
+                font_color="white",
+                stroke_width=4,
+                font_family="Montserrat"
             )
         }
         
@@ -333,8 +355,7 @@ class SubtitleGenerator:
             segments: List of subtitle segments
             video_width: Video width in pixels
             video_height: Video height in pixels
-            
-        Returns:
+              Returns:
             List of TextClip objects ready for composition
         """
         if not MOVIEPY_AVAILABLE:
@@ -347,14 +368,22 @@ class SubtitleGenerator:
             try:
                 style = self.styles[segment.style]
                 
-                # Format text for mobile display
-                formatted_text = self._format_text_for_mobile(segment.text, style)                # Create text clip
+                # Format text for mobile display with padding consideration
+                # Reduce max chars to account for side padding
+                effective_max_chars = max(20, segment.max_chars_per_line - 4)  # Ensure minimum 20 chars, subtract 4 for padding
+                formatted_text = self._format_text_for_mobile(segment.text, style, effective_max_chars)
+                
+                # Create text clip with proper centering and padding
                 txt_clip = TextClip(
                     text=formatted_text,
                     font_size=style.font_size,
                     color=style.font_color,
                     stroke_color=style.stroke_color,
-                    stroke_width=style.stroke_width
+                    stroke_width=style.stroke_width,
+                    method='caption',  # Use caption method for proper multi-line centering
+                    size=(video_width - 80, None),  # Add 40px padding on each side (80px total)
+                    text_align='center',  # Center align the text
+                    vertical_align='center'  # Center vertically within the text box
                 ).with_duration(segment.duration).with_start(segment.start_time)
                 
                 # Position the text
@@ -366,8 +395,7 @@ class SubtitleGenerator:
                     y_pixels = y_position
                 
                 txt_clip = txt_clip.with_position((segment.position[0], y_pixels))
-                
-                # Add fade effects
+                  # Add fade effects
                 if style.fade_in_duration > 0:
                     txt_clip = txt_clip.with_effects([FadeIn(style.fade_in_duration)])
                 if style.fade_out_duration > 0:
@@ -382,7 +410,7 @@ class SubtitleGenerator:
         logger.success(f"Created {len(clips)} subtitle clips")
         return clips
     
-    def _format_text_for_mobile(self, text: str, style: SubtitleStyle) -> str:
+    def _format_text_for_mobile(self, text: str, style: SubtitleStyle, max_chars_per_line: int = 35) -> str:
         """Format text for optimal mobile display."""
         # Split long lines for better mobile readability
         words = text.split()
@@ -390,7 +418,7 @@ class SubtitleGenerator:
         current_line = ""
         
         for word in words:
-            if current_line and len(current_line + " " + word) > 25:  # Mobile-optimized line length
+            if current_line and len(current_line + " " + word) > max_chars_per_line:  # Use configurable line length
                 lines.append(current_line)
                 current_line = word
             else:

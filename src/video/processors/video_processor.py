@@ -52,11 +52,10 @@ class VideoConfig:
     blur_strength: float = 30.0  # Blur strength for blurred_background mode
     background_opacity: float = 0.7  # Opacity for blurred background (0.0-1.0) - 70% for optimal paleness
     background_desaturation: float = 0.3  # Desaturation for blurred background (0.0-1.0) - 30% for good color retention
-    
-    # Subtitle settings
+      # Subtitle settings
     enable_subtitles: bool = True  # Enable synchronized subtitles
     subtitle_style: str = "modern"  # Subtitle style preset
-    subtitle_position: float = 0.85  # Vertical position (0.0-1.0)
+    subtitle_position: float = 0.75  # Vertical position (0.0-1.0) - improved higher position
     export_srt: bool = True  # Export SRT file alongside video
     
     # Output
