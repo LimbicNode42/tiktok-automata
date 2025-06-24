@@ -19,9 +19,10 @@ from loguru import logger
 import time
 
 try:
-    from moviepy import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, ColorClip, concatenate_videoclips, CompositeAudioClip
-    # Import video effects from the video.fx module
+    from moviepy import VideoFileClip, AudioFileClip, CompositeVideoClip, TextClip, ColorClip, concatenate_videoclips, CompositeAudioClip    # Import video effects from the video.fx module
     from moviepy.video.fx import Resize, MultiplySpeed, FadeIn, FadeOut, LumContrast
+    # Import subtitle system
+    from ..subtitles import SubtitleGenerator, generate_subtitles, create_subtitle_video_clips
     # Note: GaussianBlur may not be available in current MoviePy, will implement custom blur
 except ImportError as e:
     logger.error(f"MoviePy not installed or import failed: {e}")
@@ -52,6 +53,12 @@ class VideoConfig:
     background_opacity: float = 0.7  # Opacity for blurred background (0.0-1.0) - 70% for optimal paleness
     background_desaturation: float = 0.3  # Desaturation for blurred background (0.0-1.0) - 30% for good color retention
     
+    # Subtitle settings
+    enable_subtitles: bool = True  # Enable synchronized subtitles
+    subtitle_style: str = "modern"  # Subtitle style preset
+    subtitle_position: float = 0.85  # Vertical position (0.0-1.0)
+    export_srt: bool = True  # Export SRT file alongside video
+    
     # Output
     output_quality: str = "high"  # low, medium, high
     output_format: str = "mp4"
@@ -72,8 +79,7 @@ class VideoProcessor:
     def __init__(self, config: VideoConfig = None):
         """Initialize the video processor."""
         self.config = config or VideoConfig()
-        
-        # Module paths
+          # Module paths
         self.footage_dir = Path(__file__).parent / "data" / "footage"
         self.temp_dir = Path(__file__).parent / "data" / "temp"
         self.output_dir = Path(__file__).parent / "data" / "output"
@@ -84,6 +90,17 @@ class VideoProcessor:
         
         # Load gaming footage metadata
         self.footage_metadata = self._load_footage_metadata()
+        
+        # Initialize subtitle generator
+        if self.config.enable_subtitles:
+            try:
+                self.subtitle_generator = SubtitleGenerator()
+                logger.info("✍️ Subtitle generator initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize subtitle generator: {e}")
+                self.subtitle_generator = None
+        else:
+            self.subtitle_generator = None
         
         logger.info(f"VideoProcessor initialized for {self.config.width}x{self.config.height} @ {self.config.fps}fps")
     
@@ -284,9 +301,8 @@ class VideoProcessor:
         # High intensity for breakthroughs, controversy, major funding
         if (content_analysis.get('is_breakthrough') or 
             content_analysis.get('controversy_score', 0) > 0 or
-            content_analysis.get('has_funding')):
-            return "high"
-          # Low intensity for partnerships, first-person content
+            content_analysis.get('has_funding')):            return "high"
+        # Low intensity for partnerships, first-person content
         if (content_analysis.get('is_partnership') or 
             content_analysis.get('is_first_person')):
             return "low"
@@ -308,32 +324,34 @@ class VideoProcessor:
         duration: float,
         voice_info: Dict = None
     ) -> List[TextClip]:
-        """Create dynamic text overlays for the video."""
+        """Create synchronized subtitles for the video."""
         try:
-            # TEMPORARILY DISABLED: Skip text overlays to focus on video core functionality
-            logger.info("⚠️ Text overlays temporarily disabled for testing")
-            return []
+            if not self.config.enable_subtitles or not self.subtitle_generator:
+                logger.info("📝 Subtitles disabled or generator not available")
+                return []
             
-            overlays = []
+            logger.info("✍️ Generating synchronized subtitles...")
             
-            # Split script into segments for overlays
-            segments = self._split_script_for_overlays(script_content, duration)
+            # Generate subtitle clips using the new subtitle system
+            subtitle_clips = await create_subtitle_video_clips(
+                script_text=script_content,
+                audio_duration=duration,
+                video_width=self.config.width,
+                video_height=self.config.height,
+                style=self.config.subtitle_style
+            )
             
-            for segment in segments:
-                text_clip = self._create_text_clip(
-                    segment['text'],
-                    segment['start_time'],
-                    segment['duration'],
-                    segment['style']
-                )
-                if text_clip:
-                    overlays.append(text_clip)
+            # Adjust position if configured
+            if self.config.subtitle_position != 0.85:  # Default position
+                for clip in subtitle_clips:
+                    y_pos = int(self.config.height * self.config.subtitle_position)
+                    clip = clip.with_position(('center', y_pos))
             
-            logger.info(f"Created {len(overlays)} text overlay segments")
-            return overlays
+            logger.success(f"✅ Created {len(subtitle_clips)} synchronized subtitle clips")
+            return subtitle_clips
             
         except Exception as e:
-            logger.error(f"Text overlay creation failed: {e}")
+            logger.error(f"Subtitle creation failed: {e}")
             return []
     
     def _split_script_for_overlays(self, script: str, duration: float) -> List[Dict]:
