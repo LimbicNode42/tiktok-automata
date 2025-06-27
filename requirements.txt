@@ -22,6 +22,9 @@ pandas>=2.0.0
 # Logging
 loguru>=0.7.0
 
+# Scheduling
+schedule>=1.2.0
+
 # Web automation (optional for dynamic content)
 selenium>=4.15.0
 fake-useragent>=1.4.0

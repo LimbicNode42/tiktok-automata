@@ -38,8 +38,7 @@ class FootageManager(BaseFootageManager):
         self._video_selection_counter = 0
         
         logger.info("FootageManager initialized with modular components")
-    
-    # === DOWNLOAD OPERATIONS ===
+      # === DOWNLOAD OPERATIONS ===
     
     async def add_footage_source(self, source: FootageSource) -> bool:
         """Add a new footage source for downloading."""
@@ -48,6 +47,11 @@ class FootageManager(BaseFootageManager):
     async def download_footage_from_source(self, source_id: str, max_new_videos: int = 5) -> List[str]:
         """Download footage from a specific source."""
         return await self.downloader.download_from_source(source_id, self.metadata, max_new_videos)
+    
+    async def download_from_source(self, source_info: Dict, max_new_videos: int = 5, max_age_days: int = 1) -> List[str]:
+        """Download footage from a source with optional date filtering."""
+        source_id = f"{source_info['channel_name']}_{hash(source_info['channel_url'])}"
+        return await self.downloader.download_footage_from_source(source_info, source_id, max_new_videos, max_age_days)
     
     # === ANALYSIS OPERATIONS ===
     

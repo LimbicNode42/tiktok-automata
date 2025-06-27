@@ -8,8 +8,8 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T22:35:17.405088",
-    "usage_count": 42,
+    "last_used": "2025-06-27T20:31:17.139410",
+    "usage_count": 84,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -32,7 +32,7 @@
       ".skipcontent--3ZC8EDEr"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:44:53.383096",
+    "last_used": "2025-06-27T20:30:08.193150",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -128,8 +128,8 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T22:35:22.844598",
-    "usage_count": 25,
+    "last_used": "2025-06-27T20:30:12.227327",
+    "usage_count": 55,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -238,8 +238,8 @@
       ".news"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T22:35:19.578904",
-    "usage_count": 18,
+    "last_used": "2025-06-26T22:43:33.785533",
+    "usage_count": 29,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -298,9 +298,9 @@
       ".device--size-"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T19:33:18.043978",
-    "usage_count": 5,
-    "confidence_score": 0.85,
+    "last_used": "2025-06-27T20:29:17.013149",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
     "pattern_type": "ai_discovered"
   },
   "fly.io": {
@@ -313,9 +313,9 @@
       ".sm:text-lg"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:42:22.492494",
-    "usage_count": 4,
-    "confidence_score": 0.82,
+    "last_used": "2025-06-27T20:30:27.724364",
+    "usage_count": 17,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "byteatatime.dev": {
@@ -401,9 +401,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-10T23:12:39.269817",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-27T20:29:30.552707",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
     "pattern_type": "ai_discovered"
   },
   "www.yahoo.com": {
@@ -443,9 +443,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T19:32:49.484391",
-    "usage_count": 4,
-    "confidence_score": 0.82,
+    "last_used": "2025-06-25T19:20:32.799872",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "justin.searls.co": {
@@ -622,9 +622,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:44:50.299171",
-    "usage_count": 3,
-    "confidence_score": 0.7899999999999999,
+    "last_used": "2025-06-27T20:31:00.763141",
+    "usage_count": 20,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "ahrefs.com": {
@@ -637,9 +637,9 @@
       ".post-188835"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T19:32:55.791793",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-25T19:20:32.973872",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
     "pattern_type": "ai_discovered"
   },
   "martinfowler.com": {
@@ -649,9 +649,9 @@
       "main"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T19:32:56.702557",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-25T19:20:40.047356",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
     "pattern_type": "ai_discovered"
   },
   "jakelazaroff.com": {
@@ -662,9 +662,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T19:32:59.311378",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-25T19:20:42.868342",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
     "pattern_type": "ai_discovered"
   },
   "gizmodo.com": {
@@ -745,8 +745,8 @@
       "section"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T22:35:19.745498",
-    "usage_count": 14,
+    "last_used": "2025-06-26T22:43:33.953532",
+    "usage_count": 25,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -760,8 +760,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T22:35:21.352997",
-    "usage_count": 14,
+    "last_used": "2025-06-26T22:43:35.555096",
+    "usage_count": 25,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -772,7 +772,7 @@
       ".content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-21T22:35:25.675262",
+    "last_used": "2025-06-26T22:43:38.658329",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -787,9 +787,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T22:09:32.269399",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-06-26T22:43:46.612669",
+    "usage_count": 10,
+    "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
   "www.androidpolice.com": {
@@ -802,7 +802,714 @@
       ".layout-regular"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-20T20:33:58.047291",
+    "last_used": "2025-06-26T22:43:40.283445",
+    "usage_count": 9,
+    "confidence_score": 0.97,
+    "pattern_type": "ai_discovered"
+  },
+  "www.theseedsofscience.pub": {
+    "domain": "www.theseedsofscience.pub",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:58.887560",
+    "usage_count": 12,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "koaning.io": {
+    "domain": "koaning.io",
+    "selectors": [
+      "article",
+      ".max-w-2xl",
+      ".mx-auto",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:05.148346",
+    "usage_count": 12,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "mashable.com": {
+    "domain": "mashable.com",
+    "selectors": [
+      "article",
+      "#article",
+      ".mt-8",
+      ".font-serif",
+      ".editor-content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:10.535331",
+    "usage_count": 12,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "www.indiewire.com": {
+    "domain": "www.indiewire.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".post-template-default",
+      ".single",
+      ".single-post",
+      ".postid-1235132629"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:09.854519",
+    "usage_count": 12,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.alexmaccaw.com": {
+    "domain": "blog.alexmaccaw.com",
+    "selectors": [
+      "article",
+      ".single",
+      ".post",
+      ".no-image",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:13.255663",
+    "usage_count": 13,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.nilenso.com": {
+    "domain": "blog.nilenso.com",
+    "selectors": [
+      "article",
+      ".hentry",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:13.743783",
+    "usage_count": 13,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "henryhmko.github.io": {
+    "domain": "henryhmko.github.io",
+    "selectors": [
+      "main",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:27.272580",
+    "usage_count": 13,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "www.andrewcoyle.com": {
+    "domain": "www.andrewcoyle.com",
+    "selectors": [
+      "main",
+      ".framer-1iunuv6",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:28.077836",
+    "usage_count": 13,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "brooker.co.za": {
+    "domain": "brooker.co.za",
+    "selectors": [
+      "[id*=\"post\"]",
+      "#post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:29.002126",
+    "usage_count": 13,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "www.tomshardware.com": {
+    "domain": "www.tomshardware.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".limit-width",
+      ".news-page",
+      ".flexi-news",
+      ".flexi-page"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:31.452831",
+    "usage_count": 14,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.character.ai": {
+    "domain": "blog.character.ai",
+    "selectors": [
+      "article",
+      ".post",
+      ".single-post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:21.787199",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.anthropic.com": {
+    "domain": "www.anthropic.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:22.262295",
+    "usage_count": 11,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "benanderson.work": {
+    "domain": "benanderson.work",
+    "selectors": [
+      ".blog-content",
+      ".blog-content",
+      ".mb-4",
+      ".px-8",
+      "section"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:22.376748",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "justinjackson.ca": {
+    "domain": "justinjackson.ca",
+    "selectors": [
+      ".content",
+      ".content",
+      ".mx-auto",
+      ".py-5"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:22.738466",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.engadget.com": {
+    "domain": "www.engadget.com",
+    "selectors": [
+      "article",
+      ".caas-container",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:23.651015",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "writing.nikunjk.com": {
+    "domain": "writing.nikunjk.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:23.873478",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.adweek.com": {
+    "domain": "www.adweek.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-26T22:44:22.001696",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "the-decoder.com": {
+    "domain": "the-decoder.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-26T22:44:23.886701",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "medium.com": {
+    "domain": "medium.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-26T22:44:24.063308",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "zhihaojia.medium.com": {
+    "domain": "zhihaojia.medium.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-26T22:44:24.258699",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "epoch.ai": {
+    "domain": "epoch.ai",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".page-content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:48.235960",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "arxiv.org": {
+    "domain": "arxiv.org",
+    "selectors": [
+      "[id*=\"content\"]",
+      "#content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:15.663682",
+    "usage_count": 33,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.cloudflare.com": {
+    "domain": "blog.cloudflare.com",
+    "selectors": [
+      "article",
+      ".post-full",
+      ".mw-100",
+      ".ph3",
+      ".ph0-l"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:25.831826",
+    "usage_count": 10,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "www.lesswrong.com": {
+    "domain": "www.lesswrong.com",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".MultiToCLayout-content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:20.038520",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "tomtunguz.com": {
+    "domain": "tomtunguz.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".post-body"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-26T22:44:28.773710",
+    "usage_count": 4,
+    "confidence_score": 0.82,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.google": {
+    "domain": "blog.google",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".template-articlepage",
+      ".keyword-blog"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:55.870448",
+    "usage_count": 6,
+    "confidence_score": 0.8799999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "siliconangle.com": {
+    "domain": "siliconangle.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".post-template-default",
+      ".single",
+      ".single-post",
+      ".postid-701092"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-25T19:21:15.039381",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.sh-reya.com": {
+    "domain": "www.sh-reya.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-25T19:21:21.621130",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "pytorch.org": {
+    "domain": "pytorch.org",
+    "selectors": [
+      "article",
+      "#post-4419",
+      ".post-4419",
+      ".post",
+      ".type-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-25T19:21:22.727898",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "semianalysis.com": {
+    "domain": "semianalysis.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:14.478398",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.understandingai.org": {
+    "domain": "www.understandingai.org",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:14.755796",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "sakana.ai": {
+    "domain": "sakana.ai",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:15.570457",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "huggingface.co": {
+    "domain": "huggingface.co",
+    "selectors": [
+      ".prose",
+      ".blog-content",
+      ".copiable-code-container",
+      ".[&_h1]:mr-0!",
+      ".prose"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:17.579780",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "english.elpais.com": {
+    "domain": "english.elpais.com",
+    "selectors": [
+      "article",
+      "#main-content",
+      "._g-lg",
+      "._g-o",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:56.205419",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "deepmind.google": {
+    "domain": "deepmind.google",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:33.742605",
+    "usage_count": 7,
+    "confidence_score": 0.9099999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.npr.org": {
+    "domain": "www.npr.org",
+    "selectors": [
+      "article",
+      ".story",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:24.645240",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "www.theregister.com": {
+    "domain": "www.theregister.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:41.103139",
+    "usage_count": 10,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "www.programmax.net": {
+    "domain": "www.programmax.net",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:28.597903",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "www.seangoedecke.com": {
+    "domain": "www.seangoedecke.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:30.620792",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "xbow.com": {
+    "domain": "xbow.com",
+    "selectors": [
+      ".prose",
+      ".prose",
+      ".prose-invert",
+      ".prose-2xl",
+      ".font-medium"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:03.142233",
+    "usage_count": 10,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "docs.rs": {
+    "domain": "docs.rs",
+    "selectors": [
+      ".content",
+      "#main-content",
+      ".content",
+      "section"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:50.254666",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "www.interconnects.ai": {
+    "domain": "www.interconnects.ai",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:51.660587",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "developers.googleblog.com": {
+    "domain": "developers.googleblog.com",
+    "selectors": [
+      "[id*=\"content\"]",
+      "#main-content",
+      ".glue-body"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:02.604531",
+    "usage_count": 15,
+    "confidence_score": 1.0,
+    "pattern_type": "ai_discovered"
+  },
+  "elevenlabs.io": {
+    "domain": "elevenlabs.io",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".blocks",
+      ".blocks-content",
+      ".pb-100",
+      ".lg:pb-120"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:58.917095",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "lucalp.dev": {
+    "domain": "lucalp.dev",
+    "selectors": [
+      ".post",
+      ".post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:31:01.857757",
+    "usage_count": 5,
+    "confidence_score": 0.85,
+    "pattern_type": "ai_discovered"
+  },
+  "cognition.ai": {
+    "domain": "cognition.ai",
+    "selectors": [
+      "[id*=\"content\"]",
+      "#site-content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:34.830591",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "petebuttigieg.substack.com": {
+    "domain": "petebuttigieg.substack.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:54.895731",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "george.mand.is": {
+    "domain": "george.mand.is",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:30:56.362418",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.worksinprogress.news": {
+    "domain": "www.worksinprogress.news",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:09.162997",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "hiandrewquinn.github.io": {
+    "domain": "hiandrewquinn.github.io",
+    "selectors": [
+      "article",
+      ".post-single",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:09.377627",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "warontherocks.com": {
+    "domain": "warontherocks.com",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".post-template-default",
+      ".single",
+      ".single-post",
+      ".postid-34844"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:16.166804",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.tubefilter.com": {
+    "domain": "www.tubefilter.com",
+    "selectors": [
+      ".article",
+      ".layout",
+      ".interior",
+      ".article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-27T20:29:18.889554",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"

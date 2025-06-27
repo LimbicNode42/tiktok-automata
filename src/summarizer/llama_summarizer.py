@@ -665,6 +665,22 @@ Output ONLY the script content that would be spoken in the TikTok video. Start i
             logger.error(f"TikTok summarization failed: {str(e)}")
             return None
 
+    async def generate_tiktok_summary(self, content: str, title: str, url: str, target_duration: int = None) -> Optional[str]:
+        """Generate TikTok summary from individual content components."""
+        # Create an Article object from the provided arguments
+        from scraper.newsletter_scraper import Article
+        
+        article = Article(
+            title=title,
+            content=content,
+            url=url,
+            published_date="",  # Not critical for summarization
+            category="general"  # Default category
+        )
+        
+        # Use the existing summarize_for_tiktok method
+        return await self.summarize_for_tiktok(article, target_duration)
+
     def _clean_summary(self, summary: str) -> str:
         """Clean and format the generated summary."""
         import re

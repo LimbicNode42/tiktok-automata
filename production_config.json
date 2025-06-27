@@ -1,0 +1,37 @@
+{
+  "storage_dir": "./storage",
+  "output_dir": "./production_output", 
+  "state_file": "./production_state.json",
+  "fallback_enabled": true,
+  "fallback_max_age_hours": 168,
+  "fallback_max_articles": 3,
+  "video_buffer_seconds": 0.5,
+  "min_video_duration": 60,
+  "max_video_duration": 3600,
+  "rss_feeds": [
+    {
+      "url": "https://tldr.tech/api/rss/tech",
+      "name": "TLDR Tech",
+      "category": "tech"
+    },
+    {
+      "url": "https://tldr.tech/api/rss/ai",
+      "name": "TLDR AI",
+      "category": "ai"
+    },
+    {
+      "url": "https://tldr.tech/api/rss/web-dev",
+      "name": "TLDR Web Dev",
+      "category": "webdev"
+    }
+  ],  "gaming_video_sources": [
+    {
+      "url": "https://www.youtube.com/@NoCopyrightGameplays/videos",
+      "name": "No Copyright Gameplays",
+      "content_type": "high_action",
+      "min_duration": 60,
+      "max_duration": 3600
+    }
+  ],
+  "subtitle_styles": ["default", "modern", "bold", "minimal", "highlight"]
+}

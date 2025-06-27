@@ -57,16 +57,14 @@ class YouTubeDownloader:
             'http_chunk_size': 1048576,  # 1MB chunks
             'external_downloader_args': {
                 'ffmpeg': ['-reconnect', '1', '-reconnect_streamed', '1', '-reconnect_delay_max', '2']
-            }
-        }
+            }        }
     
-    async def download_footage_from_source(self, source_info: Dict, source_id: str, max_new_videos: int = 5) -> List[str]:
+    async def download_footage_from_source(self, source_info: Dict, source_id: str, max_new_videos: int = 5, max_age_days: int = 1) -> List[str]:
         """Download new footage from a specific source."""
         try:
             url = source_info["channel_url"]
             logger.info(f"Downloading footage from: {source_info['channel_name']}")
-            
-            # Check if this is a single video URL or a channel URL
+              # Check if this is a single video URL or a channel URL
             if "watch?v=" in url or "youtu.be/" in url:
                 # This is a single video URL
                 logger.info(f"Detected single video URL: {url}")
@@ -84,11 +82,17 @@ class YouTubeDownloader:
         for attempt in range(self.max_retries):
             try:
                 logger.info(f"📡 Attempt {attempt + 1}/{self.max_retries} - Getting video info for: {video_url}")
-                
-                # Get video info first with retry-friendly options
+                  # Get video info first with retry-friendly options
                 info_opts = {'quiet': True, 'socket_timeout': 20 + (attempt * 5)}
                 with yt_dlp.YoutubeDL(info_opts) as ydl:
                     video_info = ydl.extract_info(video_url, download=False)
+                
+                # Check if video is already downloaded (skip duplicates)
+                video_id = video_info.get('id')
+                skip_video_ids = source_info.get('skip_video_ids', set())
+                if video_id and video_id in skip_video_ids:
+                    logger.info(f"⏭️ Skipping already downloaded single video: {video_id}")
+                    return []
                 
                 # Download the video
                 logger.info(f"🎬 Downloading video: {video_info.get('title', 'Unknown')}")
@@ -143,8 +147,7 @@ class YouTubeDownloader:
                     if not raw_entries:
                         logger.warning("No accessible videos found in channel")
                         return []
-                    
-                    # Get detailed info for videos
+                      # Get detailed info for videos
                     videos = []
                     for entry in raw_entries[:max_new_videos * 2]:
                         try:
@@ -153,6 +156,12 @@ class YouTubeDownloader:
                                 
                             video_id = entry.get('id')
                             if not video_id:
+                                continue
+                            
+                            # Check if video is already downloaded (skip duplicates)
+                            skip_video_ids = source_info.get('skip_video_ids', set())
+                            if video_id in skip_video_ids:
+                                logger.info(f"⏭️ Skipping already downloaded video: {video_id}")
                                 continue
                                 
                             # Get detailed video info
