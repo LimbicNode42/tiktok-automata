@@ -85,11 +85,9 @@ def safe_log_message(message: str) -> str:
 @dataclass
 class ProductionConfig:
     """Configuration for production pipeline."""
-    
-    # Storage paths
+      # Storage paths
     storage_dir: str = "./storage"
-    output_dir: str = "./production_output"
-    state_file: str = "./production_state.json"    
+    state_file: str = "./storage/production_state.json"
     # Processing limits (optional - if None, no limits applied)
     max_articles_per_run: Optional[int] = None
     max_videos_per_run: Optional[int] = None
@@ -130,11 +128,16 @@ class ProductionConfig:
 
 @dataclass
 class ProductionState:
-    """Tracks what has been processed to avoid duplicates."""
+    """Tracks what has been processed and points to output files."""
     processed_article_urls: Set[str]
     downloaded_video_urls: Set[str]
     last_run_date: str
     daily_video_assignments: Dict[str, str]  # article_id -> video_id mapping for today
+      # Output file tracking - maps URLs to file paths
+    article_content_files: Dict[str, str]  # url -> content.json path
+    article_summary_files: Dict[str, str]  # url -> summary.json path  
+    article_tts_files: Dict[str, str]  # url -> audio.wav path
+    article_final_videos: Dict[str, str]  # url -> final_video.mp4 path
     
     @classmethod
     def load(cls, state_file: str) -> "ProductionState":
@@ -146,7 +149,11 @@ class ProductionState:
                 processed_article_urls=set(data.get('processed_article_urls', [])),
                 downloaded_video_urls=set(data.get('downloaded_video_urls', [])),
                 last_run_date=data.get('last_run_date', ''),
-                daily_video_assignments=data.get('daily_video_assignments', {})
+                daily_video_assignments=data.get('daily_video_assignments', {}),
+                article_content_files=data.get('article_content_files', {}),
+                article_summary_files=data.get('article_summary_files', {}),
+                article_tts_files=data.get('article_tts_files', {}),
+                article_final_videos=data.get('article_final_videos', {})
             )
         except (FileNotFoundError, json.JSONDecodeError):
             logger.info("No existing state found, starting fresh")
@@ -154,7 +161,11 @@ class ProductionState:
                 processed_article_urls=set(),
                 downloaded_video_urls=set(),
                 last_run_date='',
-                daily_video_assignments={}
+                daily_video_assignments={},
+                article_content_files={},
+                article_summary_files={},
+                article_tts_files={},
+                article_final_videos={}
             )
     
     def save(self, state_file: str):
@@ -163,11 +174,266 @@ class ProductionState:
             'processed_article_urls': list(self.processed_article_urls),
             'downloaded_video_urls': list(self.downloaded_video_urls),
             'last_run_date': self.last_run_date,
-            'daily_video_assignments': self.daily_video_assignments
+            'daily_video_assignments': self.daily_video_assignments,
+            'article_content_files': self.article_content_files,
+            'article_summary_files': self.article_summary_files,
+            'article_tts_files': self.article_tts_files,
+            'article_final_videos': self.article_final_videos
         }
         with open(state_file, 'w') as f:
             json.dump(data, f, indent=2)
-        logger.info(f"Production state saved to {state_file}")
+        logger.info(f"Production state saved to {state_file}")    
+    def save_article_content(self, article: Dict, storage_dir: str) -> str:
+        """Save article content to file and track in state."""
+        import hashlib
+        import os
+        
+        url = article.get('url')
+        if not url:
+            return None
+            
+        # Create content filename from URL hash
+        url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+        safe_title = "".join(c for c in article.get('title', 'unknown')[:30] if c.isalnum() or c in (' ', '-', '_')).strip()
+        filename = f"content_{url_hash}_{safe_title.replace(' ', '_')}.json"
+        
+        # Ensure content directory exists
+        content_dir = Path(storage_dir) / "content"
+        content_dir.mkdir(exist_ok=True)
+        
+        filepath = content_dir / filename        # Save content with metadata
+        content_data = {
+            'url': url,
+            'title': article.get('title'),
+            'content': article.get('content'),
+            'published_date': str(article.get('published_date')) if article.get('published_date') else None,
+            'category': article.get('category'),
+            'word_count': article.get('word_count'),
+            'content_extraction_status': article.get('content_extraction_status'),
+            'failure_reason': article.get('failure_reason'),
+            'feed_name': article.get('feed_name'),
+            'scraped_at': datetime.now().isoformat()
+        }
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(content_data, f, indent=2)
+        
+        # Track in state
+        self.article_content_files[url] = str(filepath)
+        self.processed_article_urls.add(url)
+        
+        return str(filepath)
+    
+    def save_article_summary(self, article: Dict, summary: str, storage_dir: str) -> str:
+        """Save article summary to file and track in state."""
+        import hashlib
+        
+        url = article.get('url')
+        if not url or not summary:
+            return None
+            
+        # Create summary filename from URL hash
+        url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+        safe_title = "".join(c for c in article.get('title', 'unknown')[:30] if c.isalnum() or c in (' ', '-', '_')).strip()
+        filename = f"summary_{url_hash}_{safe_title.replace(' ', '_')}.json"
+        
+        # Ensure summaries directory exists
+        summary_dir = Path(storage_dir) / "summaries"
+        summary_dir.mkdir(exist_ok=True)
+        
+        filepath = summary_dir / filename
+        
+        # Save summary with metadata
+        summary_data = {
+            'url': url,
+            'title': article.get('title'),
+            'original_content': article.get('content'),
+            'tiktok_summary': summary,
+            'summary_length': len(summary),
+            'summary_words': len(summary.split()),
+            'summarized_at': datetime.now().isoformat()
+        }
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(summary_data, f, indent=2)
+        
+        # Track in state
+        self.article_summary_files[url] = str(filepath)
+        
+        return str(filepath)
+    
+    def save_article_tts(self, article: Dict, tts_path: str, duration: float, voice: str, storage_dir: str) -> str:
+        """Move TTS file to organized location and track in state."""
+        import hashlib
+        import shutil
+        
+        url = article.get('url')
+        if not url or not tts_path or not Path(tts_path).exists():
+            return None
+            
+        # Create TTS filename from URL hash
+        url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+        safe_title = "".join(c for c in article.get('title', 'unknown')[:30] if c.isalnum() or c in (' ', '-', '_')).strip()
+        filename = f"tts_{url_hash}_{safe_title.replace(' ', '_')}.wav"
+        
+        # Ensure TTS directory exists
+        tts_dir = Path(storage_dir) / "tts"
+        tts_dir.mkdir(exist_ok=True)
+        
+        filepath = tts_dir / filename
+        
+        # Move the TTS file to organized location
+        shutil.move(tts_path, filepath)
+        
+        # Save metadata alongside
+        metadata_file = filepath.with_suffix('.json')
+        metadata = {
+            'url': url,
+            'title': article.get('title'),
+            'tts_path': str(filepath),
+            'duration_seconds': duration,
+            'voice': voice,
+            'generated_at': datetime.now().isoformat()
+        }
+        
+        with open(metadata_file, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, indent=2)
+        
+        # Track in state
+        self.article_tts_files[url] = str(filepath)
+        
+        return str(filepath)
+    
+    def save_article_final_video(self, article: Dict, video_path: str, storage_dir: str) -> str:
+        """Move final video to organized location and track in state."""
+        import hashlib
+        import shutil
+        
+        url = article.get('url')
+        if not url or not video_path or not Path(video_path).exists():
+            return None
+            
+        # Create video filename from URL hash
+        url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
+        safe_title = "".join(c for c in article.get('title', 'unknown')[:30] if c.isalnum() or c in (' ', '-', '_')).strip()
+        filename = f"final_{url_hash}_{safe_title.replace(' ', '_')}.mp4"
+        
+        # Ensure videos directory exists
+        videos_dir = Path(storage_dir) / "videos"
+        videos_dir.mkdir(exist_ok=True)
+        
+        filepath = videos_dir / filename
+        
+        # Move the video file to organized location
+        shutil.move(video_path, filepath)
+        
+        # Save metadata alongside
+        metadata_file = filepath.with_suffix('.json')
+        metadata = {
+            'url': url,
+            'title': article.get('title'),
+            'video_path': str(filepath),
+            'tts_audio_path': article.get('tts_audio_path'),
+            'tts_duration': article.get('tts_duration'),
+            'assigned_video_id': article.get('assigned_video_id'),
+            'subtitle_style': article.get('subtitle_style'),
+            'generated_at': datetime.now().isoformat()
+        }
+        
+        with open(metadata_file, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, indent=2)
+        
+        # Track in state
+        self.article_final_videos[url] = str(filepath)
+        
+        return str(filepath)
+    
+    def has_article_content(self, url: str) -> bool:
+        """Check if article content exists."""
+        if url not in self.article_content_files:
+            return False
+        return Path(self.article_content_files[url]).exists()
+    
+    def has_article_summary(self, url: str) -> bool:
+        """Check if article summary exists."""
+        if url not in self.article_summary_files:
+            return False
+        return Path(self.article_summary_files[url]).exists()
+    
+    def has_article_tts(self, url: str) -> bool:
+        """Check if article TTS exists."""
+        if url not in self.article_tts_files:
+            return False
+        return Path(self.article_tts_files[url]).exists()
+    
+    def has_article_final_video(self, url: str) -> bool:
+        """Check if article final video exists."""
+        if url not in self.article_final_videos:
+            return False
+        return Path(self.article_final_videos[url]).exists()
+    
+    def load_article_content(self, url: str) -> Dict:
+        """Load article content from file."""
+        if not self.has_article_content(url):
+            return None
+        
+        with open(self.article_content_files[url], 'r', encoding='utf-8') as f:
+            return json.load(f)
+    
+    def load_article_summary(self, url: str) -> Dict:
+        """Load article summary from file."""
+        if not self.has_article_summary(url):
+            return None
+        
+        with open(self.article_summary_files[url], 'r', encoding='utf-8') as f:
+            return json.load(f)    
+    def get_processing_report(self) -> Dict:
+        """Generate a detailed processing report."""
+        total_content = len(self.article_content_files)
+        total_summaries = len(self.article_summary_files)
+        total_tts = len(self.article_tts_files)
+        total_videos = len(self.article_final_videos)
+        
+        # Find articles that need processing
+        content_urls = set(self.article_content_files.keys())
+        summary_urls = set(self.article_summary_files.keys())
+        tts_urls = set(self.article_tts_files.keys())
+        video_urls = set(self.article_final_videos.keys())
+        
+        need_summary = content_urls - summary_urls
+        need_tts = summary_urls - tts_urls
+        need_video = tts_urls - video_urls
+        
+        # Check for successful vs failed content extractions
+        successful_extractions = 0
+        failed_extractions = 0
+        
+        for url, filepath in self.article_content_files.items():
+            try:
+                content_data = self.load_article_content(url)
+                if content_data and content_data.get('content_extraction_status') == 'success':
+                    successful_extractions += 1
+                else:
+                    failed_extractions += 1
+            except:
+                failed_extractions += 1
+        
+        return {
+            'total_articles_scraped': total_content,
+            'successful_extractions': successful_extractions,
+            'failed_extractions': failed_extractions,
+            'total_articles_summarized': total_summaries,
+            'total_articles_with_tts': total_tts,
+            'total_final_videos': total_videos,
+            'articles_needing_summary': len(need_summary),
+            'articles_needing_tts': len(need_tts),
+            'articles_needing_video': len(need_video),
+            'fully_processed_articles': len(content_urls & summary_urls & tts_urls & video_urls),
+            'last_run': self.last_run_date,
+            'content_files': dict(list(self.article_content_files.items())[:3]),
+            'summary_files': dict(list(self.article_summary_files.items())[:3]),
+            'tts_files': dict(list(self.article_tts_files.items())[:3])
+        }
 
 class TikTokProductionPipeline:
     """Complete TikTok production pipeline."""
@@ -182,10 +448,11 @@ class TikTokProductionPipeline:
         self.summarizer = None
         self.tts_engine = None
         self.footage_manager = None
-        
-        # Create directories
+          # Create directories
         Path(config.storage_dir).mkdir(exist_ok=True)
-        Path(config.output_dir).mkdir(exist_ok=True)
+        # Create subdirectories for organized storage
+        for subdir in ["content", "summaries", "tts", "videos"]:
+            Path(config.storage_dir, subdir).mkdir(exist_ok=True)
         
         logger.info(f"TikTok Production Pipeline initialized (dry_run={dry_run})")
     
@@ -288,15 +555,55 @@ class TikTokProductionPipeline:
                 
             except Exception as e:
                 logger.error(f"Error fetching from {feed_name}: {e}")
-                continue
-          # Filter out already processed articles
+                continue        # Filter articles and track processing state
         new_articles = []
-        for article in all_articles:
-            if article.get('url') not in self.state.processed_article_urls:
-                new_articles.append(article)
-                self.state.processed_article_urls.add(article.get('url'))
+        already_scraped = []
         
-        logger.info(f"Found {len(new_articles)} new articles (total scraped: {len(all_articles)})")
+        for article in all_articles:
+            url = article.get('url')
+            if not self.state.has_article_content(url):
+                # NEW ARTICLE: Save content and track regardless of extraction success
+                content_file = self.state.save_article_content(article, self.config.storage_dir)
+                
+                # Only add to processing queue if content extraction was successful
+                extraction_status = article.get('content_extraction_status', 'unknown')
+                if extraction_status == 'success':
+                    new_articles.append(article)
+                    logger.info(safe_log_message(f"📄 New article (successful extraction): {article.get('title', 'Unknown')[:50]}..."))
+                else:
+                    # Content saved but marked as failed - don't process further
+                    failure_reason = article.get('failure_reason', 'Unknown extraction failure')
+                    logger.info(safe_log_message(f"⚠️ Article saved but extraction failed ({failure_reason}): {article.get('title', 'Unknown')[:50]}..."))
+            else:
+                # ALREADY ATTEMPTED: Skip this article entirely
+                already_scraped.append(article)
+                # Get the stored extraction status to provide better logging
+                stored_content = self.state.load_article_content(url)
+                stored_status = stored_content.get('content_extraction_status', 'unknown') if stored_content else 'unknown'
+                if stored_status == 'success':
+                    logger.debug(safe_log_message(f"⏭️ Already scraped (successful): {article.get('title', 'Unknown')[:40]}..."))
+                else:
+                    logger.debug(safe_log_message(f"⏭️ Already attempted (failed): {article.get('title', 'Unknown')[:40]}..."))        # Report article processing status
+        if already_scraped:
+            successful_count = 0
+            failed_count = 0
+            for article in already_scraped:
+                stored_content = self.state.load_article_content(article.get('url'))
+                if stored_content and stored_content.get('content_extraction_status') == 'success':
+                    successful_count += 1
+                else:
+                    failed_count += 1
+            
+            logger.info(f"📋 Skipped {len(already_scraped)} already attempted articles ({successful_count} successful, {failed_count} failed)")
+            for article in already_scraped[:3]:  # Show first 3 as examples
+                stored_content = self.state.load_article_content(article.get('url'))
+                status = stored_content.get('content_extraction_status', 'unknown') if stored_content else 'unknown'
+                status_emoji = "✅" if status == 'success' else "❌"
+                logger.info(safe_log_message(f"  {status_emoji} Already attempted ({status}): {article.get('title', 'Unknown')[:40]}..."))
+            if len(already_scraped) > 3:
+                logger.info(f"  ... and {len(already_scraped) - 3} more")
+        
+        logger.info(f"📊 Article Summary: {len(new_articles)} new for processing, {len(already_scraped)} already attempted, {len(all_articles)} total found")
         
         # Fallback: if no new articles and fallback is enabled, get some older articles
         if len(new_articles) == 0 and self.config.fallback_enabled and not initial_setup:
@@ -351,8 +658,7 @@ class TikTokProductionPipeline:
                 logger.info(f"Added {len(fallback_articles)} fallback articles for processing")
             else:
                 logger.warning("No fallback articles found either")
-        
-        # Apply article limit if configured
+          # Apply article limit if configured
         if self.config.max_articles_per_run is not None and len(new_articles) > self.config.max_articles_per_run:
             new_articles = new_articles[:self.config.max_articles_per_run]
             logger.info(f"Limited to {self.config.max_articles_per_run} articles for this run")
@@ -363,99 +669,169 @@ class TikTokProductionPipeline:
     
     async def summarize_articles(self, articles: List[Dict]) -> List[Dict]:
         """Generate TikTok summaries for articles."""
-        logger.info(f"Generating summaries for {len(articles)} articles...")
+        logger.info(f"📝 Processing {len(articles)} articles for summarization...")
         
         summarized_articles = []
+        skipped_articles = []
         
         for i, article in enumerate(articles):
             try:
-                logger.info(f"Summarizing article {i+1}/{len(articles)}: {article.get('title', 'Unknown')[:50]}...")
+                url = article.get('url')
+                title = article.get('title', 'Unknown')
+                
+                # Check if already summarized
+                if self.state.has_article_summary(url):
+                    logger.info(safe_log_message(f"⏭️ Article {i+1}/{len(articles)} already summarized: {title[:40]}..."))
+                    # Load existing summary into article for next pipeline step
+                    summary_data = self.state.load_article_summary(url)
+                    if summary_data:
+                        article['tiktok_summary'] = summary_data.get('tiktok_summary')
+                        article['summary_generated_at'] = summary_data.get('summarized_at')
+                    skipped_articles.append(article)
+                    continue
+                
+                logger.info(safe_log_message(f"📝 Summarizing article {i+1}/{len(articles)}: {title[:50]}..."))
                 
                 if self.dry_run:
                     # Mock summary for dry run
-                    summary = f"**[0s-3s]** 🚨 BREAKING: {article.get('title', 'Test article')}!\n**[3s-8s]** This is a test summary for dry run mode.\n**[8s-12s]** #TechNews #AI #TikTok"
+                    summary = f"🚨 BREAKING: {title}! This is a test summary for dry run mode. #TechNews #AI #TikTok"
                 else:
                     # Generate real summary                    
                     summary = await self.summarizer.generate_tiktok_summary(
                         content=article.get('content', ''),
-                        title=article.get('title', ''),
-                        url=article.get('url', '')
+                        title=title,
+                        url=url
                     )
                 
                 if summary:
                     article['tiktok_summary'] = summary
                     article['summary_generated_at'] = datetime.now().isoformat()
+                    
+                    # Save summary to file and track in state
+                    summary_file = self.state.save_article_summary(article, summary, self.config.storage_dir)
+                    
                     summarized_articles.append(article)
-                    logger.info(safe_log_message(f"✅ Summary generated for: {article.get('title', 'Unknown')[:50]}"))
+                    logger.info(safe_log_message(f"✅ Summary generated ({len(summary)} chars): {title[:40]}..."))
                 else:
-                    logger.warning(safe_log_message(f"⚠️ Failed to generate summary for: {article.get('title', 'Unknown')[:50]}"))
+                    logger.warning(safe_log_message(f"⚠️ Failed to generate summary for: {title[:40]}..."))
                     
             except Exception as e:
-                logger.error(f"Error summarizing article {i+1}: {e}")
+                logger.error(safe_log_message(f"❌ Error summarizing article {i+1}: {e}"))
                 continue
+          # Report results
+        logger.info(f"📊 Summary Results: {len(summarized_articles)} new summaries, {len(skipped_articles)} already done, {len(articles)} total")
         
-        logger.info(f"Successfully summarized {len(summarized_articles)}/{len(articles)} articles")
+        if skipped_articles:
+            logger.info(f"⏭️ Skipped {len(skipped_articles)} already summarized articles")
+        
         return summarized_articles
     
     async def generate_tts_audio(self, articles: List[Dict]) -> List[Dict]:
         """Generate TTS audio for article summaries."""
-        logger.info(f"Generating TTS audio for {len(articles)} summaries...")
+        logger.info(f"🔊 Processing {len(articles)} articles for TTS generation...")
         
         # Available voices for randomization
         available_voices = list(self.tts_engine.available_voices.keys())
         
+        tts_articles = []
+        skipped_articles = []
+        
         for i, article in enumerate(articles):
             try:
+                url = article.get('url')
+                title = article.get('title', 'Unknown')
                 summary = article.get('tiktok_summary')
+                
+                # Check if already has TTS
+                if self.state.has_article_tts(url):
+                    logger.info(safe_log_message(f"⏭️ Article {i+1}/{len(articles)} already has TTS: {title[:40]}..."))
+                    # Load existing TTS info into article for next pipeline step
+                    tts_file = self.state.article_tts_files.get(url)
+                    if tts_file and Path(tts_file).exists():
+                        # Load TTS metadata
+                        metadata_file = Path(tts_file).with_suffix('.json')
+                        if metadata_file.exists():
+                            with open(metadata_file, 'r') as f:
+                                tts_metadata = json.load(f)
+                            article['tts_audio_path'] = tts_file
+                            article['tts_duration'] = tts_metadata.get('duration_seconds')
+                            article['tts_voice'] = tts_metadata.get('voice')
+                            article['tts_generated_at'] = tts_metadata.get('generated_at')
+                    skipped_articles.append(article)
+                    continue
+                
                 if not summary:
-                    logger.warning(f"No summary found for article {i+1}")
+                    logger.warning(safe_log_message(f"⚠️ No summary found for article {i+1}: {title[:40]}..."))
                     continue
                 
                 # Randomize voice for variety
                 voice = random.choice(available_voices)
                 
-                logger.info(f"Generating TTS {i+1}/{len(articles)} with voice '{voice}': {article.get('title', 'Unknown')[:30]}...")
+                logger.info(safe_log_message(f"🔊 Generating TTS {i+1}/{len(articles)} with voice '{voice}': {title[:30]}..."))
                 
                 if self.dry_run:
                     # Mock TTS for dry run
-                    article['tts_audio_path'] = f"mock_audio_{i+1}.wav"
-                    article['tts_duration'] = 25.0  # Mock duration
+                    audio_path = f"mock_audio_{int(time.time())}_{i+1}.wav"
+                    duration = 25.0  # Mock duration
+                    article['tts_audio_path'] = audio_path
+                    article['tts_duration'] = duration
                     article['tts_voice'] = voice
+                    
+                    # Save mock TTS to organized location
+                    organized_path = self.state.save_article_tts(
+                        article, audio_path, duration, voice, self.config.storage_dir
+                    )
+                    if organized_path:
+                        article['tts_audio_path'] = organized_path
+                    
+                    logger.info(safe_log_message(f"✅ Mock TTS generated ({duration:.1f}s): {title[:40]}..."))
+                    tts_articles.append(article)
                 else:
                     # Generate real TTS
                     audio_filename = f"tts_{int(time.time())}_{i+1}.wav"
-                    audio_path = Path(self.config.output_dir) / audio_filename
+                    temp_audio_path = Path("temp") / audio_filename
+                    temp_audio_path.parent.mkdir(exist_ok=True)
                     
                     generated_path = await self.tts_engine.generate_audio(
                         text=summary,
-                        output_path=str(audio_path),
                         voice=voice,
-                        speed=1.55  # Optimized speed
+                        output_path=str(temp_audio_path)
                     )
                     
-                    if generated_path:
-                        # Get audio duration for video segment calculation
-                        audio_info = self.tts_engine.get_audio_info(generated_path)
-                        duration = audio_info.get('duration', 25.0)
+                    if generated_path and Path(generated_path).exists():
+                        # Get audio duration (placeholder for now)
+                        duration = len(summary.split()) * 0.5  # Rough estimate: 0.5s per word
                         
-                        article['tts_audio_path'] = generated_path
-                        article['tts_duration'] = duration
-                        article['tts_voice'] = voice
+                        # Save TTS to organized location and track in state
+                        organized_path = self.state.save_article_tts(
+                            article, generated_path, duration, voice, self.config.storage_dir
+                        )
                         
-                        logger.info(safe_log_message(f"✅ TTS generated: {duration:.1f}s audio with voice '{voice}'"))
+                        if organized_path:
+                            article['tts_audio_path'] = organized_path
+                            article['tts_duration'] = duration
+                            article['tts_voice'] = voice
+                            article['tts_generated_at'] = datetime.now().isoformat()
+                        
+                            logger.info(safe_log_message(f"✅ TTS generated ({duration:.1f}s): {title[:40]}..."))
+                            tts_articles.append(article)
+                        else:
+                            logger.warning(safe_log_message(f"⚠️ Failed to organize TTS file for: {title[:40]}..."))
                     else:
-                        logger.warning(f"⚠️ Failed to generate TTS for article {i+1}")
+                        logger.warning(safe_log_message(f"⚠️ TTS generation failed for: {title[:40]}..."))
                         continue
                         
             except Exception as e:
-                logger.error(f"Error generating TTS for article {i+1}: {e}")
+                logger.error(safe_log_message(f"❌ Error generating TTS for article {i+1}: {e}"))
                 continue
         
-        # Filter articles that have TTS
-        articles_with_tts = [a for a in articles if 'tts_audio_path' in a]
-        logger.info(f"Successfully generated TTS for {len(articles_with_tts)}/{len(articles)} articles")
+        # Report results
+        logger.info(f"📊 TTS Results: {len(tts_articles)} new TTS files, {len(skipped_articles)} already done, {len(articles)} total")
         
-        return articles_with_tts
+        if skipped_articles:
+            logger.info(f"⏭️ Skipped {len(skipped_articles)} articles that already have TTS")
+        
+        return tts_articles
     async def download_new_videos(self, initial_setup: bool = False) -> List[str]:
         """Download new gaming videos from configured sources."""
         # Set lookback period based on mode
@@ -613,8 +989,7 @@ class TikTokProductionPipeline:
             self.state.daily_video_assignments[article_id] = video_id
             assigned_articles.append(article)
             
-            logger.info(f"Assigned video '{video_id}' to article: {article.get('title', 'Unknown')[:30]}...")
-        
+            logger.info(f"Assigned video '{video_id}' to article: {article.get('title', 'Unknown')[:30]}...")        
         logger.info(f"Successfully assigned videos to {len(assigned_articles)} articles")
         return assigned_articles
     
@@ -623,10 +998,23 @@ class TikTokProductionPipeline:
         logger.info(f"Generating final TikTok videos for {len(articles)} articles...")
         
         generated_videos = []
+        skipped_videos = []
         subtitle_styles = self.config.subtitle_styles.copy()
         
         for i, article in enumerate(articles):
             try:
+                url = article.get('url')
+                title = article.get('title', 'Unknown')
+                
+                # Check if final video already exists
+                if self.state.has_article_final_video(url):
+                    logger.info(safe_log_message(f"⏭️ Article {i+1}/{len(articles)} already has final video: {title[:40]}..."))
+                    existing_video_path = self.state.article_final_videos.get(url)
+                    if existing_video_path:
+                        generated_videos.append(existing_video_path)
+                        skipped_videos.append(article)
+                    continue
+                
                 # Get TTS duration and calculate video segment length
                 tts_duration = article.get('tts_duration', 25.0)
                 segment_duration = int(tts_duration + (self.config.video_buffer_seconds * 2))
@@ -641,17 +1029,28 @@ class TikTokProductionPipeline:
                 if not subtitle_styles:  # Reset when all styles used
                     subtitle_styles = self.config.subtitle_styles.copy()
                 
+                article['subtitle_style'] = subtitle_style  # Track for metadata
+                
                 logger.info(f"Generating video {i+1}/{len(articles)}: {segment_duration}s segment, '{subtitle_style}' subtitles")
-                logger.info(f"  Article: {article.get('title', 'Unknown')[:40]}...")
+                logger.info(f"  Article: {title[:40]}...")
                 logger.info(f"  Video: {article.get('assigned_video_id')}")
                 logger.info(f"  TTS: {tts_duration:.1f}s audio")
                 
                 if self.dry_run:
                     # Mock video generation
                     output_filename = f"tiktok_video_{i+1}_{int(time.time())}.mp4"
-                    output_path = Path(self.config.output_dir) / output_filename
-                    generated_videos.append(str(output_path))
-                    logger.info(f"✅ Mock video generated: {output_filename}")
+                    temp_output_path = Path("temp") / output_filename
+                    temp_output_path.parent.mkdir(exist_ok=True)
+                    temp_output_path.write_text("mock video content")  # Create mock file
+                    
+                    # Save to organized location
+                    organized_path = self.state.save_article_final_video(
+                        article, str(temp_output_path), self.config.storage_dir
+                    )
+                    if organized_path:
+                        generated_videos.append(organized_path)
+                        logger.info(f"✅ Mock video generated: {Path(organized_path).name}")
+                    
                 else:
                     # Real video generation
                     video_config = VideoConfig(
@@ -664,17 +1063,27 @@ class TikTokProductionPipeline:
                         export_srt=True
                     )
                     
-                    # Generate video segment
+                    # Generate video segment to temporary location first
+                    temp_output_dir = Path("temp") / "videos"
+                    temp_output_dir.mkdir(parents=True, exist_ok=True)
+                    
                     result = await self.footage_manager.create_tiktok_segment(
                         video_id=article.get('assigned_video_id'),
                         duration=segment_duration,
                         config=video_config,
-                        output_dir=self.config.output_dir
+                        output_dir=str(temp_output_dir)
                     )
                     
                     if result and result.get('output_path'):
-                        generated_videos.append(result['output_path'])
-                        logger.info(f"✅ Video generated: {Path(result['output_path']).name}")
+                        # Move to organized location and track in state
+                        organized_path = self.state.save_article_final_video(
+                            article, result['output_path'], self.config.storage_dir
+                        )
+                        if organized_path:
+                            generated_videos.append(organized_path)
+                            logger.info(f"✅ Video generated: {Path(organized_path).name}")
+                        else:
+                            logger.warning(f"⚠️ Failed to organize video for article {i+1}")
                     else:
                         logger.warning(f"⚠️ Failed to generate video for article {i+1}")
                         
@@ -682,7 +1091,7 @@ class TikTokProductionPipeline:
                 logger.error(f"Error generating video for article {i+1}: {e}")
                 continue
         
-        logger.info(f"Successfully generated {len(generated_videos)}/{len(articles)} final videos")
+        logger.info(f"📊 Video Results: {len(generated_videos)} total videos ({len(generated_videos) - len(skipped_videos)} new, {len(skipped_videos)} already existed)")
         return generated_videos
     
     async def run_production_pipeline(self, initial_setup: bool = False) -> Dict:
@@ -695,12 +1104,16 @@ class TikTokProductionPipeline:
             'articles_processed': 0,
             'videos_generated': 0,
             'errors': [],
-            'generated_files': []
-        }
+            'generated_files': []        }
         
         try:
             # Initialize all components
-            await self.initialize_components()            # Step 1: Fetch new articles
+            await self.initialize_components()
+            
+            # Output current processing status
+            self.output_processing_report()
+            
+            # Step 1: Fetch new articles
             logger.info("=== STEP 1: Fetching Articles ===")
             articles = await self.fetch_new_articles(initial_setup)
             
@@ -806,6 +1219,61 @@ class TikTokProductionPipeline:
         
         return results
 
+    def output_processing_report(self):
+        """Output a detailed report of what articles have been processed."""
+        report = self.state.get_processing_report()
+        
+        print("\n" + "="*60)
+        print("📊 ARTICLE PROCESSING STATUS REPORT")
+        print("="*60)
+        print(f"📄 Total Articles Scraped: {report['total_articles_scraped']}")
+        print(f"✍️  Total Articles Summarized: {report['total_articles_summarized']}")
+        print(f"🔊 Total Articles with TTS: {report['total_articles_with_tts']}")
+        print(f"🎬 Total Final Videos: {report['total_final_videos']}")
+        print(f"✅ Fully Processed Articles: {report['fully_processed_articles']}")
+        print(f"📅 Last Run: {report['last_run'] or 'Never'}")
+        
+        if report['articles_needing_summary'] > 0:
+            print(f"⏳ Articles Needing Summary: {report['articles_needing_summary']}")
+        
+        if report['articles_needing_tts'] > 0:
+            print(f"⏳ Articles Needing TTS: {report['articles_needing_tts']}")
+        
+        if report['articles_needing_video'] > 0:
+            print(f"⏳ Articles Needing Video: {report['articles_needing_video']}")
+        
+        # Show samples of processed files
+        if report['content_files']:
+            print(f"\n📋 Recent Content Files:")
+            for url, filepath in list(report['content_files'].items())[:3]:
+                print(f"  • {Path(filepath).name}")
+        
+        if report['summary_files']:
+            print(f"\n✍️  Recent Summary Files:")
+            for url, filepath in list(report['summary_files'].items())[:3]:
+                print(f"  • {Path(filepath).name}")
+        
+        if report['tts_files']:
+            print(f"\n🔊 Recent TTS Files:")
+            for url, filepath in list(report['tts_files'].items())[:3]:
+                print(f"  • {Path(filepath).name}")
+        
+        print("="*60 + "\n")        
+        # Save detailed report to file
+        report_file = Path(self.config.storage_dir) / f"processing_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        with open(report_file, 'w') as f:
+            # Convert sets to lists for JSON serialization
+            json_report = {k: (list(v) if isinstance(v, set) else v) for k, v in report.items()}
+            json.dump(json_report, f, indent=2)
+        
+        logger.info(f"Detailed processing report saved to: {report_file}")
+
+    def _serialize_for_json(self, obj):
+        """Helper method to serialize objects for JSON storage."""
+        if hasattr(obj, 'isoformat'):
+            return obj.isoformat()
+        return obj
+
 async def main():
     """Main entry point for production pipeline."""
     parser = argparse.ArgumentParser(description="TikTok Automata Production Pipeline")
@@ -853,10 +1321,9 @@ async def main():
             for error in results['errors']:
                 print(f"  ❌ {error}")
         
-        print("="*60)
-        
+        print("="*60)        
         # Save results summary
-        results_file = Path(production_config.output_dir) / f"production_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        results_file = Path(production_config.storage_dir) / f"production_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(results_file, 'w') as f:
             json.dump(results, f, indent=2)
         

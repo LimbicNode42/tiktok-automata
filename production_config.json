@@ -1,7 +1,5 @@
 {
   "storage_dir": "./storage",
-  "output_dir": "./production_output", 
-  "state_file": "./production_state.json",
   "fallback_enabled": true,
   "fallback_max_age_hours": 168,
   "fallback_max_articles": 3,
