@@ -1,0 +1,20 @@
+{
+  "total_articles_scraped": 0,
+  "successful_extractions": 0,
+  "failed_extractions": 0,
+  "total_articles_summarized": 3,
+  "total_articles_with_tts": 0,
+  "total_final_videos": 3,
+  "articles_needing_summary": 0,
+  "articles_needing_tts": 3,
+  "articles_needing_video": 0,
+  "fully_processed_articles": 0,
+  "last_run": "2025-06-28",
+  "content_files": {},
+  "summary_files": {
+    "https://www.nytimes.com/2025/06/24/technology/amazon-ai-data-centers.html?unlocked_article_code=1.Rk8.5sod.iW1YVG1JWA0r&smid=url-share&utm_source=tldrnewsletter": "storage\\summaries\\summary_43eabc48f13b_At_Amazons_Biggest_Data_Cente.json",
+    "https://finance.yahoo.com/news/openai-designs-rival-office-workspace-163628447.html?utm_source=tldrnewsletter": "storage\\summaries\\summary_732ca451ca29_OpenAI_designs_rival_to_Office.json",
+    "https://arstechnica.com/google/2025/06/google-releases-first-cloud-free-ai-robotics-model/?utm_source=tldrnewsletter": "storage\\summaries\\summary_d96aedff2b60_Googles_new_robotics_AI_can_r.json"
+  },
+  "tts_files": {}
+}

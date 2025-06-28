@@ -1,0 +1,12 @@
+{
+  "url": "https://www.programmax.net/articles/png-is-back/?utm_source=tldrnewsletter",
+  "title": "PNG is back!",
+  "content": "Jokes aside, this is exciting news. PNG is back to its former glory after its progress stalled for over two decades. Did you know the U.S. Library of Congress , Library and Archives Canada , and the National Archives of Australia recommend PNG? It is important that we keep PNG current and competitive. After 20 years of stagnation, PNG is back with renewed vigor! What's new? Rec. 2020 and Rec. 709 comparison image/svg+xml Rec. 2020 and Rec. 709 comparison Figure 1. Adapted from Wikipedia's CIE xy 1931 Rec. 2020 and Rec. 709 images under the Creative Commons Attribution-Share Alike 3.0 Unported (CC BY-SA 3.0) license. Proper HDR support (future\u2010proof, too!) Figure 1 shows the colors our eyes can see. The smaller, inner triangle represents the color space of most images. The larger, outer triangle represents the colors that are typical with a High Dynamic Range (HDR) image. This new HDR support uses only 4 bytes (plus the usual PNG chunk overhead). Chris Lilley\u2014one of PNG's original co\u2010authors and current Technical Director contributing to the new PNG work\u2014wrote an excellent article explaining how this works . Finally recognizes APNGs (animations!) Animated PNGs were proposed by Mozilla quite some time ago. Support was added to Firefox, but other programs hesitated to adopt them. Today, animated PNGs are widely supported. It is time for the spec to reflect reality. Officially supports Exif data Exif stores additional information such as",
+  "published_date": "2025-06-26 00:00:00",
+  "category": "big_tech",
+  "word_count": 236,
+  "content_extraction_status": "partial",
+  "failure_reason": "Partial extraction: got 236/600 words (39.3%)",
+  "feed_name": "TLDR Tech",
+  "scraped_at": "2025-06-28T00:42:10.574558"
+}

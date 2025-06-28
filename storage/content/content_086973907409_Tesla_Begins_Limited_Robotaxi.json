@@ -1,0 +1,12 @@
+{
+  "url": "https://www.nytimes.com/2025/06/22/business/tesla-robotaxi-service-austin.html?unlocked_article_code=1.Q08.KdDI.w-g9FEWttVOg&smid=url-share&utm_source=tldrnewsletter",
+  "title": "Tesla Begins Limited Robotaxi Service in Austin",
+  "content": "[CONTENT EXTRACTION FAILED] Expected ~1400 words, got 383. URL: https://www.nytimes.com/2025/06/22/business/tesla-robotaxi-service-austin.html?unlocked_article_code=1.Q08.KdDI.w-g9FEWttVOg&smid=url-share&utm_source=tldrnewsletter",
+  "published_date": "2025-06-23 00:00:00",
+  "category": "ai",
+  "word_count": 383,
+  "content_extraction_status": "failed",
+  "failure_reason": "Insufficient content: got 383/1400 words (27.4%)",
+  "feed_name": "TLDR Tech",
+  "scraped_at": "2025-06-28T00:42:10.592558"
+}

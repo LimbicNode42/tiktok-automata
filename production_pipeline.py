@@ -312,11 +312,15 @@ class ProductionState:
         url = article.get('url')
         if not url or not video_path or not Path(video_path).exists():
             return None
-            
-        # Create video filename from URL hash
+              # Create video filename from URL hash, article title, and source video
         url_hash = hashlib.md5(url.encode()).hexdigest()[:12]
         safe_title = "".join(c for c in article.get('title', 'unknown')[:30] if c.isalnum() or c in (' ', '-', '_')).strip()
-        filename = f"final_{url_hash}_{safe_title.replace(' ', '_')}.mp4"
+        
+        # Include source video name for traceability
+        source_video = article.get('assigned_video_id', 'unknown_video')
+        safe_video_name = "".join(c for c in source_video[:20] if c.isalnum() or c in (' ', '-', '_')).strip()
+        
+        filename = f"final_{url_hash}_{safe_title.replace(' ', '_')}_from_{safe_video_name.replace(' ', '_')}.mp4"
         
         # Ensure videos directory exists
         videos_dir = Path(storage_dir) / "videos"
@@ -892,12 +896,12 @@ class TikTokProductionPipeline:
                         "max_duration": source_config.get("max_duration", self.config.max_video_duration),
                         "skip_video_ids": already_downloaded  # Pass to downloader to skip
                     }
-                      # Download videos from this source with date filtering
+                    
+                    # Download videos from this source with date filtering
                     downloaded_ids = await self.footage_manager.download_from_source(
                         source_info, 
                         max_new_videos=source_info["max_videos"],
-                        max_age_days=max_age_days
-                    )
+                        max_age_days=max_age_days                    )
                     
                     if downloaded_ids:
                         new_video_ids.extend(downloaded_ids)
@@ -931,9 +935,9 @@ class TikTokProductionPipeline:
                 # Mock video IDs for dry run
                 return [f"mock_video_{i}" for i in range(1, 6)]
             else:
-                # Get all downloaded videos
-                storage_path = Path(self.config.storage_dir)
-                video_files = list(storage_path.glob("*.mp4")) + list(storage_path.glob("*.mkv"))
+                # Get all downloaded videos from the raw storage directory
+                raw_storage_path = Path(self.config.storage_dir) / "raw"
+                video_files = list(raw_storage_path.glob("*.mp4")) + list(raw_storage_path.glob("*.mkv"))
                 video_ids = [f.stem for f in video_files]
                 
                 logger.info(f"Found {len(video_ids)} videos available for analysis")
@@ -1042,8 +1046,7 @@ class TikTokProductionPipeline:
                     temp_output_path = Path("temp") / output_filename
                     temp_output_path.parent.mkdir(exist_ok=True)
                     temp_output_path.write_text("mock video content")  # Create mock file
-                    
-                    # Save to organized location
+                      # Save to organized location
                     organized_path = self.state.save_article_final_video(
                         article, str(temp_output_path), self.config.storage_dir
                     )
@@ -1052,40 +1055,52 @@ class TikTokProductionPipeline:
                         logger.info(f"✅ Mock video generated: {Path(organized_path).name}")
                     
                 else:
-                    # Real video generation
+                    # Real video generation using VideoProcessor directly
                     video_config = VideoConfig(
                         enable_subtitles=True,
                         subtitle_style=subtitle_style,
-                        enable_letterboxing=True,
-                        quality="medium",
-                        enable_audio_mixing=True,
-                        tts_audio_path=article.get('tts_audio_path'),
-                        export_srt=True
+                        output_quality="medium",
+                        export_srt=True,
+                        duration=segment_duration
                     )
                     
                     # Generate video segment to temporary location first
                     temp_output_dir = Path("temp") / "videos"
                     temp_output_dir.mkdir(parents=True, exist_ok=True)
                     
-                    result = await self.footage_manager.create_tiktok_segment(
-                        video_id=article.get('assigned_video_id'),
-                        duration=segment_duration,
-                        config=video_config,
-                        output_dir=str(temp_output_dir)
-                    )
+                    # Create unique output filename
+                    temp_filename = f"temp_tiktok_{int(time.time())}_{i+1}.mp4"
+                    temp_output_path = temp_output_dir / temp_filename
                     
-                    if result and result.get('output_path'):
-                        # Move to organized location and track in state
-                        organized_path = self.state.save_article_final_video(
-                            article, result['output_path'], self.config.storage_dir
+                    # Import and use VideoProcessor directly
+                    from src.video.processors.video_processor import VideoProcessor
+                    processor = VideoProcessor(video_config)
+                    
+                    # Get TTS summary for overlay text
+                    script_content = article.get('tiktok_summary', '')
+                    tts_audio_path = article.get('tts_audio_path')
+                    
+                    if tts_audio_path and Path(tts_audio_path).exists():
+                        generated_path = await processor.create_video(
+                            audio_file=tts_audio_path,
+                            script_content=script_content,
+                            output_path=str(temp_output_path)
                         )
-                        if organized_path:
-                            generated_videos.append(organized_path)
-                            logger.info(f"✅ Video generated: {Path(organized_path).name}")
+                        
+                        if generated_path and Path(generated_path).exists():
+                            # Move to organized location and track in state
+                            organized_path = self.state.save_article_final_video(
+                                article, generated_path, self.config.storage_dir
+                            )
+                            if organized_path:
+                                generated_videos.append(organized_path)
+                                logger.info(f"✅ Video generated: {Path(organized_path).name}")
+                            else:
+                                logger.warning(f"⚠️ Failed to organize video for article {i+1}")
                         else:
-                            logger.warning(f"⚠️ Failed to organize video for article {i+1}")
+                            logger.warning(f"⚠️ Failed to generate video for article {i+1}")
                     else:
-                        logger.warning(f"⚠️ Failed to generate video for article {i+1}")
+                        logger.warning(f"⚠️ TTS audio file not found for article {i+1}: {tts_audio_path}")
                         
             except Exception as e:
                 logger.error(f"Error generating video for article {i+1}: {e}")

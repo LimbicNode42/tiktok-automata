@@ -1,0 +1,12 @@
+{
+  "url": "https://arstechnica.com/space/2025/06/psyche-keeps-its-date-with-an-asteroid-but-now-its-running-in-backup-mode/?utm_source=tldrnewsletter",
+  "title": "Psyche keeps its date with an asteroid, but now it's running in backup mode",
+  "content": "A NASA spacecraft bound for an unexplored metal-rich asteroid has reignited its plasma thrusters, continuing its cruise deeper into the Solar System after switching to a backup fuel line. The $1.4 billion Psyche mission, built to explore an asteroid with the same name, has four electric thrusters fueled by xenon gas. Psyche's solar-electric propulsion system is more fuel-efficient than conventional rocket thrusters, and it works by flowing xenon through an electromagnetic field, which ionizes the gas and expels the ions at high speed to produce thrust. The plasma engines generate lower thrust than chemical rocket engines, but they can accumulate years of run time over the course of a mission, enabling a spacecraft to make significant changes in its velocity to steer its way through space. Psyche launched in October 2023 to kick off a six-year trip to its asteroid destination, located between the orbits of Mars and Jupiter. The robotic mission proceeded normally until April 1, when the spacecraft detected a drop in pressure inside the line that feeds xenon fuel to its four thrusters. The craft reacted to the pressure signature by powering off the thrusters. Back in action The good news is two-fold. First, one of the advantages of using electric thrusters is flexibility. With conventional thrusters, key burns on a deep space mission often must happen at the appointed time. In the case of this mission, the electric thrusters could remain powered off from April 1 until the middle of this month with no effect on the mission's scheduled arrival at asteroid Psyche in August 2029. Second, the Psyche spacecraft's propulsion system has a backup fuel line. Ground controllers at NASA's Jet Propulsion Laboratory ended up commanding the probe to switch to the backup line last month, and test burns showed the thrusters worked well. The spacecraft resumed \"full thruster operations\" on Monday, according to NASA.",
+  "published_date": "2025-06-23 00:00:00",
+  "category": "science",
+  "word_count": 310,
+  "content_extraction_status": "partial",
+  "failure_reason": "Partial extraction: got 310/1000 words (31.0%)",
+  "feed_name": "TLDR Tech",
+  "scraped_at": "2025-06-28T00:42:10.592558"
+}

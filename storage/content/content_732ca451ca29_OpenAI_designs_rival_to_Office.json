@@ -1,0 +1,12 @@
+{
+  "url": "https://finance.yahoo.com/news/openai-designs-rival-office-workspace-163628447.html?utm_source=tldrnewsletter",
+  "title": "OpenAI designs rival to Office and Workspace, The Information reports",
+  "content": "[CONTENT EXTRACTION FAILED] Unable to extract content from: https://finance.yahoo.com/news/openai-designs-rival-office-workspace-163628447.html?utm_source=tldrnewsletter",
+  "published_date": "2025-06-25 00:00:00",
+  "category": "dev",
+  "word_count": 0,
+  "content_extraction_status": "failed",
+  "failure_reason": "Network error: 400, message='Got more than 8190 bytes (19784) when reading Header value is too long.', url='https://finance.yahoo.com/news/openai-designs-rival-office-workspace-163628447.html?utm_source=tldrnewsletter'",
+  "feed_name": "TLDR Tech",
+  "scraped_at": "2025-06-28T00:42:10.578559"
+}

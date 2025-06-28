@@ -1,0 +1,13 @@
+{
+  "start_time": "2025-06-28T00:35:15.872497",
+  "articles_processed": 3,
+  "videos_generated": 3,
+  "errors": [],
+  "generated_files": [
+    "storage\\videos\\final_43eabc48f13b_At_Amazons_Biggest_Data_Cente.mp4",
+    "storage\\videos\\final_732ca451ca29_OpenAI_designs_rival_to_Office.mp4",
+    "storage\\videos\\final_d96aedff2b60_Googles_new_robotics_AI_can_r.mp4"
+  ],
+  "end_time": "2025-06-28T00:37:05.971352",
+  "duration_seconds": 110.09885478019714
+}

@@ -1,0 +1,12 @@
+{
+  "url": "https://arxiv.org/pdf/2503.10622?utm_source=tldrai",
+  "title": "Transformers without Normalization",
+  "content": "[CONTENT EXTRACTION FAILED] Unable to extract content from: https://arxiv.org/pdf/2503.10622?utm_source=tldrai",
+  "published_date": "2025-06-27 00:00:00",
+  "category": "ai",
+  "word_count": 0,
+  "content_extraction_status": "failed",
+  "failure_reason": "Network error: 'utf-8' codec can't decode byte 0xbf in position 10: invalid start byte",
+  "feed_name": "TLDR AI",
+  "scraped_at": "2025-06-28T00:42:10.602557"
+}
