@@ -1,0 +1,12 @@
+{
+  "start_time": "2025-06-28T11:12:38.486981",
+  "articles_processed": 2,
+  "videos_generated": 2,
+  "errors": [],
+  "generated_files": [
+    "storage\\videos\\final_a77a500f234a_Anthropic_wins_a_major_fair_us_from_mock_video_5.mp4",
+    "storage\\videos\\final_c6e0a3ad34ee_ChatGPT_Wows_Office_Workers_T_from_mock_video_1.mp4"
+  ],
+  "end_time": "2025-06-28T11:14:29.476159",
+  "duration_seconds": 110.99018049240112
+}

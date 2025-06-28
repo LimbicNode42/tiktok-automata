@@ -721,14 +721,15 @@ class TikTokProductionPipeline:
                     
             except Exception as e:
                 logger.error(safe_log_message(f"❌ Error summarizing article {i+1}: {e}"))
-                continue
-          # Report results
+                continue        # Report results
         logger.info(f"📊 Summary Results: {len(summarized_articles)} new summaries, {len(skipped_articles)} already done, {len(articles)} total")
         
         if skipped_articles:
             logger.info(f"⏭️ Skipped {len(skipped_articles)} already summarized articles")
         
-        return summarized_articles
+        # Return both new and already-processed articles for next pipeline step
+        all_processed_articles = summarized_articles + skipped_articles
+        return all_processed_articles
     
     async def generate_tts_audio(self, articles: List[Dict]) -> List[Dict]:
         """Generate TTS audio for article summaries."""
@@ -828,14 +829,15 @@ class TikTokProductionPipeline:
             except Exception as e:
                 logger.error(safe_log_message(f"❌ Error generating TTS for article {i+1}: {e}"))
                 continue
-        
-        # Report results
+          # Report results
         logger.info(f"📊 TTS Results: {len(tts_articles)} new TTS files, {len(skipped_articles)} already done, {len(articles)} total")
         
         if skipped_articles:
             logger.info(f"⏭️ Skipped {len(skipped_articles)} articles that already have TTS")
         
-        return tts_articles
+        # Return both new and already-processed articles for next pipeline step
+        all_processed_articles = tts_articles + skipped_articles
+        return all_processed_articles
     async def download_new_videos(self, initial_setup: bool = False) -> List[str]:
         """Download new gaming videos from configured sources."""
         # Set lookback period based on mode
