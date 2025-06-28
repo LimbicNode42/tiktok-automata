@@ -82,6 +82,65 @@ def safe_log_message(message: str) -> str:
             sanitized = sanitized.replace(emoji, replacement)
         return sanitized
 
+def clean_text_for_tts(text: str) -> str:
+    """Clean text for TTS by removing/replacing problematic characters."""
+    if not text:
+        return text
+    
+    # Remove or replace Unicode characters that cause issues
+    replacements = {
+        # Smart quotes
+        '"': '"',
+        '"': '"',
+        ''': "'",
+        ''': "'",
+        
+        # Special characters
+        '–': '-',  # en dash
+        '—': '-',  # em dash
+        '…': '...',  # ellipsis
+        
+        # Accented characters (if they cause TTS issues)
+        'é': 'e',
+        'ñ': 'n',
+        'ü': 'u',
+        'ä': 'a',
+        'ö': 'o',
+        
+        # Remove emojis for TTS clarity
+        '🚨': '',
+        '💰': '',
+        '🤖': '',
+        '📝': '',
+        '🎯': '',
+        '⚡': '',
+        '🔥': '',
+        '💻': '',
+        '🎮': '',
+        '📱': '',
+        '🌟': '',
+        '🚀': '',
+        '💡': '',
+        
+        # Common problematic Unicode sequences
+        '\u00e9': 'e',  # é
+        '\u00f1': 'n',  # ñ
+        '\ud83d\udea8': '',  # 🚨 emoji
+    }
+    
+    cleaned = text
+    for char, replacement in replacements.items():
+        cleaned = cleaned.replace(char, replacement)
+    
+    # Remove any remaining non-ASCII characters that might cause issues
+    cleaned = cleaned.encode('ascii', errors='ignore').decode('ascii')
+    
+    # Clean up multiple spaces
+    import re
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    
+    return cleaned
+
 @dataclass
 class ProductionConfig:
     """Configuration for production pipeline."""
@@ -683,6 +742,12 @@ class TikTokProductionPipeline:
                 url = article.get('url')
                 title = article.get('title', 'Unknown')
                 
+                # Skip articles with failed content extraction
+                extraction_status = article.get('content_extraction_status', 'unknown')
+                if extraction_status != 'success':
+                    logger.info(safe_log_message(f"⏭️ Article {i+1}/{len(articles)} skipped - extraction failed ({extraction_status}): {title[:40]}..."))
+                    continue
+                
                 # Check if already summarized
                 if self.state.has_article_summary(url):
                     logger.info(safe_log_message(f"⏭️ Article {i+1}/{len(articles)} already summarized: {title[:40]}..."))
@@ -698,7 +763,7 @@ class TikTokProductionPipeline:
                 
                 if self.dry_run:
                     # Mock summary for dry run
-                    summary = f"🚨 BREAKING: {title}! This is a test summary for dry run mode. #TechNews #AI #TikTok"
+                    summary = f"BREAKING: {title}! This is a test summary for dry run mode. #TechNews #AI #TikTok"
                 else:
                     # Generate real summary                    
                     summary = await self.summarizer.generate_tiktok_summary(
@@ -708,14 +773,18 @@ class TikTokProductionPipeline:
                     )
                 
                 if summary:
-                    article['tiktok_summary'] = summary
+                    # Clean summary for TTS compatibility
+                    cleaned_summary = clean_text_for_tts(summary)
+                    article['tiktok_summary'] = cleaned_summary
                     article['summary_generated_at'] = datetime.now().isoformat()
                     
-                    # Save summary to file and track in state
-                    summary_file = self.state.save_article_summary(article, summary, self.config.storage_dir)
+                    # Save cleaned summary to file and track in state
+                    summary_file = self.state.save_article_summary(article, cleaned_summary, self.config.storage_dir)
                     
                     summarized_articles.append(article)
-                    logger.info(safe_log_message(f"✅ Summary generated ({len(summary)} chars): {title[:40]}..."))
+                    logger.info(safe_log_message(f"✅ Summary generated ({len(cleaned_summary)} chars): {title[:40]}..."))
+                    if len(cleaned_summary) != len(summary):
+                        logger.info(f"🧹 Text cleaned: {len(summary)} -> {len(cleaned_summary)} chars")
                 else:
                     logger.warning(safe_log_message(f"⚠️ Failed to generate summary for: {title[:40]}..."))
                     
@@ -746,6 +815,12 @@ class TikTokProductionPipeline:
                 url = article.get('url')
                 title = article.get('title', 'Unknown')
                 summary = article.get('tiktok_summary')
+                
+                # Skip articles with failed content extraction
+                extraction_status = article.get('content_extraction_status', 'unknown')
+                if extraction_status != 'success':
+                    logger.info(safe_log_message(f"⏭️ Article {i+1}/{len(articles)} skipped - extraction failed ({extraction_status}): {title[:40]}..."))
+                    continue
                 
                 # Check if already has TTS
                 if self.state.has_article_tts(url):

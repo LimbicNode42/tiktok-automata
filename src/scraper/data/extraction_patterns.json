@@ -8,8 +8,8 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:44.645668",
-    "usage_count": 156,
+    "last_used": "2025-06-28T13:42:59.150726",
+    "usage_count": 158,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -32,7 +32,7 @@
       ".skipcontent--3ZC8EDEr"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:57.038282",
+    "last_used": "2025-06-28T13:42:09.263064",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -128,8 +128,8 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:01.568479",
-    "usage_count": 133,
+    "last_used": "2025-06-28T13:42:13.853185",
+    "usage_count": 135,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -313,8 +313,8 @@
       ".sm:text-lg"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:18.421201",
-    "usage_count": 35,
+    "last_used": "2025-06-28T13:42:29.808909",
+    "usage_count": 36,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -622,8 +622,8 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:27.758970",
-    "usage_count": 55,
+    "last_used": "2025-06-28T13:42:39.596111",
+    "usage_count": 57,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -817,8 +817,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:48.415253",
-    "usage_count": 31,
+    "last_used": "2025-06-28T13:42:00.306531",
+    "usage_count": 32,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -831,8 +831,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:54.610227",
-    "usage_count": 31,
+    "last_used": "2025-06-28T13:42:06.716157",
+    "usage_count": 32,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -846,8 +846,8 @@
       ".editor-content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:59.402706",
-    "usage_count": 31,
+    "last_used": "2025-06-28T13:42:11.920479",
+    "usage_count": 32,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -861,8 +861,8 @@
       ".postid-1235132629"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:58.789937",
-    "usage_count": 31,
+    "last_used": "2025-06-28T13:42:11.141303",
+    "usage_count": 32,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -876,8 +876,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:02.815407",
-    "usage_count": 32,
+    "last_used": "2025-06-28T13:42:15.130537",
+    "usage_count": 33,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -889,8 +889,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:03.537758",
-    "usage_count": 32,
+    "last_used": "2025-06-28T13:42:15.939849",
+    "usage_count": 33,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -901,8 +901,8 @@
       "main"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:17.064928",
-    "usage_count": 31,
+    "last_used": "2025-06-28T13:42:29.465811",
+    "usage_count": 32,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -914,8 +914,8 @@
       "main"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:18.758550",
-    "usage_count": 31,
+    "last_used": "2025-06-28T13:42:30.149760",
+    "usage_count": 32,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -926,8 +926,8 @@
       "#post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:19.682701",
-    "usage_count": 31,
+    "last_used": "2025-06-28T13:42:31.067789",
+    "usage_count": 32,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -941,8 +941,8 @@
       ".flexi-page"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:22.256722",
-    "usage_count": 69,
+    "last_used": "2025-06-28T13:42:33.592155",
+    "usage_count": 70,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -955,8 +955,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:49.682868",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:43:04.571633",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -967,8 +967,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:50.198870",
-    "usage_count": 46,
+    "last_used": "2025-06-28T13:43:05.173881",
+    "usage_count": 47,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -982,8 +982,8 @@
       "section"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:50.303869",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:43:05.305883",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -996,8 +996,8 @@
       ".py-5"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:50.656060",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:43:05.657010",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1009,8 +1009,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:51.561489",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:43:11.773907",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1024,8 +1024,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:51.803201",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:43:11.972260",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1102,8 +1102,8 @@
       "#content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:43.306641",
-    "usage_count": 81,
+    "last_used": "2025-06-28T13:42:56.450864",
+    "usage_count": 84,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1129,7 +1129,7 @@
       ".MultiToCLayout-content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:47.518930",
+    "last_used": "2025-06-28T13:43:02.605620",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -1211,8 +1211,8 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:42.110693",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:42:55.221191",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1226,8 +1226,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:42.371693",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:42:55.535349",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1238,8 +1238,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:43.211009",
-    "usage_count": 23,
+    "last_used": "2025-06-28T13:42:56.356861",
+    "usage_count": 24,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1253,8 +1253,8 @@
       ".prose"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:45.481198",
-    "usage_count": 32,
+    "last_used": "2025-06-28T13:42:59.608412",
+    "usage_count": 33,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1305,8 +1305,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:30.602024",
-    "usage_count": 64,
+    "last_used": "2025-06-28T13:41:40.603819",
+    "usage_count": 65,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1344,8 +1344,8 @@
       ".font-medium"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:30.764753",
-    "usage_count": 57,
+    "last_used": "2025-06-28T13:42:43.505302",
+    "usage_count": 59,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1358,8 +1358,8 @@
       "section"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:39.789411",
-    "usage_count": 36,
+    "last_used": "2025-06-28T13:41:50.779714",
+    "usage_count": 37,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1373,8 +1373,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:07:40.960452",
-    "usage_count": 36,
+    "last_used": "2025-06-28T13:41:52.351066",
+    "usage_count": 37,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1386,8 +1386,8 @@
       ".glue-body"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:30.498909",
-    "usage_count": 63,
+    "last_used": "2025-06-28T13:42:43.242141",
+    "usage_count": 66,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1401,8 +1401,8 @@
       ".lg:pb-120"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:25.279800",
-    "usage_count": 21,
+    "last_used": "2025-06-28T13:42:36.607416",
+    "usage_count": 22,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1413,8 +1413,8 @@
       ".post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-28T12:08:28.882792",
-    "usage_count": 21,
+    "last_used": "2025-06-28T13:42:40.773873",
+    "usage_count": 22,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1540,6 +1540,20 @@
     "last_used": "2025-06-28T11:24:05.156854",
     "usage_count": 9,
     "confidence_score": 0.97,
+    "pattern_type": "ai_discovered"
+  },
+  "www.wsj.com": {
+    "domain": "www.wsj.com",
+    "selectors": [
+      "main",
+      ".css-10sttjg",
+      ".e129c7hm1",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-06-28T13:42:06.638157",
+    "usage_count": 1,
+    "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
   }
 }
