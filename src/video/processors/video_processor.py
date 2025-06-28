@@ -276,8 +276,7 @@ class VideoProcessor:
             
             else:
                 logger.warning("⚠️ No raw gaming footage available, using placeholder")
-                
-                # Fallback to placeholder colored background
+                  # Fallback to placeholder colored background
                 placeholder_color = self._get_color_for_intensity(intensity)
                 
                 gaming_video = ColorClip(
@@ -286,7 +285,7 @@ class VideoProcessor:
                     duration=duration
                 )
                 return gaming_video
-            
+                
         except Exception as e:
             logger.error(f"Gaming footage selection failed: {e}")
             import traceback
@@ -294,20 +293,32 @@ class VideoProcessor:
             return None
     
     def _determine_footage_intensity(self, content_analysis: Dict = None) -> str:
-        """Determine appropriate footage intensity based on content."""
+        """
+        Determine appropriate footage intensity based on content.
+        Enhanced to prioritize high intensity for more engaging TikTok content.
+        """
         if not content_analysis:
-            return "medium"
+            return "high"  # Default to high intensity for more engaging content
         
-        # High intensity for breakthroughs, controversy, major funding
+        # Prioritize high intensity for breakthrough content, controversy, major funding
         if (content_analysis.get('is_breakthrough') or 
             content_analysis.get('controversy_score', 0) > 0 or
-            content_analysis.get('has_funding')):            return "high"
-        # Low intensity for partnerships, first-person content
+            content_analysis.get('has_funding') or
+            content_analysis.get('is_ai_related', True)):  # AI content often benefits from high intensity
+            return "high"
+        
+        # Medium intensity for partnerships, analysis content
         if (content_analysis.get('is_partnership') or 
-            content_analysis.get('is_first_person')):
+            content_analysis.get('is_analysis')):
+            return "medium"
+        
+        # Low intensity only for very calm, first-person, or dialogue content
+        if (content_analysis.get('is_first_person') or
+            content_analysis.get('is_dialogue')):
             return "low"
         
-        return "medium"
+        # Default to high for engaging TikTok content
+        return "high"
     
     def _get_color_for_intensity(self, intensity: str) -> Tuple[int, int, int]:
         """Get background color based on intensity (placeholder)."""
@@ -898,7 +909,7 @@ class VideoProcessor:
                 letterboxed = CompositeVideoClip([
                     background,
                     scaled_video.with_position(('center', y_offset))
-                ])
+                ])            
             else:
                 # Video fills the entire frame
                 letterboxed = scaled_video
@@ -919,39 +930,108 @@ class VideoProcessor:
         content_analysis: Dict = None
     ) -> Optional[VideoFileClip]:
         """
-        Select raw gaming footage WITHOUT TikTok format conversion for letterboxing.
-        This bypasses the segment processor's automatic conversion.
+        Select raw gaming footage using intelligent action analysis and segment selection.
+        Analyzes videos to find the highest intensity segments suitable for TikTok format.
         """
         try:
-            # Determine footage intensity based on content
-            intensity = self._determine_footage_intensity(content_analysis)
+            # Import action analyzer here to avoid circular imports
+            from src.video.analyzers.action_analyzer import VideoActionAnalyzer
             
-            logger.info(f"Selecting RAW {intensity} intensity gaming footage for letterboxing...")
-              # Get the raw footage path directly from the video data directory
-            footage_dir = Path(__file__).parent.parent / "data" / "footage" / "raw"
-            footage_files = list(footage_dir.glob("*.mp4"))
+            # Determine target intensity based on content
+            target_intensity = self._determine_footage_intensity(content_analysis)
+            
+            logger.info(f"🎯 Selecting RAW {target_intensity} intensity gaming footage for {duration:.1f}s segment...")
+            
+            # Check if we should use production storage or development data
+            # First try production storage (used in pipeline)
+            storage_dir = Path("storage") / "raw"
+            if not storage_dir.exists():
+                # Fallback to development data directory
+                storage_dir = Path(__file__).parent.parent / "data" / "footage" / "raw"
+            
+            footage_files = list(storage_dir.glob("*.mp4"))
             
             if not footage_files:
-                logger.warning("No raw footage files found")
+                logger.warning(f"No raw footage files found in {storage_dir}")
                 return None
             
-            # Select a random footage file (or based on intensity later)
+            logger.info(f"🔍 Found {len(footage_files)} available videos to analyze")
+            
+            # Initialize action analyzer
+            analyzer = VideoActionAnalyzer()
+            
+            # Try to find the best footage with action analysis
+            best_video_path = None
+            best_segment_start = 0.0
+            best_segment_score = 0.0
+            
+            # Analyze up to 3 videos (for performance) to find the best segment
             import random
-            selected_file = random.choice(footage_files)
+            sample_videos = random.sample(footage_files, min(3, len(footage_files)))
             
-            logger.info(f"📹 Selected raw footage: {selected_file.name}")
+            for video_path in sample_videos:
+                logger.info(f"🔍 Analyzing action in: {video_path.name}")
+                
+                try:
+                    # Analyze video for action segments
+                    categorized_metrics = await analyzer.analyze_video_action(video_path)
+                    
+                    # Find continuous segments of target duration
+                    segments_results = await analyzer.analyze_continuous_segments(video_path, [duration])
+                    duration_key = str(duration)
+                    
+                    if duration_key in segments_results and segments_results[duration_key]:
+                        best_segment = segments_results[duration_key][0]  # Get best segment
+                        segment_score = best_segment['avg_score']
+                        
+                        logger.info(f"  � Best segment: {best_segment['start_time']:.1f}s - {best_segment['end_time']:.1f}s (score: {segment_score:.1f})")
+                        
+                        # Select video with highest scoring segment
+                        if segment_score > best_segment_score:
+                            best_video_path = video_path
+                            best_segment_start = best_segment['start_time']
+                            best_segment_score = segment_score
+                            logger.info(f"  ✅ New best segment found! Score: {segment_score:.1f}")
+                    else:
+                        logger.info(f"  ⚠️ No suitable {duration:.1f}s segments found")
+                        
+                except Exception as e:
+                    logger.warning(f"  ❌ Failed to analyze {video_path.name}: {e}")
+                    continue
             
-            # Load the raw video without any processing
-            raw_video = VideoFileClip(str(selected_file))
+            # If no analyzed segments found, fallback to random selection
+            if best_video_path is None:
+                logger.warning("🔄 No analyzed segments found, falling back to random selection")
+                best_video_path = random.choice(footage_files)
+                best_segment_start = 0.0
+                best_segment_score = 0.0
+            
+            logger.info(f"📹 Selected video: {best_video_path.name}")
+            logger.info(f"🎬 Using segment: {best_segment_start:.1f}s - {best_segment_start + duration:.1f}s (score: {best_segment_score:.1f})")
+            
+            # Load the selected video
+            raw_video = VideoFileClip(str(best_video_path))
             
             logger.info(f"📊 Raw footage specs: {raw_video.w}x{raw_video.h}, duration: {raw_video.duration:.1f}s")
             
-            # If the video is shorter than needed, loop it
-            if raw_video.duration < duration:
-                loops_needed = int(duration / raw_video.duration) + 1
-                raw_video = concatenate_videoclips([raw_video] * loops_needed)
-              # Trim to exact duration
-            raw_video = raw_video.subclipped(0, duration)            # Keep gaming audio but reduce volume for ambient background noise
+            # Extract the best segment (or handle duration issues)
+            segment_end = best_segment_start + duration
+            
+            if segment_end > raw_video.duration:
+                # If segment goes beyond video, start earlier or loop
+                if raw_video.duration >= duration:
+                    # Start from a position that fits
+                    best_segment_start = max(0, raw_video.duration - duration - 1)
+                    segment_end = best_segment_start + duration
+                    logger.info(f"🔄 Adjusted segment to fit: {best_segment_start:.1f}s - {segment_end:.1f}s")
+                else:
+                    # Video is shorter than needed, loop it
+                    loops_needed = int(duration / raw_video.duration) + 1
+                    raw_video = concatenate_videoclips([raw_video] * loops_needed)
+                    logger.info(f"🔄 Looped video {loops_needed} times for duration")
+            
+            # Extract the selected segment
+            raw_video = raw_video.subclipped(best_segment_start, best_segment_start + duration)# Keep gaming audio but reduce volume for ambient background noise
             if raw_video.audio:
                 # Reduce gaming audio volume to 30% for ambient effect
                 gaming_audio = raw_video.audio
