@@ -1,8 +1,7 @@
-{
-  "storage_dir": "./storage",
+{  "storage_dir": "./storage",
   "fallback_enabled": true,
   "fallback_max_age_hours": 168,
-  "fallback_max_articles": 3,
+  "fallback_max_articles": 10,
   "video_buffer_seconds": 0.5,
   "min_video_duration": 60,
   "max_video_duration": 3600,

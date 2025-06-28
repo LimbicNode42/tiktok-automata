@@ -154,7 +154,7 @@ class ProductionConfig:
     # Fallback options
     fallback_enabled: bool = True  # Enable fallback to older articles when no new ones found
     fallback_max_age_hours: int = 168  # 1 week for fallback articles
-    fallback_max_articles: int = 3  # Maximum fallback articles to process
+    fallback_max_articles: int = 10  # Maximum fallback articles to process
     
     # Video configuration
     video_buffer_seconds: float = 2.0  # Buffer on each side of TTS length
@@ -1215,35 +1215,67 @@ class TikTokProductionPipeline:
                     articles = []  # Continue with empty articles list
                 else:
                     logger.info("No new articles to process")
-                    return results
+                    return results            # Step 2: Generate summaries (check both new articles and existing articles needing summaries)
+            articles_for_summary = articles.copy() if articles else []
             
-            # Step 2: Summarize articles (only if we have articles)
-            if articles:
-                logger.info("=== STEP 2: Generating Summaries ===")
-                articles = await self.summarize_articles(articles)
+            # Add existing articles that need summaries (deduplicate by URL)
+            existing_articles_needing_summaries = self.get_articles_needing_summaries()
+            if existing_articles_needing_summaries:
+                logger.info(f"📝 Found {len(existing_articles_needing_summaries)} existing articles needing summaries")
                 
-                if not articles:
+                # Deduplicate by URL
+                existing_urls = {article.get('url') for article in articles_for_summary if article.get('url')}
+                for article in existing_articles_needing_summaries:
+                    if article.get('url') not in existing_urls:
+                        articles_for_summary.append(article)
+                    
+                logger.info(f"📝 Total articles for summarization: {len(articles_for_summary)} (including {len(existing_articles_needing_summaries)} existing)")
+            
+            if articles_for_summary:
+                logger.info("=== STEP 2: Generating Summaries ===")
+                summarized_articles = await self.summarize_articles(articles_for_summary)
+                
+                if not summarized_articles:
                     if initial_setup:
                         logger.error("No articles were successfully summarized, but continuing with video download for initial setup")
-                        articles = []  # Continue with empty articles list
+                        summarized_articles = []
                     else:
                         logger.error("No articles were successfully summarized")
                         return results
-                
-                # Step 3: Generate TTS audio (only if we have articles)
-                if articles:
-                    logger.info("=== STEP 3: Generating TTS Audio ===")
-                    articles = await self.generate_tts_audio(articles)
-                    
-                    if not articles:
-                        if initial_setup:
-                            logger.error("No TTS audio was successfully generated, but continuing with video download for initial setup")
-                            articles = []  # Continue with empty articles list
-                        else:
-                            logger.error("No TTS audio was successfully generated")
-                            return results
             else:
-                logger.info("=== STEP 2-3: Skipping Summaries and TTS (no articles) ===")            # Step 4: Download new videos (if needed)
+                logger.info("=== STEP 2: No articles need summarization ===")
+                summarized_articles = []
+                
+            # Step 3: Generate TTS (check both summarized articles and existing articles needing TTS)
+            articles_for_tts = summarized_articles.copy() if summarized_articles else []
+            
+            # Add existing articles that need TTS (deduplicate by URL)
+            existing_articles_needing_tts = self.get_articles_needing_tts()
+            if existing_articles_needing_tts:
+                logger.info(f"🔊 Found {len(existing_articles_needing_tts)} existing articles needing TTS")
+                
+                # Deduplicate by URL
+                existing_urls = {article.get('url') for article in articles_for_tts if article.get('url')}
+                for article in existing_articles_needing_tts:
+                    if article.get('url') not in existing_urls:
+                        articles_for_tts.append(article)
+                        
+                logger.info(f"🔊 Total articles for TTS: {len(articles_for_tts)} (including {len(existing_articles_needing_tts)} existing)")
+            
+            if articles_for_tts:
+                logger.info("=== STEP 3: Generating TTS Audio ===")
+                articles = await self.generate_tts_audio(articles_for_tts)
+                
+                if not articles:
+                    if initial_setup:
+                        logger.error("No TTS audio was successfully generated, but continuing with video download for initial setup")
+                        articles = []
+                    else:
+                        logger.error("No TTS audio was successfully generated")
+                        return results
+            else:
+                logger.info("=== STEP 3: No articles need TTS generation ===")
+                articles = []# Step 4: Download new videos (if needed)
             logger.info("=== STEP 4: Downloading Gaming Videos ===")
             # For initial setup or when we need more videos, download from sources
             new_videos = await self.download_new_videos(initial_setup)
@@ -1365,6 +1397,57 @@ class TikTokProductionPipeline:
         if hasattr(obj, 'isoformat'):
             return obj.isoformat()
         return obj
+
+    def get_articles_needing_summaries(self) -> List[Dict]:
+        """Get articles that have content but need summaries."""
+        articles_needing_summaries = []
+        
+        # Check all articles with content
+        for url, content_file in self.state.article_content_files.items():
+            if not Path(content_file).exists():
+                continue
+                
+            # Skip if already has summary
+            if self.state.has_article_summary(url):
+                continue
+                
+            # Load article content
+            content = self.state.load_article_content(url)
+            if not content or content.get('content_extraction_status') != 'success':
+                continue                
+            articles_needing_summaries.append(content)
+                
+        return articles_needing_summaries
+        
+    def get_articles_needing_tts(self) -> List[Dict]:
+        """Get articles that have summaries but need TTS."""
+        articles_needing_tts = []
+        
+        # Check all articles with summaries
+        for url, summary_file in self.state.article_summary_files.items():
+            if not Path(summary_file).exists():
+                continue
+                
+            # Skip if already has TTS
+            if self.state.has_article_tts(url):
+                continue
+                
+            # Load article summary
+            with open(summary_file, 'r', encoding='utf-8') as f:
+                summary_data = json.load(f)
+                
+            if summary_data.get('tiktok_summary'):
+                # Add content extraction status from content file (if exists)
+                content_data = self.state.load_article_content(url)
+                if content_data:
+                    summary_data['content_extraction_status'] = content_data.get('content_extraction_status', 'success')
+                else:
+                    # If no content file exists but we have a summary, assume success
+                    summary_data['content_extraction_status'] = 'success'
+                    
+                articles_needing_tts.append(summary_data)
+                
+        return articles_needing_tts
 
 async def main():
     """Main entry point for production pipeline."""

@@ -44,7 +44,7 @@ class YouTubeDownloader:
         self.ydl_opts = {
             'format': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]',
             'outtmpl': str(self.raw_footage_dir / '%(id)s_%(title)s.%(ext)s'),
-            'writeinfojson': True,
+            'writeinfojson': False,  # Disabled to prevent hanging on YouTube API calls
             'quiet': False,
             'no_warnings': False,
             'extract_flat': False,
@@ -81,9 +81,13 @@ class YouTubeDownloader:
         """Download a single video from a direct URL with enhanced retry logic."""
         for attempt in range(self.max_retries):
             try:
-                logger.info(f"📡 Attempt {attempt + 1}/{self.max_retries} - Getting video info for: {video_url}")
-                  # Get video info first with retry-friendly options
-                info_opts = {'quiet': True, 'socket_timeout': 20 + (attempt * 5)}
+                logger.info(f"📡 Attempt {attempt + 1}/{self.max_retries} - Getting video info for: {video_url}")                # Get video info first with retry-friendly options
+                info_opts = {
+                    'quiet': True, 
+                    'socket_timeout': 20 + (attempt * 5),
+                    'writeinfojson': False,  # Prevent hanging on YouTube API calls
+                    'ignoreerrors': True
+                }
                 with yt_dlp.YoutubeDL(info_opts) as ydl:
                     video_info = ydl.extract_info(video_url, download=False)
                 
@@ -120,77 +124,75 @@ class YouTubeDownloader:
     async def _download_from_channel(self, channel_url: str, source_info: Dict, source_id: str, max_new_videos: int) -> List[str]:
         """Download videos from a channel URL."""
         try:
-            logger.info(f"🔍 Extracting video list from channel: {channel_url}")
-            
-            # Configure yt-dlp for channel extraction
+            logger.info(f"🔍 Extracting video list from channel: {channel_url}")            # Configure yt-dlp for channel extraction with aggressive API prevention
             channel_opts = {
                 'quiet': False,
                 'ignoreerrors': True,
                 'extract_flat': True,
-                'playlistend': max_new_videos * 2,
-            }
+                'playlistend': max_new_videos,  # Only get what we need, not 2x
+                'writeinfojson': False,  # Prevent hanging on YouTube API calls
+                'socket_timeout': 20,   # Shorter timeout for API calls
+                'retries': 2,           # Fewer retries for channel extraction
+                'no_color': True,       # Reduce processing overhead
+                'lazy_playlist': True,  # Don't download full playlist metadata
+                'playlist_items': f'1-{max_new_videos}',  # Limit to specific range
+            }            # Get video list from channel with fallback approach            # Get video list from channel with timeout protection
+            logger.info("📋 Getting channel video list...")
+            channel_info = await self._extract_channel_info_with_timeout(channel_url, channel_opts, timeout_seconds=30)
             
-            # Get video list from channel
-            with yt_dlp.YoutubeDL(channel_opts) as ydl:
+            if not channel_info or 'entries' not in channel_info:
+                logger.error(f"No video entries found in channel: {channel_url}")
+                return []
+            
+            # Filter out None entries and get video info
+            raw_entries = [entry for entry in channel_info['entries'] if entry is not None]
+            logger.info(f"📹 Found {len(raw_entries)} videos in channel")
+            
+            if not raw_entries:
+                logger.warning("No accessible videos found in channel")
+                return []            # Get detailed info for videos
+            videos = []
+            for entry in raw_entries[:max_new_videos * 2]:
                 try:
-                    logger.info("📋 Getting channel video list...")
-                    channel_info = ydl.extract_info(channel_url, download=False)
+                    if len(videos) >= max_new_videos:
+                        break
+                        
+                    video_id = entry.get('id')
+                    if not video_id:
+                        continue
                     
-                    if not channel_info or 'entries' not in channel_info:
-                        logger.error(f"No video entries found in channel: {channel_url}")
-                        return []
+                    # Check if video is already downloaded (skip duplicates)
+                    skip_video_ids = source_info.get('skip_video_ids', set())
+                    if video_id in skip_video_ids:
+                        logger.info(f"⏭️ Skipping already downloaded video: {video_id}")
+                        continue
+                        
+                    # Get detailed video info                            logger.info(f"🔍 Getting detailed info for video: {video_id}")
+                    detailed_opts = {
+                        'quiet': True, 
+                        'ignoreerrors': True,
+                        'writeinfojson': False,  # Prevent hanging on YouTube API calls
+                        'socket_timeout': 15
+                    }
                     
-                    # Filter out None entries and get video info
-                    raw_entries = [entry for entry in channel_info['entries'] if entry is not None]
-                    logger.info(f"📹 Found {len(raw_entries)} videos in channel")
-                    
-                    if not raw_entries:
-                        logger.warning("No accessible videos found in channel")
-                        return []
-                      # Get detailed info for videos
-                    videos = []
-                    for entry in raw_entries[:max_new_videos * 2]:
-                        try:
-                            if len(videos) >= max_new_videos:
-                                break
-                                
-                            video_id = entry.get('id')
-                            if not video_id:
-                                continue
+                    with yt_dlp.YoutubeDL(detailed_opts) as detail_ydl:
+                        video_info = detail_ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False)
+                        
+                        if video_info and video_info.get('availability') != 'subscriber_only':
+                            # Check duration constraints
+                            duration = video_info.get('duration', 0)
+                            if source_info["min_duration"] <= duration <= source_info["max_duration"]:
+                                videos.append(video_info)
+                                logger.success(f"✅ Added video to download queue: {video_info.get('title', 'Unknown')[:50]}...")
+                            else:
+                                logger.info(f"⏭️ Skipping video {video_id}: duration {duration}s outside range")
+                        else:
+                            logger.info(f"⏭️ Skipping members-only or unavailable video: {video_id}")
                             
-                            # Check if video is already downloaded (skip duplicates)
-                            skip_video_ids = source_info.get('skip_video_ids', set())
-                            if video_id in skip_video_ids:
-                                logger.info(f"⏭️ Skipping already downloaded video: {video_id}")
-                                continue
-                                
-                            # Get detailed video info
-                            logger.info(f"🔍 Getting detailed info for video: {video_id}")
-                            detailed_opts = {'quiet': True, 'ignoreerrors': True}
-                            
-                            with yt_dlp.YoutubeDL(detailed_opts) as detail_ydl:
-                                video_info = detail_ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False)
-                                
-                                if video_info and video_info.get('availability') != 'subscriber_only':
-                                    # Check duration constraints
-                                    duration = video_info.get('duration', 0)
-                                    if source_info["min_duration"] <= duration <= source_info["max_duration"]:
-                                        videos.append(video_info)
-                                        logger.success(f"✅ Added video to download queue: {video_info.get('title', 'Unknown')[:50]}...")
-                                    else:
-                                        logger.info(f"⏭️ Skipping video {video_id}: duration {duration}s outside range")
-                                else:
-                                    logger.info(f"⏭️ Skipping members-only or unavailable video: {video_id}")
-                                    
-                        except Exception as e:
-                            logger.warning(f"⚠️ Failed to get info for video {entry.get('id', 'unknown')}: {e}")
-                            continue
-                    
-                    logger.info(f"📥 Selected {len(videos)} videos for download")
-                    
                 except Exception as e:
-                    logger.error(f"Failed to extract channel info: {e}")
-                    return []
+                    logger.warning(f"⚠️ Failed to get info for video {entry.get('id', 'unknown')}: {e}")
+                    continue            
+            logger.info(f"📥 Selected {len(videos)} videos for download")
             
             downloaded_files = []
             
@@ -274,8 +276,100 @@ class YouTubeDownloader:
                     return file_path
             
             logger.error(f"⚠️ No video file found after download")
-            return None
-            
+            return None            
         except Exception as e:
             logger.error(f"❌ Download failed for {title}: {e}")
             return None
+    
+    async def _extract_channel_info_with_timeout(self, channel_url: str, channel_opts: dict, timeout_seconds: int = 30):
+        """Extract channel info with timeout protection and process killing."""
+        import subprocess
+        import tempfile
+        import json
+        import os
+        import signal
+        
+        # Create a temporary file for yt-dlp output
+        with tempfile.NamedTemporaryFile(mode='w+', suffix='.json', delete=False) as temp_file:
+            temp_file_path = temp_file.name
+        
+        try:
+            # Build yt-dlp command
+            cmd = [
+                'yt-dlp',
+                '--dump-json',
+                '--flat-playlist',
+                '--playlist-items', f'1:{channel_opts.get("playlistend", 30)}',
+                '--no-warnings',
+                '--quiet',
+                '--ignore-errors',
+                '--no-check-certificates',
+                '--socket-timeout', '10',
+                '--retries', '1',
+                channel_url
+            ]
+            
+            logger.info(f"🔄 Running yt-dlp with {timeout_seconds}s timeout...")
+            
+            # Run yt-dlp as subprocess with timeout
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                
+                # Wait for completion with timeout
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), 
+                    timeout=timeout_seconds
+                )
+                
+                if process.returncode != 0:
+                    logger.error(f"❌ yt-dlp failed with return code {process.returncode}")
+                    if stderr:
+                        logger.error(f"Error output: {stderr.decode()[:500]}")
+                    return None
+                
+                # Parse JSON output
+                if stdout:
+                    lines = stdout.decode().strip().split('\n')
+                    entries = []
+                    for line in lines:
+                        if line.strip():
+                            try:
+                                entry = json.loads(line)
+                                entries.append(entry)
+                            except json.JSONDecodeError:
+                                continue
+                    
+                    if entries:
+                        # Create a fake playlist info structure
+                        return {
+                            'entries': entries,
+                            'title': 'Channel Videos',
+                            'id': 'channel_videos'
+                        }
+                
+                logger.warning("⚠️ No video entries found in yt-dlp output")
+                return None
+                
+            except asyncio.TimeoutError:
+                logger.error(f"⏱️ yt-dlp process timed out after {timeout_seconds}s - killing process")
+                try:
+                    process.kill()
+                    await process.wait()
+                except:
+                    pass
+                return None
+                
+        except Exception as e:
+            logger.error(f"❌ Channel extraction failed: {e}")
+            return None
+        finally:
+            # Clean up temp file
+            try:
+                if os.path.exists(temp_file_path):
+                    os.unlink(temp_file_path)
+            except:
+                pass

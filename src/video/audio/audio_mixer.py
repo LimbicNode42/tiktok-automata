@@ -40,10 +40,9 @@ class AudioConfig:
     sample_rate: int = 24000          # Target sample rate
     bit_depth: int = 16               # Audio bit depth
     channels: int = 1                 # Mono output for TikTok
-    
-    # Effects
+      # Effects
     enable_fade_transitions: bool = True
-    fade_duration: float = 0.5        # Fade in/out duration in seconds
+    fade_duration: float = 0.2        # Fade in/out duration in seconds - Reduced for better sync with 1.5x TTS speed
     enable_dynamic_range: bool = True  # Compress dynamic range for mobile
     enable_noise_gate: bool = True    # Remove background noise gaps
     

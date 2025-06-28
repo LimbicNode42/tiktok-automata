@@ -77,10 +77,9 @@ class SubtitleStyle:
     double_stroke: bool = False  # Double stroke for extra bubble effect
     inner_stroke_color: str = "white"  # Inner stroke color for double effect
     inner_stroke_width: int = 2  # Inner stroke width
-    
-    # Animation effects
-    fade_in_duration: float = 0.2
-    fade_out_duration: float = 0.2
+      # Animation effects - Reduced for better sync with 1.5x TTS speed
+    fade_in_duration: float = 0.1
+    fade_out_duration: float = 0.1
     
     # Mobile optimization  
     line_spacing: float = 1.2

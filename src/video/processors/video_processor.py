@@ -453,9 +453,8 @@ class VideoProcessor:
             
             # Position text (centered with some offset for mobile viewing)
             txt_clip = txt_clip.with_position(('center', 0.7))  # 70% down the screen
-            
-            # Add fade effects
-            txt_clip = txt_clip.with_effects([FadeIn(0.5), FadeOut(0.5)])
+              # Add fade effects - Reduced for better sync with 1.5x TTS speed
+            txt_clip = txt_clip.with_effects([FadeIn(0.1), FadeOut(0.1)])
             
             return txt_clip
             
