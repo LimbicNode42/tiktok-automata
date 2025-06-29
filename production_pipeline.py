@@ -1275,7 +1275,20 @@ class TikTokProductionPipeline:
                         return results
             else:
                 logger.info("=== STEP 3: No articles need TTS generation ===")
-                articles = []# Step 4: Download new videos (if needed)
+                articles = []
+
+            # Check for articles ready for video generation (have summaries and TTS)
+            articles_ready_for_video = self.get_articles_needing_video()
+            if articles_ready_for_video:
+                logger.info(f"🎬 Found {len(articles_ready_for_video)} articles ready for video generation")
+                # Merge with articles from current processing (deduplicate by URL)
+                existing_urls = {article.get('url') for article in articles if article.get('url')}
+                for article in articles_ready_for_video:
+                    if article.get('url') not in existing_urls:
+                        articles.append(article)
+                logger.info(f"🎬 Total articles for video generation: {len(articles)}")
+
+            # Step 4: Download new videos (if needed)
             logger.info("=== STEP 4: Downloading Gaming Videos ===")
             # For initial setup or when we need more videos, download from sources
             new_videos = await self.download_new_videos(initial_setup)
@@ -1448,6 +1461,44 @@ class TikTokProductionPipeline:
                 articles_needing_tts.append(summary_data)
                 
         return articles_needing_tts
+
+    def get_articles_needing_video(self) -> List[Dict]:
+        """Get articles that have summaries and TTS but need final video generation."""
+        articles_needing_video = []
+        
+        # Check all articles with TTS
+        for url, tts_file in self.state.article_tts_files.items():
+            if not Path(tts_file).exists():
+                continue
+                
+            # Skip if already has final video
+            if self.state.has_article_final_video(url):
+                continue
+                
+            # Load article TTS metadata
+            tts_json_file = tts_file.replace('.wav', '.json')
+            if Path(tts_json_file).exists():
+                with open(tts_json_file, 'r', encoding='utf-8') as f:
+                    tts_data = json.load(f)
+                    
+                # Also load summary data for complete article info
+                summary_file = self.state.article_summary_files.get(url)
+                if summary_file and Path(summary_file).exists():
+                    with open(summary_file, 'r', encoding='utf-8') as f:
+                        summary_data = json.load(f)
+                    
+                    # Merge TTS and summary data
+                    article_data = summary_data.copy()
+                    article_data.update({
+                        'tts_audio_path': tts_file,
+                        'tts_duration': tts_data.get('duration_seconds', 30.0),
+                        'tts_voice': tts_data.get('voice', 'default'),
+                        'tts_generated_at': tts_data.get('generated_at')
+                    })
+                    
+                    articles_needing_video.append(article_data)
+                
+        return articles_needing_video
 
 async def main():
     """Main entry point for production pipeline."""
