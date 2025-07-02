@@ -33,7 +33,7 @@ class SyncConfig:
     max_time_stretch: float = 0.1       # Maximum time stretching (10%)
     
     # TTS synchronization
-    tts_lead_time: float = 0.2          # TTS starts slightly before video action
+    tts_lead_time: float = 0.15         # Show subtitles 150ms before TTS for better sync
     tts_fade_overlap: float = 0.5       # Overlap time for smooth transitions
     
     # Background audio

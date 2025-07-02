@@ -532,7 +532,7 @@ class TikTokProductionPipeline:
         # Initialize TTS with optimized settings
         tts_config = TTSConfig(
             voice='af_heart',  # Default voice, will be randomized
-            speed=1.55,        # Optimized TikTok speed
+            speed=config.get_tts_speed(),  # Use config TTS speed (1.35x)
             use_gpu=True
         )
         self.tts_engine = KokoroTTSEngine(tts_config)
@@ -1150,7 +1150,7 @@ class TikTokProductionPipeline:
                     temp_output_path = temp_output_dir / temp_filename
                     
                     # Import and use VideoProcessor directly
-                    from src.video.processors.video_processor import VideoProcessor
+                    from video.processors.video_processor import VideoProcessor
                     processor = VideoProcessor(video_config)
                     
                     # Get TTS summary for overlay text

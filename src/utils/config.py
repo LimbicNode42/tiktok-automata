@@ -34,7 +34,7 @@ class VoiceProfile:
 class TTSConfig:
     """TTS configuration settings."""
     default_voice: str = 'af_heart'
-    default_speed: float = 1.55  # Optimized for TikTok/short-form content - Natural 1.55x speed
+    default_speed: float = 1.35  # Reduced for more natural pacing - 1.35x speed
     sample_rate: int = 24000
     output_format: str = 'wav'
     normalize_audio: bool = True
@@ -56,7 +56,7 @@ class Config:
         )        # TTS Configuration
         self.tts = TTSConfig(
             default_voice=os.getenv("TTS_DEFAULT_VOICE", "af_heart"),
-            default_speed=float(os.getenv("TTS_DEFAULT_SPEED", 1.55)),  # Natural 1.55x for TikTok
+            default_speed=float(os.getenv("TTS_DEFAULT_SPEED", 1.35)),  # Reduced to 1.35x for more natural pacing
             sample_rate=int(os.getenv("TTS_SAMPLE_RATE", 24000)),
             output_format=os.getenv("TTS_OUTPUT_FORMAT", "wav"),
             normalize_audio=os.getenv("TTS_NORMALIZE_AUDIO", "true").lower() == "true",
@@ -426,6 +426,10 @@ class Config:
                 'logs_dir': str(self.logs_dir)
             }
         }
+    
+    def get_tts_speed(self) -> float:
+        """Get the configured TTS speed."""
+        return self.tts.default_speed
 
 
 # Global config instance

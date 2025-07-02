@@ -31,7 +31,8 @@ class SubtitleSegment:
     end_time: float    # seconds
     style: str = "default"  # Style preset name
     position: Tuple[str, float] = ("center", 0.75)  # (x, y) position - moved higher up
-    max_chars_per_line: int = 35  # Increased from 25 to use more screen width
+    max_chars_per_line: int = 28  # Optimized for 2-line static display
+    force_two_lines: bool = True  # Always display as 2 lines for consistency
     
     @property
     def duration(self) -> float:
@@ -278,10 +279,11 @@ class SubtitleGenerator:
     
     def _segment_text(self, text: str) -> List[str]:
         """
-        Segment text into subtitle-appropriate chunks.
+        Segment text into subtitle-appropriate chunks with forced 2-line display.
         
         Optimizes for:
-        - Mobile readability (short lines)
+        - Static 2-line display for consistency
+        - Mobile readability (balanced lines)
         - Natural speech pauses
         - TikTok attention spans
         """
@@ -295,11 +297,15 @@ class SubtitleGenerator:
         segments = []
         
         for sentence in sentences:
-            # If sentence is short enough, use as-is
-            if len(sentence) <= 50:
-                segments.append(sentence)
+            # Format for exactly 2 lines by finding optimal split point
+            words = sentence.split()
+            if len(words) <= 3:
+                # Very short sentence - pad to ensure 2 lines
+                segments.append(self._format_to_two_lines(sentence))
+            elif len(sentence) <= 50:  # Reduced from 56 to ensure 28 chars per line
+                segments.append(self._format_to_two_lines(sentence))
             else:
-                # Split long sentences by phrases/clauses
+                # Split long sentences by phrases/clauses and format each
                 phrases = re.split(r'[,;:]+', sentence)
                 current_segment = ""
                 
@@ -308,10 +314,10 @@ class SubtitleGenerator:
                     if not phrase:
                         continue
                     
-                    # Check if adding this phrase would exceed optimal length
-                    if current_segment and len(current_segment + " " + phrase) > 45:
+                    # Check if adding this phrase would exceed 2-line capacity (50 chars total)
+                    if current_segment and len(current_segment + " " + phrase) > 50:
                         if current_segment:
-                            segments.append(current_segment)
+                            segments.append(self._format_to_two_lines(current_segment))
                         current_segment = phrase
                     else:
                         if current_segment:
@@ -321,31 +327,79 @@ class SubtitleGenerator:
                 
                 # Add any remaining segment
                 if current_segment:
-                    segments.append(current_segment)
+                    segments.append(self._format_to_two_lines(current_segment))
         
-        # Further split overly long segments by words
+        # Filter out empty segments and ensure all are formatted for 2 lines
         final_segments = []
         for segment in segments:
-            if len(segment) <= 50:
-                final_segments.append(segment)
-            else:
-                words = segment.split()
-                current_line = ""
-                
-                for word in words:
-                    if current_line and len(current_line + " " + word) > 45:
-                        final_segments.append(current_line)
-                        current_line = word
-                    else:
-                        if current_line:
-                            current_line += " " + word
-                        else:
-                            current_line = word
-                
-                if current_line:
-                    final_segments.append(current_line)
+            if segment and segment.strip():
+                final_segments.append(self._format_to_two_lines(segment))
         
-        logger.info(f"Segmented text into {len(final_segments)} parts")
+        return final_segments
+    
+    def _format_to_two_lines(self, text: str) -> str:
+        """
+        Format text to display exactly as 2 lines with optimal word wrapping.
+        
+        Args:
+            text: Input text to format
+            
+        Returns:
+            Text formatted with newline for 2-line display
+        """
+        words = text.split()
+        if len(words) <= 1:
+            # Single word - add filler text to create 2 lines
+            return f"{text}\n "
+        elif len(words) == 2:
+            # Two words - put one per line
+            return f"{words[0]}\n{words[1]}"
+        
+        # Find the optimal split point for balanced lines under 28 chars each
+        best_split = len(words) // 2
+        best_balance = float('inf')
+        
+        # Try different split points to find the most balanced within char limits
+        for i in range(1, len(words)):
+            first_line = ' '.join(words[:i])
+            second_line = ' '.join(words[i:])
+            
+            # Skip if either line exceeds character limit
+            if len(first_line) > 28 or len(second_line) > 28:
+                continue
+            
+            # Prefer balanced line lengths
+            line_balance = abs(len(first_line) - len(second_line))
+            
+            if line_balance < best_balance:
+                best_balance = line_balance
+                best_split = i
+        
+        first_line = ' '.join(words[:best_split])
+        second_line = ' '.join(words[best_split:])
+        
+        return f"{first_line}\n{second_line}"
+    
+    def _legacy_segment_words(self, segment: str) -> List[str]:
+        """Legacy word-based segmentation for fallback."""
+        words = segment.split()
+        final_segments = []
+        current_line = ""
+        
+        for word in words:
+            if current_line and len(current_line + " " + word) > 50:
+                final_segments.append(self._format_to_two_lines(current_line))
+                current_line = word
+            else:
+                if current_line:
+                    current_line += " " + word
+                else:
+                    current_line = word
+        
+        # Add any remaining text
+        if current_line:
+            final_segments.append(self._format_to_two_lines(current_line))
+        
         return final_segments
     
     def _calculate_timing(
@@ -393,13 +447,18 @@ class SubtitleGenerator:
             scale_factor = (total_duration * 0.95) / total_estimated  # Use 95% to leave some buffer
             segment_durations = [d * scale_factor for d in segment_durations]
         
-        # Create timed segments
+        # Create timed segments with lead time for better sync
         timed_segments = []
-        current_time = 0
+        subtitle_lead_time = 0.15  # Show subtitles 150ms before TTS audio
+        
+        # Calculate base timing first
+        current_audio_time = 0
         
         for i, (segment, duration) in enumerate(zip(segments, segment_durations)):
-            start_time = current_time
-            end_time = min(current_time + duration, total_duration)
+            # Subtitle starts before the audio for this segment
+            start_time = max(0, current_audio_time - subtitle_lead_time)
+            # Subtitle ends when audio segment ends
+            end_time = min(current_audio_time + duration, total_duration)
             
             timed_segments.append(SubtitleSegment(
                 text=segment,
@@ -407,11 +466,12 @@ class SubtitleGenerator:
                 end_time=end_time
             ))
             
-            current_time = end_time
+            # Move to next audio segment
+            current_audio_time += duration
             
             # Small gap between segments for natural pacing
             if i < len(segments) - 1:
-                current_time += 0.1
+                current_audio_time += 0.1
         
         return timed_segments
     
