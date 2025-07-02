@@ -1,9 +1,0 @@
-{
-  "url": "https://www.lesswrong.com/posts/uAEhvX6scvcZANWwg/a-guide-for-llm-assisted-web-research?utm_source=tldrai",
-  "title": "A Guide For LLM-Assisted Web Research",
-  "original_content": "It's hard to imagine doing web research without using LLMs. Chatbots may be the first thing you turn to for questions like: What are the companies currently working on nuclear fusion and who invested in them? What is the performance gap between open and closed-weight models on the MMLU benchmark? Is there really a Tesla Model H? So which LLMs, and which \"Search\", \"Research\", \"Deep Search\" or \"Deep Research\" branded products, are best? How good are their epistemics, compared to if you did the web research yourself? Last month we ( FutureSearch ) published Deep Research Bench (DRB) , a benchmark designed to evaluate LLMs agents on difficult web research tasks using frozen snapshots of the internet. In this post, we're going to share the non-obvious findings, suggestions and failure modes that we think might be useful to anyone who uses LLMs with web search enabled. tl;dr ChatGPT with o3 + websearch outperformed everything else by a decent margin, though is still clearly worse than a skilled human. Use this as your default research tool. Claude web + Claude Research were not able to read PDFs (as of May 6, 2025 and as far as we can tell that's still the case), which likely nerfed their scores. If that's important for your task, don't use them. If you're using LLMs with your own agent via an API, Claude 4 Sonnet + Opus are best, better than o3 (as of June 24, 2025). Grok was ok, but not great. Unless you need to access",
-  "tiktok_summary": "BREAKING: A Guide For LLM-Assisted Web Research! This is a test summary for dry run mode. #TechNews #AI #TikTok",
-  "summary_length": 111,
-  "summary_words": 19,
-  "summarized_at": "2025-06-28T20:07:51.284224"
-}

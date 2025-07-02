@@ -144,3 +144,5 @@ assets/audio/*
 .env.local
 .env.production
 config/secrets.yaml
+
+storage/*
