@@ -8,8 +8,8 @@
       ".BrandPageWrapper-contentWrapper"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:06.673063",
-    "usage_count": 222,
+    "last_used": "2025-07-03T17:37:22.783005",
+    "usage_count": 235,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -32,7 +32,7 @@
       ".skipcontent--3ZC8EDEr"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:26.226862",
+    "last_used": "2025-07-03T17:35:19.704601",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
@@ -128,8 +128,8 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:00.868639",
-    "usage_count": 184,
+    "last_used": "2025-07-03T17:35:40.300171",
+    "usage_count": 186,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -201,9 +201,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:41:11.768205",
-    "usage_count": 6,
-    "confidence_score": 0.8799999999999999,
+    "last_used": "2025-07-03T17:35:39.467760",
+    "usage_count": 8,
+    "confidence_score": 0.94,
     "pattern_type": "ai_discovered"
   },
   "www.reuters.com": {
@@ -213,9 +213,9 @@
       ".regular-article-layout__container__3KL1R"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-12T17:40:48.518756",
-    "usage_count": 4,
-    "confidence_score": 0.82,
+    "last_used": "2025-07-03T17:37:04.415993",
+    "usage_count": 8,
+    "confidence_score": 0.94,
     "pattern_type": "ai_discovered"
   },
   "deepdream.substack.com": {
@@ -298,8 +298,8 @@
       ".device--size-"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:02.086213",
-    "usage_count": 50,
+    "last_used": "2025-07-03T17:35:51.002012",
+    "usage_count": 52,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -401,8 +401,8 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:16.109417",
-    "usage_count": 46,
+    "last_used": "2025-07-02T18:40:51.061170",
+    "usage_count": 47,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -677,9 +677,9 @@
       ".postid-2000617042"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:23.905307",
-    "usage_count": 2,
-    "confidence_score": 0.76,
+    "last_used": "2025-07-03T17:36:43.811736",
+    "usage_count": 8,
+    "confidence_score": 0.94,
     "pattern_type": "ai_discovered"
   },
   "redis.io": {
@@ -771,10 +771,10 @@
       "[class*=\"content\"]",
       ".content"
     ],
-    "success_rate": 0.00636268544113595,
+    "success_rate": 0.003757102126136367,
     "last_used": "2025-06-26T22:43:38.658329",
     "usage_count": 1,
-    "confidence_score": 0.03445387980879516,
+    "confidence_score": 0.03262997148829545,
     "pattern_type": "ai_discovered"
   },
   "charity.wtf": {
@@ -846,8 +846,8 @@
       ".editor-content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:07.134062",
-    "usage_count": 49,
+    "last_used": "2025-07-03T17:35:01.733805",
+    "usage_count": 51,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -926,8 +926,8 @@
       "#post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:15.489559",
-    "usage_count": 49,
+    "last_used": "2025-07-03T17:35:09.388551",
+    "usage_count": 51,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -941,8 +941,8 @@
       ".flexi-page"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:32.918441",
-    "usage_count": 117,
+    "last_used": "2025-07-03T17:37:19.603229",
+    "usage_count": 123,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -967,8 +967,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:33.160519",
-    "usage_count": 87,
+    "last_used": "2025-07-03T17:37:08.978527",
+    "usage_count": 94,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1090,8 +1090,8 @@
       ".page-content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:54.195469",
-    "usage_count": 32,
+    "last_used": "2025-07-02T18:43:42.197955",
+    "usage_count": 33,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1102,8 +1102,8 @@
       "#content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:24.503798",
-    "usage_count": 132,
+    "last_used": "2025-07-03T17:36:53.781820",
+    "usage_count": 137,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1117,8 +1117,8 @@
       ".ph0-l"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:11.870054",
-    "usage_count": 49,
+    "last_used": "2025-07-03T17:34:58.325087",
+    "usage_count": 51,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1128,10 +1128,10 @@
       "[class*=\"content\"]",
       ".MultiToCLayout-content"
     ],
-    "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:29.308949",
+    "success_rate": 0.9,
+    "last_used": "2025-07-03T17:36:33.136577",
     "usage_count": 1,
-    "confidence_score": 0.8,
+    "confidence_score": 0.66,
     "pattern_type": "ai_discovered"
   },
   "tomtunguz.com": {
@@ -1154,8 +1154,8 @@
       ".keyword-blog"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:02.084060",
-    "usage_count": 56,
+    "last_used": "2025-07-02T18:43:53.403466",
+    "usage_count": 58,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1196,8 +1196,8 @@
       ".type-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:38.055400",
-    "usage_count": 26,
+    "last_used": "2025-07-03T17:37:24.820516",
+    "usage_count": 30,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1211,8 +1211,8 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:23.304231",
-    "usage_count": 40,
+    "last_used": "2025-07-03T17:36:34.756942",
+    "usage_count": 42,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1253,8 +1253,8 @@
       ".prose"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:26.833620",
-    "usage_count": 64,
+    "last_used": "2025-07-03T17:37:23.790230",
+    "usage_count": 67,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1268,8 +1268,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:03.238305",
-    "usage_count": 71,
+    "last_used": "2025-07-02T18:43:54.951431",
+    "usage_count": 73,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1280,8 +1280,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:39.906961",
-    "usage_count": 71,
+    "last_used": "2025-07-02T18:42:32.910596",
+    "usage_count": 73,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1293,8 +1293,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:09.814899",
-    "usage_count": 44,
+    "last_used": "2025-07-02T18:40:41.685791",
+    "usage_count": 45,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1305,8 +1305,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:27.106998",
-    "usage_count": 98,
+    "last_used": "2025-07-02T18:40:46.057672",
+    "usage_count": 99,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1317,8 +1317,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:14.092235",
-    "usage_count": 44,
+    "last_used": "2025-07-02T18:40:47.526672",
+    "usage_count": 45,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1329,8 +1329,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:16.381390",
-    "usage_count": 44,
+    "last_used": "2025-07-02T18:40:51.769336",
+    "usage_count": 45,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1425,8 +1425,8 @@
       "#site-content"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:53.685755",
-    "usage_count": 27,
+    "last_used": "2025-07-02T18:43:41.553885",
+    "usage_count": 28,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1440,8 +1440,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:00.919445",
-    "usage_count": 27,
+    "last_used": "2025-07-02T18:43:50.516800",
+    "usage_count": 28,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1452,8 +1452,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:28:03.351438",
-    "usage_count": 27,
+    "last_used": "2025-07-02T18:43:55.077530",
+    "usage_count": 28,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1467,8 +1467,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:25:52.509320",
-    "usage_count": 45,
+    "last_used": "2025-07-03T17:35:42.738535",
+    "usage_count": 47,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1480,8 +1480,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:25:52.799037",
-    "usage_count": 45,
+    "last_used": "2025-07-03T17:35:43.030773",
+    "usage_count": 47,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1495,8 +1495,8 @@
       ".postid-34844"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:00.059222",
-    "usage_count": 45,
+    "last_used": "2025-07-03T17:35:50.031503",
+    "usage_count": 47,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1509,8 +1509,8 @@
       ".article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:26:03.933684",
-    "usage_count": 41,
+    "last_used": "2025-07-03T17:35:52.859843",
+    "usage_count": 43,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1523,8 +1523,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:24.900503",
-    "usage_count": 24,
+    "last_used": "2025-07-03T17:37:09.582722",
+    "usage_count": 26,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1537,8 +1537,8 @@
       ".yt-overflow-x"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-06-29T12:27:37.624664",
-    "usage_count": 24,
+    "last_used": "2025-07-03T17:37:24.440915",
+    "usage_count": 26,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1566,9 +1566,9 @@
       ".mx-4"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:15.600798",
-    "usage_count": 1,
-    "confidence_score": 0.8,
+    "last_used": "2025-07-03T17:36:35.040147",
+    "usage_count": 5,
+    "confidence_score": 0.85,
     "pattern_type": "ai_discovered"
   },
   "www.scientificamerican.com": {
@@ -1579,9 +1579,9 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:24.246307",
-    "usage_count": 1,
-    "confidence_score": 0.8,
+    "last_used": "2025-07-03T17:35:17.533539",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
     "pattern_type": "ai_discovered"
   },
   "andrewchen.substack.com": {
@@ -1594,7 +1594,238 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-01T22:22:25.951917",
+    "last_used": "2025-07-03T17:35:20.591864",
+    "usage_count": 3,
+    "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.bbc.com": {
+    "domain": "www.bbc.com",
+    "selectors": [
+      "article",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:35:37.189415",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "worksonmymachine.substack.com": {
+    "domain": "worksonmymachine.substack.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:35:37.800390",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "newsletter.manager.dev": {
+    "domain": "newsletter.manager.dev",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:35:38.160278",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "wbenny.github.io": {
+    "domain": "wbenny.github.io",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".blog-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:35:38.476502",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.cursor.com": {
+    "domain": "www.cursor.com",
+    "selectors": [
+      "main",
+      ".flex",
+      ".flex-1",
+      ".flex-col",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:36:31.420250",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "blog.jxmo.io": {
+    "domain": "blog.jxmo.io",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:36:35.285951",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.airtable.com": {
+    "domain": "www.airtable.com",
+    "selectors": [
+      "main",
+      ".MarketingWrapper_mainWrap__Fn_FK",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:36:42.391847",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "metr.github.io": {
+    "domain": "metr.github.io",
+    "selectors": [
+      "article",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:36:43.189784",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "chipsandcheese.com": {
+    "domain": "chipsandcheese.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:36:53.637685",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "www.rand.org": {
+    "domain": "www.rand.org",
+    "selectors": [
+      "[id*=\"content\"]",
+      "#content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:36:54.257405",
+    "usage_count": 2,
+    "confidence_score": 0.76,
+    "pattern_type": "ai_discovered"
+  },
+  "electrek.co": {
+    "domain": "electrek.co",
+    "selectors": [
+      "[class*=\"post\"]",
+      ".wp-singular",
+      ".post-template-default",
+      ".single",
+      ".single-post"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:34:49.350276",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.indragie.com": {
+    "domain": "www.indragie.com",
+    "selectors": [
+      "article",
+      ".prose",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:34:50.122582",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.cnet.com": {
+    "domain": "www.cnet.com",
+    "selectors": [
+      "[id*=\"article\"]",
+      "#page-article-8f096965-d04a-43e6-8549-19f4e76feb92",
+      ".c-pageArticle"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:34:58.889693",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "letsencrypt.org": {
+    "domain": "letsencrypt.org",
+    "selectors": [
+      "[class*=\"content\"]",
+      ".narrow-container",
+      ".mx-auto",
+      ".py-8",
+      ".prose-content"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:34:59.172887",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.aboutamazon.com": {
+    "domain": "www.aboutamazon.com",
+    "selectors": [
+      "article",
+      ".ArticlePage-mainContent",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:35:56.212522",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.grammarly.com": {
+    "domain": "www.grammarly.com",
+    "selectors": [
+      "main",
+      "._14tc9-mainWide",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:35:56.614781",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "www.john-rush.com": {
+    "domain": "www.john-rush.com",
+    "selectors": [
+      "main",
+      "main"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-03T17:35:59.129688",
     "usage_count": 1,
     "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
