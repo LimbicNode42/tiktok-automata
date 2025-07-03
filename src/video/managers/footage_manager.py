@@ -182,14 +182,60 @@ class FootageManager(BaseFootageManager):
     
     async def create_segments_from_json(self, video_id: str, json_file_path: Path, 
                                       buffer_seconds: float = 7.5) -> List[Path]:
-        """Create segments with custom durations from JSON file."""
+        """Create segments with custom durations from JSON file, filtering out dialogue."""
         duration_info_list = self.processor.load_audio_durations_from_json(json_file_path, buffer_seconds)
         if not duration_info_list:
             logger.warning(f"No valid durations found in {json_file_path}")
             return []
         
         logger.info(f"Creating {len(duration_info_list)} individual segments with {buffer_seconds}s buffer")
-        return await self.process_footage_for_tiktok(video_id, duration_info_list=duration_info_list)
+        segments = await self.process_footage_for_tiktok(video_id, duration_info_list=duration_info_list)
+        
+        # Filter out dialogue segments for better TTS audio quality
+        filtered_segments = []
+        for segment in segments:
+            if segment.exists():
+                # Quick analysis to check if segment contains dialogue
+                try:
+                    # Analyze a small sample from the segment
+                    from moviepy import VideoFileClip
+                    with VideoFileClip(str(segment)) as clip:
+                        # Sample frames from the middle 10 seconds
+                        sample_duration = min(10, clip.duration)
+                        start_time = max(0, (clip.duration - sample_duration) / 2)
+                        sample_frames = []
+                        
+                        # Extract 5 frames for analysis
+                        for i in range(5):
+                            t = start_time + i * (sample_duration / 5)
+                            frame = clip.get_frame(t)
+                            sample_frames.append(frame)
+                        
+                        # Analyze content type
+                        metrics_list = self.analyzer.analyze_frames(sample_frames)
+                        if metrics_list:
+                            content_type = metrics_list[0].content_type
+                            if content_type != "dialogue":
+                                filtered_segments.append(segment)
+                                logger.info(f"✅ Kept segment: {segment.name} (content_type: {content_type})")
+                            else:
+                                logger.info(f"🚫 Filtered out dialogue segment: {segment.name}")
+                        else:
+                            # If analysis fails, keep the segment
+                            filtered_segments.append(segment)
+                            logger.warning(f"⚠️ Analysis failed for {segment.name}, keeping segment")
+                            
+                except Exception as e:
+                    logger.warning(f"Error analyzing segment {segment.name}: {e}")
+                    # If analysis fails, keep the segment to avoid losing all content
+                    filtered_segments.append(segment)
+        
+        if not filtered_segments:
+            logger.warning("All segments were filtered out as dialogue, returning original segments")
+            return segments
+        
+        logger.success(f"✅ Filtered segments: {len(filtered_segments)}/{len(segments)} segments kept")
+        return filtered_segments
     
     # === CONTENT SELECTION ===
     

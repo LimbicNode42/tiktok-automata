@@ -34,13 +34,13 @@ class VoiceProfile:
 class TTSConfig:
     """TTS configuration settings."""
     default_voice: str = 'af_heart'
-    default_speed: float = 1.35  # Reduced for more natural pacing - 1.35x speed
+    default_speed: float = 1.35  # Optimized speed for better pacing and sync
     sample_rate: int = 24000
     output_format: str = 'wav'
     normalize_audio: bool = True
     add_silence_padding: bool = True
-    padding_seconds: float = 0.5
-    target_duration: float = 60.0
+    padding_seconds: float = 0.3  # Reduced padding
+    target_duration: float = 45.0  # Reduced target duration for shorter videos
 
 
 class Config:
@@ -56,13 +56,13 @@ class Config:
         )        # TTS Configuration
         self.tts = TTSConfig(
             default_voice=os.getenv("TTS_DEFAULT_VOICE", "af_heart"),
-            default_speed=float(os.getenv("TTS_DEFAULT_SPEED", 1.35)),  # Reduced to 1.35x for more natural pacing
+            default_speed=float(os.getenv("TTS_DEFAULT_SPEED", 1.35)),  # Optimized at 1.35x for better sync
             sample_rate=int(os.getenv("TTS_SAMPLE_RATE", 24000)),
             output_format=os.getenv("TTS_OUTPUT_FORMAT", "wav"),
             normalize_audio=os.getenv("TTS_NORMALIZE_AUDIO", "true").lower() == "true",
             add_silence_padding=os.getenv("TTS_ADD_PADDING", "true").lower() == "true",
-            padding_seconds=float(os.getenv("TTS_PADDING_SECONDS", 0.5)),
-            target_duration=float(os.getenv("TTS_TARGET_DURATION", 60.0))
+            padding_seconds=float(os.getenv("TTS_PADDING_SECONDS", 0.3)),  # Reduced padding
+            target_duration=float(os.getenv("TTS_TARGET_DURATION", 45.0))  # Reduced target duration
         )
         
         # Kokoro Voice Profiles

@@ -1,10 +1,11 @@
-{  "storage_dir": "./storage",
+{
+  "storage_dir": "./storage",
   "fallback_enabled": true,
   "fallback_max_age_hours": 168,
   "fallback_max_articles": 10,
-  "video_buffer_seconds": 0.3,
-  "min_video_duration": 45,
-  "max_video_duration": 55,
+  "video_buffer_seconds": 0.25,
+  "min_video_duration": 40,
+  "max_video_duration": 50,
   "rss_feeds": [
     {
       "url": "https://tldr.tech/api/rss/tech",

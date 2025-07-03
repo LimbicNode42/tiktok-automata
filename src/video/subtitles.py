@@ -31,8 +31,9 @@ class SubtitleSegment:
     end_time: float    # seconds
     style: str = "default"  # Style preset name
     position: Tuple[str, float] = ("center", 0.75)  # (x, y) position - moved higher up
-    max_chars_per_line: int = 28  # Optimized for 2-line static display
-    force_two_lines: bool = True  # Always display as 2 lines for consistency
+    max_chars_per_line: int = 25  # Reduced to accommodate 3 lines
+    force_three_lines: bool = True  # Force 3 lines for consistency
+    max_lines: int = 3  # Hard cap at 3 lines maximum
     
     @property
     def duration(self) -> float:
@@ -279,10 +280,11 @@ class SubtitleGenerator:
     
     def _segment_text(self, text: str) -> List[str]:
         """
-        Segment text into subtitle-appropriate chunks with forced 2-line display.
+        Segment text into subtitle-appropriate chunks with forced 3-line maximum.
         
         Optimizes for:
-        - Static 2-line display for consistency
+        - Maximum 3 lines to avoid bottom screen placement
+        - No single-word lines to maintain readability
         - Mobile readability (balanced lines)
         - Natural speech pauses
         - TikTok attention spans
@@ -297,75 +299,167 @@ class SubtitleGenerator:
         segments = []
         
         for sentence in sentences:
-            # Format for exactly 2 lines by finding optimal split point
-            words = sentence.split()
-            if len(words) <= 3:
-                # Very short sentence - pad to ensure 2 lines
-                segments.append(self._format_to_two_lines(sentence))
-            elif len(sentence) <= 50:  # Reduced from 56 to ensure 28 chars per line
-                segments.append(self._format_to_two_lines(sentence))
+            # Check if sentence is too long for 3 lines (approximately 75 characters)
+            if len(sentence) > 65:  # Conservative limit
+                # Split long sentences into smaller chunks
+                chunks = self._split_long_sentence(sentence)
+                for chunk in chunks:
+                    if chunk and chunk.strip():
+                        segments.append(self._format_to_three_lines(chunk))
             else:
-                # Split long sentences by phrases/clauses and format each
-                phrases = re.split(r'[,;:]+', sentence)
-                current_segment = ""
-                
-                for phrase in phrases:
-                    phrase = phrase.strip()
-                    if not phrase:
-                        continue
-                    
-                    # Check if adding this phrase would exceed 2-line capacity (50 chars total)
-                    if current_segment and len(current_segment + " " + phrase) > 50:
-                        if current_segment:
-                            segments.append(self._format_to_two_lines(current_segment))
-                        current_segment = phrase
-                    else:
-                        if current_segment:
-                            current_segment += " " + phrase
-                        else:
-                            current_segment = phrase
-                
-                # Add any remaining segment
-                if current_segment:
-                    segments.append(self._format_to_two_lines(current_segment))
+                # Format shorter sentences directly
+                if sentence and sentence.strip():
+                    segments.append(self._format_to_three_lines(sentence))
         
-        # Filter out empty segments and ensure all are formatted for 2 lines
+        # Filter out empty segments
         final_segments = []
         for segment in segments:
             if segment and segment.strip():
-                final_segments.append(self._format_to_two_lines(segment))
+                final_segments.append(segment)
         
         return final_segments
     
-    def _format_to_two_lines(self, text: str) -> str:
+    def _split_long_sentence(self, sentence: str) -> List[str]:
+        """Split a long sentence into smaller chunks suitable for subtitles."""
+        words = sentence.split()
+        if len(words) <= 6:
+            return [sentence]
+        
+        chunks = []
+        current_chunk = ""
+        
+        for word in words:
+            # Check if adding this word would make the chunk too long
+            test_chunk = current_chunk + " " + word if current_chunk else word
+            
+            # Estimate if this chunk can fit in 3 lines (roughly 65 characters)
+            if len(test_chunk) <= 65:
+                current_chunk = test_chunk
+            else:
+                # Current chunk is ready, start a new one
+                if current_chunk:
+                    chunks.append(current_chunk)
+                current_chunk = word
+        
+        # Add the last chunk
+        if current_chunk:
+            chunks.append(current_chunk)
+        
+        return chunks
+    
+    def _format_to_three_lines(self, text: str, force_two_lines: bool = False) -> str:
         """
-        Format text to display exactly as 2 lines with optimal word wrapping.
+        Format text to display in maximum 3 lines with no single-word lines.
         
         Args:
             text: Input text to format
+            force_two_lines: Force into 2 lines even if 3 would be better
             
         Returns:
-            Text formatted with newline for 2-line display
+            Text formatted with newlines for multi-line display
         """
         words = text.split()
-        if len(words) <= 1:
-            # Single word - add filler text to create 2 lines
-            return f"{text}\n "
-        elif len(words) == 2:
-            # Two words - put one per line
-            return f"{words[0]}\n{words[1]}"
         
-        # Find the optimal split point for balanced lines under 28 chars each
-        best_split = len(words) // 2
+        # Single word - create 2 lines with padding
+        if len(words) == 1:
+            return f"{text}\n "  # Add space to create second line
+        
+        # Two words - decide based on length
+        if len(words) == 2:
+            total_length = len(words[0]) + len(words[1])
+            if total_length <= 25:
+                # Short enough for one line, but we need 2 lines
+                return f"{words[0]}\n{words[1]}"
+            else:
+                # Too long for single line anyway
+                return f"{words[0]}\n{words[1]}"
+        
+        # Three words - handle carefully to avoid single-word lines
+        if len(words) == 3:
+            # Try different combinations
+            option1 = f"{words[0]} {words[1]}\n{words[2]}"  # 2+1
+            option2 = f"{words[0]}\n{words[1]} {words[2]}"  # 1+2
+            
+            # Check lengths
+            if len(words[0]) + len(words[1]) + 1 <= 25:
+                return option1  # 2+1 words
+            elif len(words[1]) + len(words[2]) + 1 <= 25:
+                return option2  # 1+2 words
+            else:
+                # All words are long, use 2 lines
+                return self._balance_two_lines(words)
+        
+        # Four or more words - use smart balancing
+        if force_two_lines or len(words) <= 6:
+            # Try to fit in 2 lines
+            return self._balance_two_lines(words)
+        else:
+            # Use up to 3 lines for longer content
+            return self._balance_three_lines(words)
+    
+    def _balance_two_lines(self, words: List[str]) -> str:
+        """Balance words across 2 lines, ensuring no single-word lines and proper length."""
+        if len(words) <= 2:
+            # For 2 words, check if they fit on one line
+            if len(words) == 2:
+                combined = ' '.join(words)
+                if len(combined) <= 25:
+                    # They fit on one line, but we need 2 lines for consistency
+                    return f"{words[0]}\n{words[1]}"
+                else:
+                    # Too long for one line
+                    return f"{words[0]}\n{words[1]}"
+            return ' '.join(words)
+        
+        # Force minimum 2 words per line for short texts
+        if len(words) <= 4:
+            if len(words) == 3:
+                # Try 2+1 split
+                line1 = f"{words[0]} {words[1]}"
+                line2 = words[2]
+                if len(line1) <= 25 and len(line2) <= 25:
+                    return f"{line1}\n{line2}"
+                else:
+                    # Fall back to 1+2 split
+                    line1 = words[0]
+                    line2 = f"{words[1]} {words[2]}"
+                    if len(line1) <= 25 and len(line2) <= 25:
+                        return f"{line1}\n{line2}"
+                    else:
+                        # Words are too long individually
+                        return f"{words[0]}\n{words[1]}\n{words[2]}"
+            else:  # 4 words
+                # Try 2+2 split
+                line1 = f"{words[0]} {words[1]}"
+                line2 = f"{words[2]} {words[3]}"
+                if len(line1) <= 25 and len(line2) <= 25:
+                    return f"{line1}\n{line2}"
+                else:
+                    # Try 3+1 or 1+3 split
+                    line1 = f"{words[0]} {words[1]} {words[2]}"
+                    line2 = words[3]
+                    if len(line1) <= 25:
+                        return f"{line1}\n{line2}"
+                    else:
+                        # Try 1+3
+                        line1 = words[0]
+                        line2 = f"{words[1]} {words[2]} {words[3]}"
+                        if len(line2) <= 25:
+                            return f"{line1}\n{line2}"
+                        else:
+                            # Use 3 lines
+                            return f"{words[0]} {words[1]}\n{words[2]}\n{words[3]}"
+        
+        # For longer texts, find optimal split point
+        best_split = 2
         best_balance = float('inf')
         
-        # Try different split points to find the most balanced within char limits
-        for i in range(1, len(words)):
+        for i in range(2, len(words) - 1):
             first_line = ' '.join(words[:i])
             second_line = ' '.join(words[i:])
             
-            # Skip if either line exceeds character limit
-            if len(first_line) > 28 or len(second_line) > 28:
+            # Must fit in character limit
+            if len(first_line) > 25 or len(second_line) > 25:
                 continue
             
             # Prefer balanced line lengths
@@ -375,10 +469,75 @@ class SubtitleGenerator:
                 best_balance = line_balance
                 best_split = i
         
+        # If no good split found, use 3 lines
+        if best_balance == float('inf'):
+            return self._force_three_lines(words)
+        
         first_line = ' '.join(words[:best_split])
         second_line = ' '.join(words[best_split:])
         
         return f"{first_line}\n{second_line}"
+    
+    def _force_three_lines(self, words: List[str]) -> str:
+        """Force text into 3 lines when 2 lines won't work."""
+        if len(words) <= 3:
+            return '\n'.join(words)
+        
+        # Try to balance across 3 lines
+        words_per_line = len(words) // 3
+        remainder = len(words) % 3
+        
+        split1 = words_per_line + (1 if remainder > 0 else 0)
+        split2 = split1 + words_per_line + (1 if remainder > 1 else 0)
+        
+        line1 = ' '.join(words[:split1])
+        line2 = ' '.join(words[split1:split2])
+        line3 = ' '.join(words[split2:])
+        
+        # Check if lines fit
+        if len(line1) <= 25 and len(line2) <= 25 and len(line3) <= 25:
+            return f"{line1}\n{line2}\n{line3}"
+        else:
+            # Emergency fallback: just split at word boundaries
+            line1 = ' '.join(words[:len(words)//3])
+            line2 = ' '.join(words[len(words)//3:2*len(words)//3])
+            line3 = ' '.join(words[2*len(words)//3:])
+            return f"{line1}\n{line2}\n{line3}"
+    
+    def _balance_three_lines(self, words: List[str]) -> str:
+        """Balance words across 3 lines, ensuring no single-word lines and proper length."""
+        if len(words) <= 6:
+            return self._balance_two_lines(words)
+        
+        # For longer texts, try to split into 3 balanced lines
+        total_chars = sum(len(word) + 1 for word in words) - 1  # +1 for spaces, -1 for last space
+        
+        if total_chars > 75:  # Too long for 3 lines (25 chars each)
+            return self._balance_two_lines(words)
+        
+        # Try to distribute words evenly across 3 lines
+        words_per_line = len(words) // 3
+        remainder = len(words) % 3
+        
+        # Calculate split points ensuring minimum 2 words per line
+        split1 = max(2, words_per_line + (1 if remainder > 0 else 0))
+        split2 = max(split1 + 2, split1 + words_per_line + (1 if remainder > 1 else 0))
+        
+        # Ensure we don't exceed the word count
+        if split2 >= len(words):
+            return self._balance_two_lines(words)
+        
+        # Create lines
+        line1 = ' '.join(words[:split1])
+        line2 = ' '.join(words[split1:split2])
+        line3 = ' '.join(words[split2:])
+        
+        # Check line lengths and word counts
+        if (len(line1) > 25 or len(line2) > 25 or len(line3) > 25 or
+            len(words[split2:]) < 2):  # Ensure at least 2 words in last line
+            return self._balance_two_lines(words)
+        
+        return f"{line1}\n{line2}\n{line3}"
     
     def _legacy_segment_words(self, segment: str) -> List[str]:
         """Legacy word-based segmentation for fallback."""
@@ -387,8 +546,8 @@ class SubtitleGenerator:
         current_line = ""
         
         for word in words:
-            if current_line and len(current_line + " " + word) > 50:
-                final_segments.append(self._format_to_two_lines(current_line))
+            if current_line and len(current_line + " " + word) > 70:  # Increased for 3-line capacity
+                final_segments.append(self._format_to_three_lines(current_line))
                 current_line = word
             else:
                 if current_line:
@@ -398,7 +557,7 @@ class SubtitleGenerator:
         
         # Add any remaining text
         if current_line:
-            final_segments.append(self._format_to_two_lines(current_line))
+            final_segments.append(self._format_to_three_lines(current_line))
         
         return final_segments
     
@@ -409,34 +568,46 @@ class SubtitleGenerator:
         tts_info: Optional[Dict] = None
     ) -> List[SubtitleSegment]:
         """
-        Calculate timing for subtitle segments.
+        Calculate timing for subtitle segments optimized for 1.35x TTS speed.
         
-        Uses character-based estimation with pauses for natural reading.
+        Uses character-based estimation with calibrated timing for better sync.
         """
         if not segments:
             return []
         
-        # Estimate reading speed (characters per second)
-        # Adjusted for TTS speech rate - typically slower than normal reading
-        base_cps = 12  # Conservative estimate for TTS
+        # Get TTS speed from config for dynamic adjustment
+        try:
+            from ..utils.config import config
+            tts_speed = config.get_tts_speed()
+        except:
+            tts_speed = 1.35  # Default fallback
+        
+        # Estimate reading speed (characters per second) adjusted for TTS speed
+        # At 1.35x speed, speech is faster, so we need to adjust timing
+        base_cps = 12 * tts_speed  # Scale with TTS speed
         
         # Calculate duration for each segment based on character count
         segment_durations = []
         total_chars = sum(len(s) for s in segments)
         
         for segment in segments:
-            # Base duration from character count
+            # Base duration from character count (adjusted for TTS speed)
             char_duration = len(segment) / base_cps
             
-            # Add pause time for punctuation
+            # Add pause time for punctuation (reduced for faster TTS)
             pause_time = 0
-            pause_time += segment.count('.') * 0.3
-            pause_time += segment.count(',') * 0.2
-            pause_time += segment.count('!') * 0.4
-            pause_time += segment.count('?') * 0.4
+            pause_time += segment.count('.') * (0.4 / tts_speed)  # Scale pauses with speed
+            pause_time += segment.count(',') * (0.25 / tts_speed)
+            pause_time += segment.count('!') * (0.35 / tts_speed)
+            pause_time += segment.count('?') * (0.35 / tts_speed)
+            pause_time += segment.count(';') * (0.3 / tts_speed)
+            pause_time += segment.count(':') * (0.2 / tts_speed)
             
-            # Minimum duration for readability
-            min_duration = max(1.5, len(segment) / 15)  # At least 1.5s, or enough for reading
+            # Add pause for line breaks (scaled for TTS speed)
+            pause_time += segment.count('\n') * (0.15 / tts_speed)
+            
+            # Minimum duration for readability (adjusted for TTS speed)
+            min_duration = max(1.5, len(segment) / (15 * tts_speed))
             
             duration = max(min_duration, char_duration + pause_time)
             segment_durations.append(duration)
@@ -444,21 +615,27 @@ class SubtitleGenerator:
         # Scale to fit total duration
         total_estimated = sum(segment_durations)
         if total_estimated > total_duration:
-            scale_factor = (total_duration * 0.95) / total_estimated  # Use 95% to leave some buffer
+            scale_factor = (total_duration * 0.95) / total_estimated  # Use 95% to leave buffer
             segment_durations = [d * scale_factor for d in segment_durations]
         
-        # Create timed segments with lead time for better sync
+        # Create timed segments with optimized lead time for 1.35x speed
         timed_segments = []
-        subtitle_lead_time = 0.15  # Show subtitles 150ms before TTS audio
+        subtitle_lead_time = 0.15  # Optimized for 1.35x TTS speed
         
-        # Calculate base timing first
+        # Calculate base timing with better pause handling
         current_audio_time = 0
         
         for i, (segment, duration) in enumerate(zip(segments, segment_durations)):
             # Subtitle starts before the audio for this segment
             start_time = max(0, current_audio_time - subtitle_lead_time)
-            # Subtitle ends when audio segment ends
-            end_time = min(current_audio_time + duration, total_duration)
+            
+            # For segments with long pauses (sentence endings), extend subtitle duration
+            extension = 0
+            if segment.endswith('.') or segment.endswith('!') or segment.endswith('?'):
+                extension = 0.3  # Keep subtitle visible during pause
+            
+            # Subtitle ends when audio segment ends plus any extension
+            end_time = min(current_audio_time + duration + extension, total_duration)
             
             timed_segments.append(SubtitleSegment(
                 text=segment,
@@ -469,9 +646,13 @@ class SubtitleGenerator:
             # Move to next audio segment
             current_audio_time += duration
             
-            # Small gap between segments for natural pacing
+            # Adaptive gap between segments based on punctuation
             if i < len(segments) - 1:
-                current_audio_time += 0.1
+                # Longer gaps after sentence endings
+                if segment.endswith('.') or segment.endswith('!') or segment.endswith('?'):
+                    current_audio_time += 0.4
+                else:
+                    current_audio_time += 0.15
         
         return timed_segments
     
