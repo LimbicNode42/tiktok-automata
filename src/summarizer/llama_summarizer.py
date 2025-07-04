@@ -32,8 +32,8 @@ except ImportError:
 @dataclass
 class TikTokSummaryConfig:
     """Configuration for TikTok summary generation."""
-    target_duration: int = 120  # Target seconds for TikTok video
-    max_tokens: int = 3000  # Max tokens in summary (increased further for full 120s TTS content)
+    target_duration: int = 45  # Target seconds for TikTok video (reduced from 120)
+    max_tokens: int = 1500  # Max tokens in summary (reduced for shorter content)
     temperature: float = 0.7  # Creativity level
     top_p: float = 0.9  # Nucleus sampling
     use_gpu: bool = True  # Use GPU acceleration
@@ -589,17 +589,17 @@ Content: {article.content[:1000]}{"..." if len(article.content) > 1000 else ""}
 
 Requirements:
 - Start with: "{selected_hook}"
-- Target EXACTLY {duration} seconds when read aloud (approximately 500-600 words for full 2-minute content)
+- Target EXACTLY {duration} seconds when read aloud (approximately {self._get_word_target(duration)} words)
 - Hook viewers in first 3 seconds{content_approach}
 - Use short, punchy sentences with dramatic pauses
 - Include the engagement hook "{selected_engagement_hook}" somewhere in the middle
-- Include 3-4 surprising facts or "wait, what?" moments throughout
+- Include 2-3 surprising facts or "wait, what?" moments throughout
 - Build tension/curiosity and maintain high energy
 - Add multiple engagement hooks and dramatic moments
 - End with: "{selected_cta}"
 - Keep it conversational and energetic
 - Use strategic pauses for emphasis and dramatic effect
-- Make it feel like a 2-minute story that flies by
+- Make it feel like a story that flies by
 - DO NOT include timestamps or time markers
 - DO NOT use emojis in the main script
 - DO NOT include any introductory text like "Here's the script:" or "Here is a script based on..."
@@ -837,6 +837,17 @@ Output ONLY the script content that would be spoken in the TikTok video. Start i
                 torch.cuda.empty_cache()
             logger.info("Model resources cleaned up")
 
+    def _get_word_target(self, duration: int) -> str:
+        """Calculate target word count for given duration."""
+        # Average speaking rate is ~150 words per minute
+        # For TTS at 1.35x speed, effective rate is ~200 words per minute
+        target_words = int((duration / 60) * 200)
+        
+        # Provide a range for flexibility
+        min_words = max(50, int(target_words * 0.8))
+        max_words = int(target_words * 1.2)
+        
+        return f"{min_words}-{max_words}"
 
 # Simplified factory function
 def create_tiktok_summarizer() -> LlamaSummarizer:

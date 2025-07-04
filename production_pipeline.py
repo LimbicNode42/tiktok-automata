@@ -765,11 +765,15 @@ class TikTokProductionPipeline:
                     # Mock summary for dry run
                     summary = f"BREAKING: {title}! This is a test summary for dry run mode. #TechNews #AI #TikTok"
                 else:
-                    # Generate real summary                    
+                    # Get target duration from config for optimal video length
+                    target_duration = int(self.config.tts.target_duration)
+                    
+                    # Generate real summary with duration constraint
                     summary = await self.summarizer.generate_tiktok_summary(
                         content=article.get('content', ''),
                         title=title,
-                        url=url
+                        url=url,
+                        target_duration=target_duration  # Control summary length for target video duration
                     )
                 
                 if summary:
@@ -850,9 +854,17 @@ class TikTokProductionPipeline:
                 logger.info(safe_log_message(f"🔊 Generating TTS {i+1}/{len(articles)} with voice '{voice}': {title[:30]}..."))
                 
                 if self.dry_run:
-                    # Mock TTS for dry run
+                    # Mock TTS for dry run with realistic duration
                     audio_path = f"mock_audio_{int(time.time())}_{i+1}.wav"
-                    duration = 25.0  # Mock duration
+                    
+                    # Calculate realistic mock duration based on target
+                    summary_words = len(article.get('tiktok_summary', '').split())
+                    if summary_words > 0:
+                        tts_speed = self.config.get_tts_speed()
+                        duration = (summary_words / 150) * 60 / tts_speed  # Same calculation as real TTS
+                    else:
+                        duration = self.config.tts.target_duration  # Use target if no summary
+                    
                     article['tts_audio_path'] = audio_path
                     article['tts_duration'] = duration
                     article['tts_voice'] = voice
@@ -879,8 +891,20 @@ class TikTokProductionPipeline:
                     )
                     
                     if generated_path and Path(generated_path).exists():
-                        # Get audio duration (placeholder for now)
-                        duration = len(summary.split()) * 0.5  # Rough estimate: 0.5s per word
+                        # Calculate more accurate duration based on word count and TTS speed
+                        word_count = len(summary.split())
+                        tts_speed = self.config.get_tts_speed()
+                        
+                        # More accurate estimation: average speaking rate is ~150 words/min
+                        # Adjusted for TTS speed: (word_count / 150) * 60 / tts_speed
+                        base_duration = (word_count / 150) * 60  # seconds at normal speed
+                        duration = base_duration / tts_speed  # adjust for TTS speed
+                        
+                        # Ensure duration stays within target range
+                        target_duration = self.config.tts.target_duration
+                        if duration > target_duration * 1.2:  # Allow 20% variance
+                            logger.warning(f"TTS duration ({duration:.1f}s) exceeds target ({target_duration}s) for {title[:40]}...")
+                            duration = min(duration, target_duration * 1.2)
                         
                         # Save TTS to organized location and track in state
                         organized_path = self.state.save_article_tts(
