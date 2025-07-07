@@ -390,8 +390,28 @@ class ProductionState:
         # Move the video file to organized location
         shutil.move(video_path, filepath)
         
-        # Save metadata alongside
+        # Save metadata alongside with enhanced game info
         metadata_file = filepath.with_suffix('.json')
+        
+        # Extract clean game name from assigned_video_id
+        assigned_video_id = article.get('assigned_video_id', '')
+        game_name = "Unknown Game"
+        if assigned_video_id:
+            # Try to extract game name from video ID format: "ID_Game Name - Other Info"
+            if '_' in assigned_video_id:
+                video_title = assigned_video_id.split('_', 1)[1]  # Remove YouTube ID part
+                # Extract game name (usually before " Gameplay", " Part", " -", etc.)
+                for separator in [' Gameplay', ' Part', ' Episode', ' -', ' |']:
+                    if separator in video_title:
+                        game_name = video_title.split(separator)[0].strip()
+                        break
+                else:
+                    # If no separators found, use first few words
+                    words = video_title.split()[:3]  # Take first 3 words as game name
+                    game_name = ' '.join(words)
+            else:
+                game_name = assigned_video_id[:30]  # Fallback to truncated ID
+        
         metadata = {
             'url': url,
             'title': article.get('title'),
@@ -399,6 +419,7 @@ class ProductionState:
             'tts_audio_path': article.get('tts_audio_path'),
             'tts_duration': article.get('tts_duration'),
             'assigned_video_id': article.get('assigned_video_id'),
+            'game_name': game_name,  # Clean extracted game name
             'subtitle_style': article.get('subtitle_style'),
             'generated_at': datetime.now().isoformat()
         }
@@ -1120,13 +1141,22 @@ class TikTokProductionPipeline:
                         skipped_videos.append(article)
                     continue
                 
-                # Get TTS duration and calculate video segment length
+                # Get TTS duration and calculate video segment length with strict <60s limit
                 tts_duration = article.get('tts_duration', 25.0)
                 segment_duration = int(tts_duration + (self.config.video_buffer_seconds * 2))
                 
-                # Ensure duration is within bounds
+                # Ensure duration is within bounds with strict 58s hard cap
                 segment_duration = max(self.config.min_video_duration, segment_duration)
                 segment_duration = min(self.config.max_video_duration, segment_duration)
+                
+                # CRITICAL: Hard cap at 58 seconds to ensure final video is always <60s
+                if segment_duration > 58:
+                    segment_duration = 58
+                    logger.info(f"⚠️ Video duration capped at 58s (was {int(tts_duration + (self.config.video_buffer_seconds * 2))}s) for: {title[:30]}...")
+                
+                # If TTS alone is >55s, we need to warn about potential issues
+                if tts_duration > 55:
+                    logger.warning(f"⚠️ TTS duration ({tts_duration:.1f}s) is very long, consider shorter summaries for: {title[:30]}...")
                 
                 # Randomize subtitle style
                 subtitle_style = random.choice(subtitle_styles)

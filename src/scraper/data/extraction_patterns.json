@@ -128,8 +128,8 @@
       ".nytapp-vi-article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-03T17:35:40.300171",
-    "usage_count": 186,
+    "last_used": "2025-07-07T21:49:21.270563",
+    "usage_count": 187,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1329,8 +1329,8 @@
       "article"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-06T21:40:43.235278",
-    "usage_count": 49,
+    "last_used": "2025-07-07T21:49:14.966323",
+    "usage_count": 50,
     "confidence_score": 1.0,
     "pattern_type": "ai_discovered"
   },
@@ -1746,9 +1746,9 @@
       ".single-post"
     ],
     "success_rate": 1.0,
-    "last_used": "2025-07-06T21:41:22.214144",
-    "usage_count": 8,
-    "confidence_score": 0.94,
+    "last_used": "2025-07-07T21:49:12.758931",
+    "usage_count": 9,
+    "confidence_score": 0.97,
     "pattern_type": "ai_discovered"
   },
   "www.indragie.com": {
@@ -1993,6 +1993,78 @@
     "last_used": "2025-07-06T21:42:17.393869",
     "usage_count": 3,
     "confidence_score": 0.7899999999999999,
+    "pattern_type": "ai_discovered"
+  },
+  "www.testingcatalog.com": {
+    "domain": "www.testingcatalog.com",
+    "selectors": [
+      "[class*=\"article\"]",
+      ".is-article",
+      ".is-article-wide"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-07T21:49:12.620973",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "newsletter.pragmaticengineer.com": {
+    "domain": "newsletter.pragmaticengineer.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-07T21:49:14.885514",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "usefulfictions.substack.com": {
+    "domain": "usefulfictions.substack.com",
+    "selectors": [
+      "article",
+      ".typography",
+      ".newsletter-post",
+      ".post",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-07T21:49:23.909710",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "jamie.ideasasylum.com": {
+    "domain": "jamie.ideasasylum.com",
+    "selectors": [
+      "article",
+      ".mx-auto",
+      ".sm:mx-2",
+      ".max-w-prose",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-07T21:49:24.115609",
+    "usage_count": 1,
+    "confidence_score": 0.8,
+    "pattern_type": "ai_discovered"
+  },
+  "pksunkara.com": {
+    "domain": "pksunkara.com",
+    "selectors": [
+      "article",
+      "#git-experts-should-try-jujutsu",
+      "._index.md",
+      "article"
+    ],
+    "success_rate": 1.0,
+    "last_used": "2025-07-07T21:49:24.466932",
+    "usage_count": 1,
+    "confidence_score": 0.8,
     "pattern_type": "ai_discovered"
   }
 }

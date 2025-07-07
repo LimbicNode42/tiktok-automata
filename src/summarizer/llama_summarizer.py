@@ -33,10 +33,12 @@ except ImportError:
 class TikTokSummaryConfig:
     """Configuration for TikTok summary generation."""
     target_duration: int = 45  # Target seconds for TikTok video (reduced from 120)
-    max_tokens: int = 1500  # Max tokens in summary (reduced for shorter content)
+    max_tokens: int = 1200  # Further reduced max tokens for stricter control
     temperature: float = 0.7  # Creativity level
     top_p: float = 0.9  # Nucleus sampling
     use_gpu: bool = True  # Use GPU acceleration
+    max_attempts: int = 3  # Max attempts to generate valid length summary
+    duration_buffer: float = 0.15  # Safety buffer for duration estimation (15%)
 
 
 class LlamaSummarizer:
@@ -590,6 +592,7 @@ Content: {article.content[:1000]}{"..." if len(article.content) > 1000 else ""}
 Requirements:
 - Start with: "{selected_hook}"
 - Target EXACTLY {duration} seconds when read aloud (approximately {self._get_word_target(duration)} words)
+- CRITICAL: Keep under {self._get_word_target(duration).split('-')[1]} words maximum - this will be validated
 - Hook viewers in first 3 seconds{content_approach}
 - Use short, punchy sentences with dramatic pauses
 - Include the engagement hook "{selected_engagement_hook}" somewhere in the middle
@@ -603,6 +606,7 @@ Requirements:
 - DO NOT include timestamps or time markers
 - DO NOT use emojis in the main script
 - DO NOT include any introductory text like "Here's the script:" or "Here is a script based on..."
+- IMPORTANT: Be concise - every word counts for timing!
 
 Output ONLY the script content that would be spoken in the TikTok video. Start immediately with "{selected_hook}" and end with "{selected_cta}".<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
@@ -611,59 +615,116 @@ Output ONLY the script content that would be spoken in the TikTok video. Start i
         return prompt
     
     async def summarize_for_tiktok(self, article: Article, target_duration: int = None, include_voice_recommendation: bool = False) -> Optional[str]:
-        """Generate TikTok-optimized summary using Llama 3.2-3B."""
+        """Generate TikTok-optimized summary using Llama 3.2-3B with strict duration control."""
         if not self.pipeline:
             await self.initialize()
         
         duration = target_duration or self.config.target_duration
         
+        # Import TTS speed from config
         try:
-            start_time = time.time()
+            from ..utils.config import config as main_config
+            tts_speed = main_config.get_tts_speed()
+        except:
+            tts_speed = 1.35  # Fallback
+        
+        attempt = 0
+        best_summary = None
+        
+        while attempt < self.config.max_attempts:
+            attempt += 1
             
-            # Create optimized prompt
-            prompt = self.create_tiktok_prompt(article, duration)
+            try:
+                start_time = time.time()
+                
+                # Adjust target based on attempt (get progressively shorter)
+                adjusted_duration = duration - (attempt - 1) * 5  # Reduce by 5s each attempt
+                adjusted_duration = max(30, adjusted_duration)  # Minimum 30s
+                
+                # Create optimized prompt with adjusted target
+                prompt = self.create_tiktok_prompt(article, adjusted_duration)
+                
+                # Reduce max_tokens progressively to force shorter outputs
+                max_tokens = max(800, self.config.max_tokens - (attempt - 1) * 200)
+                
+                # Generate with optimized parameters
+                with torch.no_grad():
+                    result = self.pipeline(
+                        prompt,
+                        max_new_tokens=max_tokens,
+                        temperature=self.config.temperature,
+                        top_p=self.config.top_p,
+                        do_sample=True,
+                        pad_token_id=self.tokenizer.eos_token_id,
+                        repetition_penalty=1.1,
+                        eos_token_id=self.tokenizer.eos_token_id
+                    )
+                
+                # Extract and clean the response
+                generated_text = result[0]['generated_text']
+                  # Extract just the assistant's response
+                if "<|start_header_id|>assistant<|end_header_id|>" in generated_text:
+                    summary = generated_text.split("<|start_header_id|>assistant<|end_header_id|>")[-1]
+                else:
+                    # Fallback for other models
+                    summary = generated_text[len(prompt):] if len(generated_text) > len(prompt) else generated_text
+                
+                # Clean up the summary
+                summary = self._clean_summary(summary)
+                
+                # Validate duration
+                if self._validate_summary_duration(summary, duration, tts_speed):
+                    generation_time = time.time() - start_time
+                    logger.info(f"Generated valid TikTok summary in {generation_time:.2f}s (attempt {attempt})")
+                    logger.info(f"Estimated duration: {self._estimate_speech_duration(summary, tts_speed):.1f}s / {duration}s target")
+                    
+                    # Optionally include voice recommendation
+                    if include_voice_recommendation:
+                        analysis = self._analyze_article_content(article)
+                        voice_recommendation = self.select_voice_for_content(article, analysis)
+                        return {
+                            'summary': summary,
+                            'voice_recommendation': voice_recommendation,
+                            'content_analysis': analysis,
+                            'estimated_duration': self._estimate_speech_duration(summary, tts_speed),
+                            'generation_attempts': attempt
+                        }
+                    
+                    return summary
+                else:
+                    # Store best attempt so far
+                    if best_summary is None or len(summary) < len(best_summary):
+                        best_summary = summary
+                    
+                    estimated_duration = self._estimate_speech_duration(summary, tts_speed)
+                    logger.warning(f"Attempt {attempt}: Summary too long ({estimated_duration:.1f}s > {duration}s), retrying...")
+                    
+            except Exception as e:
+                logger.error(f"TikTok summarization attempt {attempt} failed: {str(e)}")
+                continue
+        
+        # If all attempts failed, return the best attempt with warning
+        if best_summary:
+            logger.warning(f"All {self.config.max_attempts} attempts exceeded target duration, using shortest summary")
+            estimated_duration = self._estimate_speech_duration(best_summary, tts_speed)
+            logger.warning(f"Final summary estimated duration: {estimated_duration:.1f}s")
             
-            # Generate with optimized parameters
-            with torch.no_grad():
-                result = self.pipeline(
-                    prompt,
-                    max_new_tokens=self.config.max_tokens,
-                    temperature=self.config.temperature,
-                    top_p=self.config.top_p,
-                    do_sample=True,
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    repetition_penalty=1.1,
-                    eos_token_id=self.tokenizer.eos_token_id
-                )
-            
-            # Extract and clean the response
-            generated_text = result[0]['generated_text']
-              # Extract just the assistant's response
-            if "<|start_header_id|>assistant<|end_header_id|>" in generated_text:
-                summary = generated_text.split("<|start_header_id|>assistant<|end_header_id|>")[-1]
-            else:
-                # Fallback for other models
-                summary = generated_text[len(prompt):] if len(generated_text) > len(prompt) else generated_text
-            
-            # Clean up the summary
-            summary = self._clean_summary(summary)
-            
-            generation_time = time.time() - start_time
-            logger.info(f"Generated TikTok summary in {generation_time:.2f}s")
-            
-            # Optionally include voice recommendation
             if include_voice_recommendation:
                 analysis = self._analyze_article_content(article)
                 voice_recommendation = self.select_voice_for_content(article, analysis)
                 return {
-                    'summary': summary,
-                    'voice_recommendation': voice_recommendation,                'content_analysis': analysis            }
+                    'summary': best_summary,
+                    'voice_recommendation': voice_recommendation,
+                    'content_analysis': analysis,
+                    'estimated_duration': estimated_duration,
+                    'generation_attempts': self.config.max_attempts,
+                    'duration_warning': True
+                }
             
-            return summary
-            
-        except Exception as e:
-            logger.error(f"TikTok summarization failed: {str(e)}")
-            return None
+            return best_summary
+        
+        logger.error("All summarization attempts failed")
+        return None
 
     async def generate_tiktok_summary(self, content: str, title: str, url: str, target_duration: int = None) -> Optional[str]:
         """Generate TikTok summary from individual content components."""        # Create an Article object from the provided arguments
@@ -838,16 +899,57 @@ Output ONLY the script content that would be spoken in the TikTok video. Start i
             logger.info("Model resources cleaned up")
 
     def _get_word_target(self, duration: int) -> str:
-        """Calculate target word count for given duration."""
-        # Average speaking rate is ~150 words per minute
-        # For TTS at 1.35x speed, effective rate is ~200 words per minute
-        target_words = int((duration / 60) * 200)
+        """Calculate target word count for given duration with TTS speed consideration."""
+        # At 1.35x TTS speed, effective speaking rate is approximately:
+        # Base rate: ~150 words/minute at 1.0x speed
+        # At 1.35x: ~150 * 1.35 = ~202 words/minute
+        # Add buffer for pauses and emphasis: ~180 words/minute effective
+        words_per_minute = 180
         
-        # Provide a range for flexibility
-        min_words = max(50, int(target_words * 0.8))
-        max_words = int(target_words * 1.2)
+        # Apply duration buffer to be conservative
+        effective_duration = duration * (1 - self.config.duration_buffer)
+        target_words = int((effective_duration / 60) * words_per_minute)
+        
+        # Provide a tighter range for better control
+        min_words = max(40, int(target_words * 0.85))
+        max_words = int(target_words * 1.0)  # No overage allowed
         
         return f"{min_words}-{max_words}"
+
+    def _estimate_speech_duration(self, text: str, tts_speed: float = 1.35) -> float:
+        """
+        Estimate how long text will take to speak with TTS at given speed.
+        
+        Args:
+            text: The text to estimate duration for
+            tts_speed: TTS playback speed multiplier
+            
+        Returns:
+            Estimated duration in seconds
+        """
+        word_count = len(text.split())
+        # Base speaking rate: ~150 words per minute
+        base_duration = (word_count / 150) * 60
+        # Adjust for TTS speed
+        actual_duration = base_duration / tts_speed
+        return actual_duration
+
+    def _validate_summary_duration(self, summary: str, target_duration: int, tts_speed: float = 1.35) -> bool:
+        """
+        Validate that summary will fit within target duration when spoken.
+        
+        Args:
+            summary: The generated summary text
+            target_duration: Target duration in seconds
+            tts_speed: TTS speed multiplier
+            
+        Returns:
+            True if summary fits within target duration
+        """
+        estimated_duration = self._estimate_speech_duration(summary, tts_speed)
+        # Add small buffer for processing overhead
+        max_allowed = target_duration - 2  # 2 second buffer
+        return estimated_duration <= max_allowed
 
 # Simplified factory function
 def create_tiktok_summarizer() -> LlamaSummarizer:
