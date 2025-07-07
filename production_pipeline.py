@@ -766,7 +766,7 @@ class TikTokProductionPipeline:
                     summary = f"BREAKING: {title}! This is a test summary for dry run mode. #TechNews #AI #TikTok"
                 else:
                     # Get target duration from config for optimal video length
-                    target_duration = int(self.config.tts.target_duration)
+                    target_duration = int(config.tts.target_duration)
                     
                     # Generate real summary with duration constraint
                     summary = await self.summarizer.generate_tiktok_summary(
@@ -860,10 +860,10 @@ class TikTokProductionPipeline:
                     # Calculate realistic mock duration based on target
                     summary_words = len(article.get('tiktok_summary', '').split())
                     if summary_words > 0:
-                        tts_speed = self.config.get_tts_speed()
+                        tts_speed = config.get_tts_speed()
                         duration = (summary_words / 150) * 60 / tts_speed  # Same calculation as real TTS
                     else:
-                        duration = self.config.tts.target_duration  # Use target if no summary
+                        duration = config.tts.target_duration  # Use target if no summary
                     
                     article['tts_audio_path'] = audio_path
                     article['tts_duration'] = duration
@@ -893,7 +893,7 @@ class TikTokProductionPipeline:
                     if generated_path and Path(generated_path).exists():
                         # Calculate more accurate duration based on word count and TTS speed
                         word_count = len(summary.split())
-                        tts_speed = self.config.get_tts_speed()
+                        tts_speed = config.get_tts_speed()
                         
                         # More accurate estimation: average speaking rate is ~150 words/min
                         # Adjusted for TTS speed: (word_count / 150) * 60 / tts_speed
@@ -901,7 +901,7 @@ class TikTokProductionPipeline:
                         duration = base_duration / tts_speed  # adjust for TTS speed
                         
                         # Ensure duration stays within target range
-                        target_duration = self.config.tts.target_duration
+                        target_duration = config.tts.target_duration
                         if duration > target_duration * 1.2:  # Allow 20% variance
                             logger.warning(f"TTS duration ({duration:.1f}s) exceeds target ({target_duration}s) for {title[:40]}...")
                             duration = min(duration, target_duration * 1.2)
