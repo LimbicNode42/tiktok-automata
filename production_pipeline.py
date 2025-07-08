@@ -395,11 +395,16 @@ class ProductionState:
         
         # Extract clean game name from assigned_video_id
         assigned_video_id = article.get('assigned_video_id', '')
+        actual_video_used = article.get('actual_video_used', '')
+        
+        # Prefer actual video used, fallback to assigned video ID
+        video_id_for_metadata = actual_video_used or assigned_video_id
+        
         game_name = "Unknown Game"
-        if assigned_video_id:
+        if video_id_for_metadata:
             # Try to extract game name from video ID format: "ID_Game Name - Other Info"
-            if '_' in assigned_video_id:
-                video_title = assigned_video_id.split('_', 1)[1]  # Remove YouTube ID part
+            if '_' in video_id_for_metadata:
+                video_title = video_id_for_metadata.split('_', 1)[1]  # Remove YouTube ID part
                 # Extract game name (usually before " Gameplay", " Part", " -", etc.)
                 for separator in [' Gameplay', ' Part', ' Episode', ' -', ' |']:
                     if separator in video_title:
@@ -410,7 +415,7 @@ class ProductionState:
                     words = video_title.split()[:3]  # Take first 3 words as game name
                     game_name = ' '.join(words)
             else:
-                game_name = assigned_video_id[:30]  # Fallback to truncated ID
+                game_name = video_id_for_metadata[:30]  # Fallback to truncated ID
         
         metadata = {
             'url': url,
@@ -418,8 +423,9 @@ class ProductionState:
             'video_path': str(filepath),
             'tts_audio_path': article.get('tts_audio_path'),
             'tts_duration': article.get('tts_duration'),
-            'assigned_video_id': article.get('assigned_video_id'),
-            'game_name': game_name,  # Clean extracted game name
+            'assigned_video_id': assigned_video_id,  # Original assignment
+            'actual_video_used': actual_video_used,  # What was actually used
+            'game_name': game_name,  # Clean extracted game name from actual video
             'subtitle_style': article.get('subtitle_style'),
             'generated_at': datetime.now().isoformat()
         }
@@ -1210,24 +1216,38 @@ class TikTokProductionPipeline:
                     # Get TTS summary for overlay text
                     script_content = article.get('tiktok_summary', '')
                     tts_audio_path = article.get('tts_audio_path')
+                    assigned_video_id = article.get('assigned_video_id')  # Get the assigned video ID
                     
                     if tts_audio_path and Path(tts_audio_path).exists():
-                        generated_path = await processor.create_video(
+                        result = await processor.create_video(
                             audio_file=tts_audio_path,
                             script_content=script_content,
-                            output_path=str(temp_output_path)
+                            output_path=str(temp_output_path),
+                            assigned_video_id=assigned_video_id  # Pass the assigned video ID
                         )
                         
-                        if generated_path and Path(generated_path).exists():
-                            # Move to organized location and track in state
-                            organized_path = self.state.save_article_final_video(
-                                article, generated_path, self.config.storage_dir
-                            )
-                            if organized_path:
-                                generated_videos.append(organized_path)
-                                logger.info(f"✅ Video generated: {Path(organized_path).name}")
+                        # Handle new return format (video_path, metadata)
+                        if result and result[0]:
+                            generated_path, video_metadata = result
+                            actual_video_used = video_metadata.get('actual_video_used')
+                            
+                            # Update article with actual video used
+                            if actual_video_used:
+                                article['actual_video_used'] = actual_video_used
+                                logger.info(f"📹 Actual video used: {actual_video_used}")
+                            
+                            if Path(generated_path).exists():
+                                # Move to organized location and track in state
+                                organized_path = self.state.save_article_final_video(
+                                    article, generated_path, self.config.storage_dir
+                                )
+                                if organized_path:
+                                    generated_videos.append(organized_path)
+                                    logger.info(f"✅ Video generated: {Path(organized_path).name}")
+                                else:
+                                    logger.warning(f"⚠️ Failed to organize video for article {i+1}")
                             else:
-                                logger.warning(f"⚠️ Failed to organize video for article {i+1}")
+                                logger.warning(f"⚠️ Failed to generate video for article {i+1}")
                         else:
                             logger.warning(f"⚠️ Failed to generate video for article {i+1}")
                     else:

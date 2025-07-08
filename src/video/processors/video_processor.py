@@ -133,7 +133,8 @@ class VideoProcessor:
         content_analysis: Dict = None,
         voice_info: Dict = None,
         output_path: Optional[str] = None,
-        json_file_path: Optional[str] = None
+        json_file_path: Optional[str] = None,
+        assigned_video_id: Optional[str] = None
     ) -> Optional[str]:
         """
         Create a complete TikTok video from audio and script.
@@ -145,6 +146,7 @@ class VideoProcessor:
             voice_info: Voice information for styling
             output_path: Optional custom output path
             json_file_path: Optional path to JSON file with custom audio durations
+            assigned_video_id: Optional specific video ID to use for background footage
             
         Returns:
             Path to the generated video file or None if failed
@@ -152,7 +154,11 @@ class VideoProcessor:
         try:
             start_time = time.time()
             logger.info("Starting video creation process...")
-              # Step 1: Prepare audio
+            
+            # Track the actual video used for metadata
+            self.actual_video_used = None
+            
+            # Step 1: Prepare audio
             audio_clip = await self._prepare_audio(audio_file)
             if not audio_clip:
                 return None
@@ -170,13 +176,15 @@ class VideoProcessor:
                 # Use custom durations from JSON
                 background_video = await self._select_gaming_footage_with_json(
                     json_file_path=json_file_path,
-                    content_analysis=content_analysis
+                    content_analysis=content_analysis,
+                    assigned_video_id=assigned_video_id
                 )
             else:
                 # Use standard duration
                 background_video = await self._select_gaming_footage(
                     duration=actual_duration,
-                    content_analysis=content_analysis
+                    content_analysis=content_analysis,
+                    assigned_video_id=assigned_video_id
                 )
             if not background_video:
                 return None
@@ -211,12 +219,13 @@ class VideoProcessor:
             processing_time = time.time() - start_time
             logger.success(f"Video created successfully in {processing_time:.2f}s: {output_file}")
             
-            return output_file
+            # Return tuple with video path and metadata
+            return (output_file, {'actual_video_used': self.actual_video_used})
             
         except Exception as e:
             logger.error(f"Video creation failed: {e}")
             await self._cleanup_temp_files()
-            return None
+            return (None, {'actual_video_used': None})
     
     async def _prepare_audio(self, audio_file: str) -> Optional[AudioFileClip]:
         """Prepare the audio clip for video synchronization."""
@@ -233,7 +242,8 @@ class VideoProcessor:
     async def _select_gaming_footage(
         self, 
         duration: float, 
-        content_analysis: Dict = None
+        content_analysis: Dict = None,
+        assigned_video_id: Optional[str] = None
     ) -> Optional[VideoFileClip]:
         """
         Select appropriate gaming footage based on content analysis.
@@ -245,7 +255,11 @@ class VideoProcessor:
             
             logger.info(f"Selecting {intensity} intensity gaming footage for {duration:.2f}s")            # BYPASS segment processor and get RAW footage for proper letterboxing
             logger.info("🎯 Getting RAW gaming footage to apply letterboxing effects...")
-            gaming_video = await self._select_raw_gaming_footage(duration, content_analysis)
+            gaming_video = await self._select_raw_gaming_footage(
+                duration, 
+                content_analysis, 
+                assigned_video_id=assigned_video_id
+            )
             
             if gaming_video:
                 logger.success(f"✅ Using raw gaming footage: {gaming_video.w}x{gaming_video.h}")
@@ -697,7 +711,8 @@ class VideoProcessor:
     async def _select_gaming_footage_with_json(
         self, 
         json_file_path: str, 
-        content_analysis: Dict = None
+        content_analysis: Dict = None,
+        assigned_video_id: Optional[str] = None
     ) -> Optional[VideoFileClip]:
         """
         Select gaming footage and create custom segments based on JSON file durations.        """
@@ -726,7 +741,7 @@ class VideoProcessor:
             
             if not video_id:
                 logger.warning("No videos available for custom segmentation")
-                return await self._select_gaming_footage(60, content_analysis)
+                return await self._select_gaming_footage(60, content_analysis, assigned_video_id)
             
             logger.info(f"Using video {video_id} for custom segmentation")
             
@@ -739,7 +754,7 @@ class VideoProcessor:
             
             if not segments:
                 logger.warning("No custom segments created, falling back to standard footage")
-                return await self._select_gaming_footage(60, content_analysis)
+                return await self._select_gaming_footage(60, content_analysis, assigned_video_id)
             
             logger.success(f"✅ Created {len(segments)} custom gaming footage segments")
             
@@ -751,11 +766,11 @@ class VideoProcessor:
                 return video_clip
             else:
                 logger.warning("First custom segment not accessible, falling back to standard footage")
-                return await self._select_gaming_footage(60, content_analysis)
+                return await self._select_gaming_footage(60, content_analysis, assigned_video_id)
         except Exception as e:
             logger.error(f"Failed to create custom gaming footage: {e}")
             logger.info("Falling back to standard footage selection")
-            return await self._select_gaming_footage(60, content_analysis)
+            return await self._select_gaming_footage(60, content_analysis, assigned_video_id)
 
     def _apply_letterboxing(self, video_clip: VideoFileClip) -> VideoFileClip:
         """
@@ -926,7 +941,8 @@ class VideoProcessor:
     async def _select_raw_gaming_footage(
         self, 
         duration: float, 
-        content_analysis: Dict = None
+        content_analysis: Dict = None,
+        assigned_video_id: Optional[str] = None
     ) -> Optional[VideoFileClip]:
         """
         Select raw gaming footage using intelligent action analysis and segment selection.
@@ -955,6 +971,83 @@ class VideoProcessor:
                 return None
             
             logger.info(f"🔍 Found {len(footage_files)} available videos to analyze")
+            
+            # If we have an assigned video ID, try to use it specifically
+            if assigned_video_id:
+                logger.info(f"🎯 Looking for assigned video: {assigned_video_id}")
+                assigned_video_path = None
+                
+                # Look for the assigned video file
+                for video_path in footage_files:
+                    if video_path.stem == assigned_video_id:
+                        assigned_video_path = video_path
+                        break
+                
+                if assigned_video_path:
+                    logger.info(f"✅ Found assigned video: {assigned_video_path.name}")
+                    
+                    # Use the assigned video and find the best segment in it
+                    analyzer = VideoActionAnalyzer()
+                    
+                    try:
+                        # Analyze the assigned video for action segments
+                        segments_results = await analyzer.analyze_continuous_segments(assigned_video_path, [duration])
+                        duration_key = str(duration)
+                        
+                        if duration_key in segments_results and segments_results[duration_key]:
+                            best_segment = segments_results[duration_key][0]
+                            best_segment_start = best_segment['start_time']
+                            best_segment_score = best_segment['avg_score']
+                            
+                            logger.info(f"✅ Using assigned video with best segment: {best_segment_start:.1f}s - {best_segment['end_time']:.1f}s (score: {best_segment_score:.1f})")
+                            
+                            # Load and process the assigned video
+                            raw_video = VideoFileClip(str(assigned_video_path))
+                            logger.info(f"📊 Assigned video specs: {raw_video.w}x{raw_video.h}, duration: {raw_video.duration:.1f}s")
+                            
+                            # Track the actual video used for metadata
+                            self.actual_video_used = assigned_video_path.stem
+                            
+                            # Extract the best segment
+                            segment_end = best_segment_start + duration
+                            if segment_end > raw_video.duration:
+                                if raw_video.duration >= duration:
+                                    best_segment_start = max(0, raw_video.duration - duration - 1)
+                                    segment_end = best_segment_start + duration
+                                    logger.info(f"🔄 Adjusted segment to fit: {best_segment_start:.1f}s - {segment_end:.1f}s")
+                                else:
+                                    loops_needed = int(duration / raw_video.duration) + 1
+                                    raw_video = concatenate_videoclips([raw_video] * loops_needed)
+                                    logger.info(f"🔄 Looped video {loops_needed} times for duration")
+                            
+                            raw_video = raw_video.subclipped(best_segment_start, best_segment_start + duration)
+                            
+                            # Handle audio
+                            if raw_video.audio:
+                                gaming_audio = raw_video.audio
+                                gaming_audio = gaming_audio.with_fps(22050)
+                                
+                                def reduce_volume(gf, t):
+                                    return gf(t) * 0.30
+                                
+                                gaming_audio = gaming_audio.transform(reduce_volume)
+                                raw_video = raw_video.with_audio(gaming_audio)
+                                logger.info("🎵 Gaming audio reduced to 30% volume for ambient background")
+                            
+                            logger.success(f"✅ Assigned video prepared: {raw_video.w}x{raw_video.h}, {raw_video.duration:.1f}s")
+                            return raw_video
+                            
+                        else:
+                            logger.warning(f"⚠️ No suitable {duration:.1f}s segments found in assigned video, falling back to random selection")
+                            
+                    except Exception as e:
+                        logger.warning(f"❌ Failed to analyze assigned video {assigned_video_path.name}: {e}, falling back to random selection")
+                
+                else:
+                    logger.warning(f"⚠️ Assigned video '{assigned_video_id}' not found in storage, falling back to random selection")
+            
+            # Fallback to original random selection logic
+            logger.info("🔄 Using random video selection with action analysis")
             
             # Initialize action analyzer
             analyzer = VideoActionAnalyzer()
@@ -1010,6 +1103,9 @@ class VideoProcessor:
             
             # Load the selected video
             raw_video = VideoFileClip(str(best_video_path))
+            
+            # Track the actual video used for metadata
+            self.actual_video_used = best_video_path.stem
             
             logger.info(f"📊 Raw footage specs: {raw_video.w}x{raw_video.h}, duration: {raw_video.duration:.1f}s")
             
